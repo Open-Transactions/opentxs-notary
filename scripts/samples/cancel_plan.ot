@@ -1,7 +1,0 @@
-#!/usr/bin/env ot
-
-// Source code is in scripts/ot/ot_commands.ot
-
-
-main_cancel_plan()
-

@@ -1,6 +1,0 @@
-#!/usr/bin/env ot
-
-// See scripts/ot/ot_commands.ot for the code for this function.
-
-main_new_symmetric_key()
-

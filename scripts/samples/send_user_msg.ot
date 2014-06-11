@@ -1,9 +1,0 @@
-#!/usr/bin/env ot
-
-
-// See the Open-Transactions/scripts/ot/ot_commands.ot file for the source
-// code for the main_sendmsg() function.
-//
-
-main_sendmsg()
-	

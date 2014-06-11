@@ -1,15 +1,15 @@
-####### AC-AM Package Preliminaries #######
-
+#  
+#
 AC_PREREQ([2.61])
-AC_INIT([opentxs],m4_esyscmd(tr -d '\n' <VERSION),[FellowTraveler@rayservers.net],[opentxs],[http://opentransactions.org])
-AC_CONFIG_SRCDIR([src/otd/main.cpp])
+AC_INIT([opentxs-server],m4_esyscmd(tr -d '\n' <VERSION), [ot-dev@opentransactions.org],[opentxs-server],[http://opentransactions.org])
+AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([config.h])
-AX_PREFIX_CONFIG_H(include/otlib/ot_config.h)
+
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
 AM_INIT_AUTOMAKE([1.10 foreign])
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([no])])
 
 ## special prelims
 AC_FUNC_STRNLEN
@@ -53,14 +53,11 @@ AC_FUNC_STRERROR_R
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([getpass gettimeofday mkdir socket strtol strtoul])
 
+# pthread #
 
-## pthread lib ##
+AC_CHECK_LIB([pthread], [pthread_create])
 
-AX_PTHREAD
-CC="$PTHREAD_CC"
-
-
-## GCC AND CLANG DETECTION ( originaly from mesa's configure.ac file)	 ##
+## GCC AND CLANG DETECTION ##
 
 AC_MSG_CHECKING([if compiling with clang])
 
@@ -68,35 +65,35 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 #ifndef __clang__
 	not clang
 #endif
-	]])],[ac_cv_ot_clang=true],[ac_cv_ot_clang=false])
+	]])],[ac_cv_vp_clang=true],[ac_cv_vp_clang=false])
 
-AC_MSG_RESULT([$ac_cv_ot_clang])
+AC_MSG_RESULT([$ac_cv_vp_clang])
 
-if test x"$ac_cv_ot_clang" == x"true"; then
+if test x"$ac_cv_vp_clang" == x"true"; then
 	AC_MSG_CHECKING([if compiling with clang -std=c++11])
 	AC_LANG_PUSH([C++])
 	AC_COMPILE_IFELSE(
 		[AC_LANG_PROGRAM([[#include <cinttypes>]],
 			[[]])],
-		[ac_cv_ot_clang11=true],
-		[ac_cv_ot_clang11=false])
+		[ac_cv_vp_clang11=true],
+		[ac_cv_vp_clang11=false])
 	AC_LANG_POP
-	AC_MSG_RESULT([$ac_cv_ot_clang11])
+	AC_MSG_RESULT([$ac_cv_vp_clang11])
 fi
 
-if test x"$ac_cv_ot_clang" == x"true"; then
+if test x"$ac_cv_vp_clang" == x"true"; then
 	AC_MSG_CHECKING([if compiling with clang TR1])
 	AC_LANG_PUSH([C++])
 	   AC_COMPILE_IFELSE(
 			 [AC_LANG_PROGRAM([[#include <tr1/memory>]],
 				    [[]])],
-			 [ac_cv_ot_clangtr1=true],
-			[ac_cv_ot_clangtr1=false])
+			 [ac_cv_vp_clangtr1=true],
+			[ac_cv_vp_clangtr1=false])
 	AC_LANG_POP
-	AC_MSG_RESULT([$ac_cv_ot_clangtr1])
+	AC_MSG_RESULT([$ac_cv_vp_clangtr1])
 fi
 
-if test x"$ac_cv_ot_clang" == x"false"; then
+if test x"$ac_cv_vp_clang" == x"false"; then
 	AC_MSG_CHECKING([whether gcc version is sufficient])
 	gcc_major=0
 	gcc_minor=0
@@ -108,13 +105,13 @@ if test x"$ac_cv_ot_clang" == x"false"; then
 	fi
 
 	## test if we have a version of gcc that suports c++11
-	ac_cv_ot_gcc11=false
+	ac_cv_vp_gcc11=false
 
 	if test $gcc_major -ge 4 -a $gcc_minor -ge 7 ; then
-		ac_cv_ot_gcc11=true
+		ac_cv_vp_gcc11=true
 		AC_MSG_RESULT([yes, and supports c++11])
 	elif test $gcc_major -ge 4 -a $gcc_minor -ge 2 ; then
-		ac_cv_ot_gcc11=false
+		ac_cv_vp_gcc11=false
 		AC_MSG_RESULT([yes, but no c++11 support])
 	else
 		AC_MSG_ERROR([If using GCC, version 4.2.0 or later is required.])
@@ -122,121 +119,34 @@ if test x"$ac_cv_ot_clang" == x"false"; then
 	fi
 fi
 
-if test x"$ac_cv_ot_clang" == x"true" -a x"$ac_cv_ot_clang11" == x"false"; then
-	ac_cv_ot_cxx11=false
-elif test x"$ac_cv_ot_clang" == x"false" -a x"$ac_cv_ot_gcc11" == x"false"; then
-	ac_cv_ot_cxx11=false
+if test x"$ac_cv_vp_clang" == x"true" -a x"$ac_cv_vp_clang11" == x"false"; then
+	ac_cv_vp_cxx11=false
+elif test x"$ac_cv_vp_clang" == x"false" -a x"$ac_cv_vp_gcc11" == x"false"; then
+	ac_cv_vp_cxx11=false
 else
-	ac_cv_ot_cxx11=true
+	ac_cv_vp_cxx11=true
+fi
+
+if test x"$ac_cv_vp_cxx11" == x"true"; then
+	AC_SUBST([CXX11_FLAGS],["-std=c++11"])
+else
+	AC_DEFINE([CXX03_TR1], [1], [Building with C++03 TR1])
 fi
 
 ######## Prelims end, Custom checks begin #######
 
 ##### Dependencies, packages, libs ####
+
 #
-## Main packages deps ##
 #
 #
-## Chaiscript & Boost & C++11
-#
+PKG_CHECK_MODULES([OPENTXS],[opentxs >= 0.0.1],,
+  AC_MSG_ERROR([Error: libotapi version >= 0.0.1 not found!])
+)
 
-if test x"$ac_cv_ot_cxx11" == x"true"; then
-	AC_SUBST([CXX11_FLAGS],["-std=c++11"])
-	AC_DEFINE([HAVE_CXX11], [1], [Building with C++11])
-	AC_SUBST([CHAI_CFLAGS],["-I\$(top_srcdir)/deps/include/chai5"])
-	AC_DEFINE([CHAISCRIPT_5], [1], [Building with Chaiscript 5])
-else
-	AC_DEFINE([CXX03_TR1], [1], [Building with C++03 TR1])
-	AC_SUBST([CHAI_CFLAGS],["-I\$(top_srcdir)/deps/include/chai4"])
-	AC_DEFINE([CHAISCRIPT_4], [1], [Building with Chaiscript 4])
-	AX_BOOST_BASE([1.25.0])
-	AX_BOOST_THREAD
-	AX_BOOST_DATE_TIME
-	AX_BOOST_SYSTEM
-	AC_SUBST([BOOST_LIBS],["$BOOST_LDFLAGS $BOOST_THREAD_LIB $BOOST_DATE_TIME_LIB $BOOST_SYSTEM_LIB"])
-	AC_DEFINE([HAVE_BOOST], [1], [We have boost])
-fi
+##############################
+## Build Configuration Options
 
-
-## Protobuff
-#
-
-PKG_CHECK_MODULES([PROTOBUF],[protobuf >= 2.4.1])
-
-AC_ARG_WITH(
-	[protoc],
-	[AS_HELP_STRING(
-		[--with-protoc=PATH],	
-		[location of the protoc protocol buffer compiler binary, defaults to protoc])],
-	[PROTOC="$withval"],
-	[PROTOC='protoc'])
-AC_SUBST([PROTOC])
-
-
-## OpenSSL
-# "--with-openssl=DIR" point to optional openssl package headers (for devs)
-
-AC_ARG_WITH(
-	[openssl],
-	[],
-	[ case "$withval" in "" | y | ye | yes | n | no) AC_MSG_ERROR([Invalid --with-openssl value]);;
-		*) AX_CHECK_OPENSSL(
-			[AC_MSG_RESULT([Custom openssl found!])],
-			[AC_MSG_ERROR([Bad --with-openssl=DIR; openssl not found in DIR])]);;
-		esac],
-	[PKG_CHECK_MODULES(
-		[OPENSSL],
-		[openssl >= 1.0.0],
-		[],
-		[AC_MSG_RESULT([Warning: openssl version >= 1.0.0 not found!])])])
-
-
-## MsgPack ##
-
-AC_CHECK_LIB([msgpack],[msgpack_unpack],
-	[MSG_LIBS="-lmsgpack"
-	AC_CHECK_HEADERS([msgpack.h],[],
-		[AC_MSG_ERROR([No header files for libmsgpack found!])]
-		)
-	],
-	[AC_MSG_RESULT([Warning: libmsgpack not found!])]
-	)
-
-## Transport Options (ZMQ defaut) ##
-
-AC_ARG_WITH(	[transport],
-		[AS_HELP_STRING([--with-transport@<:@=zmq@:>@],
-		[Choose a transport backend (available: zmq2, zmq4)])],
-		[case "${withval}" in
-			zmq2) true ;;
-			zmq4) true ;;
-			*) AC_MSG_ERROR([bad value ${withval} for --with-transport]) ;;
-			esac],
-		[with_transport="zmq4"])
-
-AM_CONDITIONAL(	[TRANSPORT_ZMQ2],	[test x"$with_transport" == x"zmq2"])
-AM_CONDITIONAL(	[TRANSPORT_ZMQ4],	[test x"$with_transport" == x"zmq4"])
-
-
-AS_IF(	[test x"$with_transport" == x"zmq2"],
-	[PKG_CHECK_MODULES([ZMQ],[libzmq >= 2.1.4],
-		[AC_LANG_PUSH([C++])
-		AC_CHECK_HEADERS([zmq.hpp],
-			[],
-			[AC_MSG_ERROR([Header files for libzmq not found or incompatible.])],
-			[])
-		AC_LANG_POP],
-		[AC_MSG_RESULT([Warning: libzmq version >= 2.1.4 not found!])]
-		)
-	])
-
-if test x"$with_transport" == x"zmq2"; then
-	AC_DEFINE([TRANSPORT_ZMQ2], [1], [Using ZMQ 2 Transport])
-elif test x"$with_transport" == x"zmq4"; then
-	AC_DEFINE([TRANSPORT_ZMQ4], [1], [Using ZMQ 4 Transport])
-else
-	AC_MSG_ERROR([ERROR: Only ZMQ Transport Supported (for the moment)!])
-fi
 
 ## Keyring Options ##
 
@@ -302,155 +212,6 @@ AS_IF(  [test "$with_keyring" == x"flatfile"],
     ])
 
 
-#### More Configure Options ####
-
-
-## (Option) Add SWIG JAVA ##
-
-AC_ARG_WITH(
-	[java],
-	[AS_HELP_STRING([--with-java], [build Java SWIG wrapper])],
-	[])
-
-AM_CONDITIONAL([WANT_JAVA], [test x"$with_java" == x"yes"])
-
-if test x"$with_java" == x"yes"; then
-
-	AX_PROG_JAVAC
-	AX_JNI_INCLUDE_DIR
-
-	for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS
-		do
-			JNI_CPPFLAGS="$JNI_CPPFLAGS -I$JNI_INCLUDE_DIR"
-			done
-
-	AC_SUBST([JNI_CPPFLAGS],[$JNI_CPPFLAGS])
-fi
-
-## (Option) Add SWIG PERL5 ##
-
-AC_ARG_WITH(
-	[perl5],
-	[AS_HELP_STRING([--with-perl5], [build Perl5 SWIG wrapper])],
-	[])
-
-AM_CONDITIONAL([WANT_PERL5], [test x"$with_perl5" == x"yes"])
-
-if test x"$with_perl5" == x"yes"; then
-
-	AX_PERL_EXT
-fi
-
-## (Option) Add SWIG PHP ##
-
-AC_ARG_WITH(
-	[php],
-	[AS_HELP_STRING([--with-php], [build PHP SWIG wrapper])],
-	[])
-
-AM_CONDITIONAL([WANT_PHP], [test x"$with_php" == x"yes"])
-
-if test x"$with_php" == x"yes"; then
-
-	AX_PHP_DEVEL
-fi
-
-## (Option) Add SWIG PYTHON ##
-
-AC_ARG_WITH(
-	[python],
-	[AS_HELP_STRING([--with-python], [build Python SWIG wrapper])],
-	[])
-
-AM_CONDITIONAL([WANT_PYTHON], [test x"$with_python" == x"yes"])
-
-if test x"$with_python" == x"yes"; then
-
-	AX_PYTHON_DEVEL([>= '2.1.0'])
-fi
-
-## (Option) Add SWIG RUBY ##
-
-AC_ARG_WITH(
-	[ruby],
-	[AS_HELP_STRING([--with-ruby], [build Ruby SWIG wrapper])],
-	[])
-
-AM_CONDITIONAL([WANT_RUBY], [test x"$with_ruby" == x"yes"])
-
-if test x"$with_ruby" == x"yes"; then
-
-	AC_PATH_PROG([RUBY],[ruby])
-	AX_RUBY_DEVEL([1.8.7])
-fi
-
-## (Option) Add SWIG TCL ##
-
-AC_ARG_WITH(
-	[tcl],
-	[AS_HELP_STRING([--with-tcl], [build TCL SWIG wrapper])],
-	[])
-
-AM_CONDITIONAL([WANT_TCL], [test x"$with_tcl" == x"yes"])
-
-if test x"$with_tcl" == x"yes"; then
-
-	AX_PROG_TCL([8.0])
-fi
-
-## (Option) Add SWIG CSHARP ##
-
-AC_ARG_WITH(
-		[csharp],
-		[AS_HELP_STRING([--with-csharp], [build Csharp SWIG wrapper])],
-		[])
-
-AM_CONDITIONAL([WANT_CSHARP], [test x"$with_csharp" == x"yes"])
-
-if test x"$with_csharp" == x"yes"; then
-
-	AX_PROG_CSC
-fi
-
-## (Option) Add SWIG D ##
-
-AC_ARG_WITH(
-		[d],
-		[AS_HELP_STRING([--with-d], [build D SWIG wrapper])],
-		[])
-
-AM_CONDITIONAL([WANT_D], [test x"$with_d" == x"yes"])
-
-if test x"$with_d" == x"yes"; then
-
-	AC_PATH_PROG([GDC_PATH],[gdc])
-fi
-
-## (Option) Add SWIG Go ##
-
-AC_ARG_WITH(
-		[go],
-		[AS_HELP_STRING([--with-go], [build Go SWIG wrapper])],
-		[])
-
-AM_CONDITIONAL([WANT_GO], [test x"$with_go" == x"yes"])
-
-## (Option) Add opentxs prompt bash-completion ##
-
-AC_ARG_WITH(
-	[bashcompletion],
-	[AS_HELP_STRING([--with-bashcompletion=DIR], [opentxs prompt bash-completion script install directory])],
-	[ case "$withval" in "" | y | ye | yes | n | no) AC_MSG_ERROR([Invalid --with-bashcompletion value]);;
-		*) ac_cv_ot_bashcompletiondir="$withval"
-		;;
-		esac
-	AC_SUBST([BASH_COMPLETIONDIR], ["$ac_cv_ot_bashcompletiondir"])
-	],
-	[])
-
-
-##############################
-## Build Configuration Options
 
 ## (Option) Signal Handler ##
 
@@ -527,7 +288,7 @@ if test x"$debug" == x"false" -a x"$release" == x"false"; then
 fi
 
 if test x"$debug" == x"true"; then
-	if test x"$ac_cv_ot_clang" == x"true"; then
+	if test x"$ac_cv_vp_clang" == x"true"; then
 		AC_SUBST([DBG_CXXFLAGS],["-g3 -O0 -fPIC"])
 	else
 		AC_SUBST([DBG_CXXFLAGS],["-g3 -O0 -fPIC -DPIC"])
@@ -536,7 +297,7 @@ if test x"$debug" == x"true"; then
 fi
 
 if test x"$release" == x"true"; then
-	if test x"$ac_cv_ot_clang" == x"true"; then
+	if test x"$ac_cv_vp_clang" == x"true"; then
 		AC_SUBST([REL_CXXFLAGS],["-g0 -O3 -fPIC -D_FORTIFY_SOURCE=2"])
 	else
 		AC_SUBST([REL_CXXFLAGS],["-g0 -O0 -fPIC -D_FORTIFY_SOURCE=2 --param ssp-buffer-size=4 -fstack-protector-all -fstack-check -Wstack-protector"])
@@ -546,27 +307,13 @@ fi
 
 #####   Output to AM   #####
 
-AC_SUBST([DEPS_CFLAGS],	["$PROTOBUF_CFLAGS $CHAI_CFLAGS $ZMQ_CFLAGS $KRG_CFLAGS $OPENSSL_CFLAGS $OPENSSL_INCLUDES $BOOST_CPPFLAGS $PTHREAD_CFLAGS"])
+AC_SUBST([DEPS_CFLAGS], ["$OPENTXS_CFLAGS"])
 
-AC_SUBST([DEPS_LIBS],	["$PROTOBUF_LIBS $ZMQ_LIBS $MSG_LIBS $KRG_LIBS $OPENSSL_LDFLAGS $OPENSSL_LIBS $BOOST_LIBS -ldl $PTHREAD_LIBS"])
+AC_SUBST([DEPS_LIBS],	  ["$OPENTXS_LIBS"])
 
 AC_SUBST([AM_CXXFLAGS],	["$DBG_CXXFLAGS $REL_CXXFLAGS $WARN_CXXFLAGS $CXX11_FLAGS $DEPS_CFLAGS"])
 
 AC_CONFIG_FILES([Makefile
-			deps/src/Makefile
-			deps/src/zmq/Makefile
-			deps/src/gtest/Makefile
-			deps/src/bigint/Makefile
-			deps/src/irrxml/Makefile
-			deps/src/lucre/Makefile
-			deps/src/misc/Makefile
-			src/Makefile
-			src/otlib/Makefile
-			src/otlib/otprotob/Makefile
-			src/otextensions/Makefile
-			src/otapi/Makefile
-			tests/Makefile
-			tests/otlib/Makefile
-			src/opentxs.pc])
+                 ])
 
 AC_OUTPUT
