@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local sha1> <remote ref> <remote sha1>
+
+remote="$1"
+url="$2"
+
+if ! command -v cppcheck >/dev/null; then
+	echo -n "error: please install cppcheck in order to be able"
+	echo    " to use this pre-push git-hook"
+	exit 1
+fi
+
+if git remote | grep -q '^upstream$'; then
+	remote="upstream"
+fi
+
+z40=0000000000000000000000000000000000000000
+
+IFS=' '
+while read local_ref local_sha remote_ref remote_sha
+do
+	if [ "$local_sha" = $z40 ]; then
+		# we only do something if it's not a branch deletion
+		continue
+	fi
+	mod_files=$(git diff-tree --no-commit-id --name-only \
+				-r $remote/develop..HEAD | grep '^src/')
+	while read file; do
+		[ -e "$file" ] && exist_files="$exist_files $(printf %q "$file")"
+	done <<< $mod_files
+	if [ -z "$exist_files" ]; then
+		echo "==> cppcheck successfull"
+		exit 0
+	fi
+	output=$(scripts/travis/cppcheck_wrapper.sh $exist_files 2>&1)
+	error_code=$?
+	filter_string="(information) Cppcheck cannot find all the include files"
+	filter_string="$filter_string (use --check-config for details)"
+	echo "$output" | grep -v "$filter_string"
+	if [ $error_code -eq 0 ]; then
+		echo "==> cppcheck successfull"
+	else
+		echo "==> cppcheck failed"
+	fi
+	exit $error_code
+done
+
+exit 0
