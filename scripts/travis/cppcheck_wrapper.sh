@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# The goal is to remove the suppressed checks stepwise and fix the issues
+# in the same commit. Use cppcheck --inline-suppr for false positives.
+sup_perf="--suppress=passedByValue"
+sup_style="--suppress=variableScope --suppress=noCopyConstructor"
+suppress="$sup_perf $sup_style"
+enabled="--enable=warning --enable=information --enable=performance \
+         --enable=portability --enable=missingInclude --enable=style"
+# Exit code '1' is returned if arguments are not valid or if no input
+# files are provided. Compare 'cppcheck --help'.
+cppcheck -f -q --error-exitcode=2 $enabled $suppress "$@"
