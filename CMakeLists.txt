@@ -6,7 +6,7 @@ project(opentxs-server)
 set (VERSION_MAJOR  0)
 set (VERSION_MINOR  0)
 set (VERSION_BUGFIX 1)
-
+set (VERSION "0.0.1")
 
 #-----------------------------------------------------------------------------
 # Options for building
