@@ -33,32 +33,23 @@ profile
 # emacs noise
 *~
 
-# autoreconf noise
-Makefile.in
-aclocal.m4
-build-aux/test-driver
-build-aux/compile
-build-aux/config.guess
-build-aux/config.sub
-build-aux/depcomp
-build-aux/install-sh
-build-aux/ltmain.sh
-build-aux/m4/libtool.m4
-build-aux/m4/ltoptions.m4
-build-aux/m4/ltsugar.m4
-build-aux/m4/ltversion.m4
-build-aux/m4/lt~obsolete.m4
-build-aux/missing
-config.h.in
-configure
-
-
-autom4te.cache
-
-
-# protobuf output
-include/otlib/*.pb*
-src/otlib/*.pb*
+# cmake noise
+CMakeCache.txt
+CMakeFiles/
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+cmake_install.cmake
+install_manifest.txt
+opentxs-server-0.0.1-1.x86_64.rpm
+opentxs-server.spec
+src/CMakeFiles/
+src/cmake_install.cmake
+src/createmint/CMakeFiles/
+src/createmint/cmake_install.cmake
+src/createmint/createmint
+src/opentxs-server
+Makefile
 
 # visual studio noise
 *.user
@@ -72,17 +63,6 @@ build/
 lib/
 obj/
 bin/
-
-# linux configure noise
-build-aux/csharpcomp.sh
-Makefile
-config.h
-config.log
-config.status
-libtool
-stamp-h1
-src/.deps/
-src/createmint/.deps/
 
 # linux build noise
 *.lo

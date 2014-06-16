@@ -8,7 +8,7 @@ compiler:
 install: ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
 script:
   - ./scripts/travis/cppcheck_wrapper.sh ./src
-#  - ./autogen.sh && ./configure && make distcheck -j 2
+#  - cmake . && make -j 2
 branches:
   only:
     - master
