@@ -124,22 +124,20 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include <OTServer.hpp>
+#include "../OTServer.hpp"
 
-#include <OTCrypto.hpp>
-#include <OTDataFolder.hpp>
-#include <OTFolders.hpp>
-#include <OTLog.hpp>
-#include <OTMint.hpp>
-#include <OTPaths.hpp>
-#include <OTStorage.hpp>
+#include <otlib/OTCrypto.hpp>
+#include <otlib/OTDataFolder.hpp>
+#include <otlib/OTFolders.hpp>
+#include <otlib/OTLog.hpp>
+#include <otlib/OTMint.hpp>
+#include <otlib/OTPaths.hpp>
+#include <otlib/OTStorage.hpp>
 
 #include <cstdio>
 
 #include <time.h>
 #include <assert.h>
-
-
 
 // TODO: what about android for all the defaults here? Are there ini files in android? Revisit.
 // so far, treating it like unix since it is.

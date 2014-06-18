@@ -3,18 +3,18 @@
 cmake_minimum_required(VERSION 2.8)
 project(opentxs-server)
 
-set (VERSION_MAJOR  0)
-set (VERSION_MINOR  0)
-set (VERSION_BUGFIX 1)
-set (VERSION "0.0.1")
+set(VERSION_MAJOR  0)
+set(VERSION_MINOR  0)
+set(VERSION_BUGFIX 1)
+set(VERSION "0.0.1")
 
 #-----------------------------------------------------------------------------
 # Options for building
 
 option(BUILD_VERBOSE       "Verbose build output." ON)
 option(BUILD_TESTS         "Build the unit tests." ON)
-option(DISABLE_LIBCXX      "Disable using libc++ when compiling with clang." OFF )
-option(RPM                 "Build a RPM instead of a tarball" OFF )
+option(DISABLE_LIBCXX      "Disable using libc++ when compiling with clang." OFF)
+option(RPM                 "Build a RPM instead of a tarball" OFF)
 
 if(BUILD_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE true)
@@ -30,7 +30,6 @@ message(STATUS "Processor:       ${CMAKE_SYSTEM_PROCESSOR}")
 
 message(STATUS "Verbose:         ${BUILD_VERBOSE}")
 message(STATUS "Testing:         ${BUILD_TESTS}")
-message(STATUS "Documentation:   ${BUILD_DOCUMENTATION}")
 message(STATUS "Build RPM:       ${RPM}")
 
 
@@ -47,7 +46,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES GNU)
   INCLUDE(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG(-std=c++11 HAVE_STD11)
   if (HAVE_STD11)
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
   else()
     message(FATAL_ERROR "No advanced standard C++ support (-std=c++11 not defined).")
@@ -56,19 +54,15 @@ elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   INCLUDE(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG(-std=c++11 HAVE_STD11)
   if (HAVE_STD11)
-    if (DISABLE_LIBCXX)
-      #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    else()
-      #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++ -Wall")
+    if (APPLE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-      set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -stdlib=libc++")
+    else()
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
   else()
     message(FATAL_ERROR "No C++11 support for Clang version. Please upgrade Clang to a version supporting C++11.")
   endif()
 endif()
-
 
 message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
@@ -89,12 +83,6 @@ endif(MSVC)
 if (WIN32)
   add_definitions(-D_WIN32_WINNT=0x0501)
 endif(WIN32)
-
-
-#-----------------------------------------------------------------------------
-# Third party libraries
-
-#find_package( opentxs )	#lclc
 
 
 #-----------------------------------------------------------------------------

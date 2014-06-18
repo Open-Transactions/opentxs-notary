@@ -24,7 +24,7 @@ os=$1
 case "$os" in
     osx)
         brew update
-        brew install protobuf-c protobuf boost openssl cppcheck
+        brew install protobuf-c protobuf boost openssl cppcheck cmake
         brew link --force openssl
         ;;
     linux|"" )
