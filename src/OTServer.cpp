@@ -132,9 +132,8 @@
 
 #include <stdafx.hpp>
 
-#include <OTServer.hpp>
-
-#include <OTClientConnection.hpp>
+#include "OTServer.hpp"
+#include "OTClientConnection.hpp"
 
 #include <OTAsymmetricKey.hpp>
 #include <OTBasket.hpp>

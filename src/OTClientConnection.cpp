@@ -130,18 +130,15 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include <stdafx.hpp>
+#include "OTClientConnection.hpp"
+#include "OTServer.hpp"
 
-#include <OTClientConnection.hpp>
-
-#include <OTServer.hpp>
-
-#include <OTAsymmetricKey.hpp>
-#include <OTDataCheck.hpp>
-#include <OTEnvelope.hpp>
-#include <OTLog.hpp>
-#include <OTMessage.hpp>
-#include <OTPayload.hpp>
+#include <otlib/OTAsymmetricKey.hpp>
+#include <otlib/OTDataCheck.hpp>
+#include <otlib/OTEnvelope.hpp>
+#include <otlib/OTLog.hpp>
+#include <otlib/OTMessage.hpp>
+#include <otlib/OTPayload.hpp>
 
 #include <cstdio>
 
