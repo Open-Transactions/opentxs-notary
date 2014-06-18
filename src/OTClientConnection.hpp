@@ -128,17 +128,15 @@
  kamH0Y/n11lCvo1oQxM+
  =uSzz
  -----END PGP SIGNATURE-----
- **************************************************************/
-
+**************************************************************/
 
 #ifndef __OT_CLIENT_CONNECTION_HPP__
 #define __OT_CLIENT_CONNECTION_HPP__
 
-#include "OTCommon.hpp"
-
-#include "OTData.hpp"
-#include "OTMessageBuffer.hpp"
-
+#include <otlib/OTglobal.h>
+#include <otlib/OTCommon.hpp>
+#include <otlib/OTData.hpp>
+#include <otlib/OTMessageBuffer.hpp>
 
 class OTAsymmetricKey;
 class OTMessage;
@@ -149,7 +147,7 @@ class OTEnvelope;
 class OTClientConnection
 {
 	u_header		m_CMD;			// We'll load a header and put it here, then wait until the bytes received matches the count
-									// before processing.
+  // before processing.
 	OTData			m_Buffer;		// As we read data, we buffer it here and chunk it out into messages.
 	
 	bool			m_bHaveHeader;	// If we've loaded a header already, and we're waiting for the byte count, this is true.
@@ -186,6 +184,5 @@ public:
 	// This is for XmlRpc mode (i.e. there is not actually an open connection being maintained.)
 	bool SealMessageForRecipient(OTMessage & theMsg, OTEnvelope & theEnvelope);
 };
-
 
 #endif // __OT_CLIENT_CONNECTION_HPP__

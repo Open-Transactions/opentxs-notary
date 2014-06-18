@@ -129,8 +129,7 @@
  kamH0Y/n11lCvo1oQxM+
  =uSzz
  -----END PGP SIGNATURE-----
- **************************************************************/
-
+**************************************************************/
 
 #ifdef _WIN32
 #include "OTLib/stdafx.h"
@@ -145,7 +144,7 @@
 extern "C"
 {
 #ifdef _WIN32
-//#include <WinSock.h>
+  //#include <WinSock.h>
 #else
 
 #include <wordexp.h>
@@ -158,7 +157,6 @@ extern "C"
 #include <netinet/in.h>
 #endif
 }
-
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -211,32 +209,26 @@ extern "C"
 
 #include "OTLog.h"
 
-
-
-
-
 /*
- if (bSuccess = theServer.ProcessUserCommand(theMessage, theReply))
- {
-	 OTLog::vOutput(1, "Successfully processed user command: %s\n", theMessage.m_strCommand.Get());
-	 ProcessReply(ssl, theReply);
- }
- else
- {
-	 OTLog::Output(1, "Unable to process user command in XML, or missing payload, in ProcessMessage.\n");
- }
+  if (bSuccess = theServer.ProcessUserCommand(theMessage, theReply))
+  {
+  OTLog::vOutput(1, "Successfully processed user command: %s\n", theMessage.m_strCommand.Get());
+  ProcessReply(ssl, theReply);
+  }
+  else
+  {
+  OTLog::Output(1, "Unable to process user command in XML, or missing payload, in ProcessMessage.\n");
+  }
 
- */
-
-
+*/
 
 int32_t main (int32_t argc, char **argv)
 {
 	OTLog::vOutput(0, "\n\nWelcome to Open Transactions... Test Server -- version %s\n"
-				   "(transport build: OTMessage -> TCP -> SSL)\n"
-				   "IF YOU PREFER TO USE XmlRpc with HTTP, then rebuild from main folder like this:\n\n"
-				   "cd ..; make clean; make rpc\n\n",
-				   OTLog::Version());
+    "(transport build: OTMessage -> TCP -> SSL)\n"
+    "IF YOU PREFER TO USE XmlRpc with HTTP, then rebuild from main folder like this:\n\n"
+    "cd ..; make clean; make rpc\n\n",
+    OTLog::Version());
 
 	// -----------------------------------------------------------------------
 
@@ -255,7 +247,6 @@ int32_t main (int32_t argc, char **argv)
 	/* Winsock DLL.											*/
 
 	OT_ASSERT_MSG((err == 0), "WSAStartup failed!\n");
-
 
 	/*	Confirm that the WinSock DLL supports 2.2.			*/
 	/*	Note that if the DLL supports versions greater		*/
@@ -308,20 +299,20 @@ int32_t main (int32_t argc, char **argv)
 			{
 				strPath.Set(pVal);
 				OTLog::vOutput(0, "Reading ini file (%s). \n Found Server data_folder path: %s \n",
-							   strIniFileDefault.Get(), strPath.Get());
+          strIniFileDefault.Get(), strPath.Get());
 			}
 			else
 			{
 				strPath.Set(SERVER_PATH_DEFAULT);
 				OTLog::vOutput(0, "Reading ini file (%s): \n Failed reading Server data_folder path. Using: %s \n",
-							   strIniFileDefault.Get(), strPath.Get());
+          strIniFileDefault.Get(), strPath.Get());
 			}
 		}
 		else
 		{
 			strPath.Set(SERVER_PATH_DEFAULT);
 			OTLog::vOutput(0, "Unable to load ini file (%s) to find data_folder path\n Will assume that server data_folder is at path: %s \n",
-						   strIniFileDefault.Get(), strPath.Get());
+        strIniFileDefault.Get(), strPath.Get());
 		}
 	}
 	// -----------------------------------------------------------------------
@@ -333,25 +324,25 @@ int32_t main (int32_t argc, char **argv)
 	{
 		OTLog::vOutput(0, "\n==> USAGE:    %s  [absolute_path_to_data_folder]\n\n"
 
-//		OTLog::vOutput(0, "\n==> USAGE:    %s  <SSL-password>  [absolute_path_to_data_folder]\n\n"
+      //		OTLog::vOutput(0, "\n==> USAGE:    %s  <SSL-password>  [absolute_path_to_data_folder]\n\n"
 #if defined (FELLOW_TRAVELER)
-//					   "(Password defaults to '%s' if left blank.)\n"
-					   "(Folder defaults to '%s' if left blank.)\n"
+      //					   "(Password defaults to '%s' if left blank.)\n"
+      "(Folder defaults to '%s' if left blank.)\n"
 #else
-					   "The test password is always 'test'.\n"
-					   "OT will try to read the data_folder path from your ini file. If you prefer\n"
-					   "to specify it at the command line, and you want to see the exact path, type:\n"
-					   "     cd data_folder && pwd && cd ..\n"
+      "The test password is always 'test'.\n"
+      "OT will try to read the data_folder path from your ini file. If you prefer\n"
+      "to specify it at the command line, and you want to see the exact path, type:\n"
+      "     cd data_folder && pwd && cd ..\n"
 #endif
-					   "\n\n", argv[0]
+      "\n\n", argv[0]
 #if defined (FELLOW_TRAVELER)
-//					   , KEY_PASSWORD,
-					   , strPath.Get()
+      //					   , KEY_PASSWORD,
+      , strPath.Get()
 #endif
-					   );
+                   );
 
 #if defined (FELLOW_TRAVELER)
-//		strSSLPassword.Set(KEY_PASSWORD);
+    //		strSSLPassword.Set(KEY_PASSWORD);
 		OTLog::SetMainPath(strPath.Get());
 #else
 		exit(1);
@@ -359,12 +350,12 @@ int32_t main (int32_t argc, char **argv)
 	}
 	else if (argc < 2)
 	{
-//		strSSLPassword.Set(argv[1]);
+    //		strSSLPassword.Set(argv[1]);
 		OTLog::SetMainPath(strPath.Get());
 	}
 	else
 	{
-//		strSSLPassword.Set(argv[1]);
+    //		strSSLPassword.Set(argv[1]);
 		OTLog::SetMainPath(argv[1]); // formerly [2]
 	}
 
@@ -373,7 +364,6 @@ int32_t main (int32_t argc, char **argv)
 	strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(), CA_FILE);
 	strDHFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(), DH_FILE);
 	strKeyFile.Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(), KEY_FILE);
-
 
 	// -----------------------------------------------------------------------
 
@@ -386,11 +376,11 @@ int32_t main (int32_t argc, char **argv)
 	// is only one server he can connect to, and one key he can use to talk to it.)
 
 	OTLog::Output(0,
-				  "\n\nNow loading the server nym, which will also ask you for a password, to unlock\n"
-				  "its private key. (Default password is \"test\".)\n");
+    "\n\nNow loading the server nym, which will also ask you for a password, to unlock\n"
+    "its private key. (Default password is \"test\".)\n");
 
 	// Initialize SSL -- This MUST occur before any Private Keys are loaded!
-    SFSocketGlobalInit(); // Any app that uses OT has to initialize SSL first.
+  SFSocketGlobalInit(); // Any app that uses OT has to initialize SSL first.
 
 	theServer.Init(); // Keys, etc are loaded here.
 
@@ -403,31 +393,30 @@ int32_t main (int32_t argc, char **argv)
 	int32_t			nPort=0;		// The port of this server, according to its own contract.
 
 	OT_ASSERT_MSG(theServer.GetConnectInfo(strHostname, nPort),
-				  "Unable to find my own connect info (which is in my server contract BTW.)\n");
+    "Unable to find my own connect info (which is in my server contract BTW.)\n");
 
 	const int32_t	nServerPort = nPort;
 
 	// -----------------------------------------------------------------------
 
-
 	SFSocket *socket = NULL;
 	listOfConnections theConnections;
 
-    // Alloc Socket
+  // Alloc Socket
 	socket = SFSocketAlloc();
 	OT_ASSERT_MSG(NULL != socket, "SFSocketAlloc Failed\n");
 
-    // Initialize SSL Socket
+  // Initialize SSL Socket
 	int32_t nSFSocketInit = SFSocketInit(socket,
-					 strCAFile.Get(),
-					 strDHFile.Get(),
-					 strKeyFile.Get(),
-					 strSSLPassword.Get(),
-									 NULL);
+    strCAFile.Get(),
+    strDHFile.Get(),
+    strKeyFile.Get(),
+    strSSLPassword.Get(),
+    NULL);
 
 	OT_ASSERT_MSG(nSFSocketInit >= 0, "SFSocketInit Context Failed\n");
 
-    // Listen on Address/Port
+  // Listen on Address/Port
 	int32_t nSFSocketListen = SFSocketListen(socket, INADDR_ANY, nServerPort);
 
 	OT_ASSERT_MSG(nSFSocketListen >= 0, "nSFSocketListen Failed\n");
@@ -435,12 +424,12 @@ int32_t main (int32_t argc, char **argv)
 
 	theServer.ActivateCron();
 
-    do
+  do
 	{
-        SFSocket * clientSocket = NULL;
+    SFSocket * clientSocket = NULL;
 
-        // Accept Client Connection
-        if (NULL != (clientSocket = SFSocketAccept(socket)))
+    // Accept Client Connection
+    if (NULL != (clientSocket = SFSocketAccept(socket)))
 		{
 			OTClientConnection * pClient = new OTClientConnection(*clientSocket, theServer);
 			theConnections.push_back(pClient);
@@ -453,7 +442,7 @@ int32_t main (int32_t argc, char **argv)
 		OTClientConnection * pConnection = NULL;
 
 		for (listOfConnections::iterator ii = theConnections.begin();
-			 ii != theConnections.end(); ++ii)
+         ii != theConnections.end(); ++ii)
 		{
 			if (pConnection = *ii)
 			{
@@ -464,14 +453,12 @@ int32_t main (int32_t argc, char **argv)
 			}
 		}
 
-
-
 		// Now loop through them all again, and process their messages onto the reply list.
 
 		pConnection = NULL;
 
 		for (listOfConnections::iterator ii = theConnections.begin();
-			 ii != theConnections.end(); ++ii)
+         ii != theConnections.end(); ++ii)
 		{
 			if (pConnection = *ii)
 			{
@@ -486,7 +473,7 @@ int32_t main (int32_t argc, char **argv)
 					if (theServer.ProcessUserCommand(*pMsg, *pReply, pConnection))
 					{
 						OTLog::vOutput(0, "Successfully processed user command: %s.\n",
-								pMsg->m_strCommand.Get());
+              pMsg->m_strCommand.Get());
 
 						pConnection->AddToOutputList(*pReply);
 					}
@@ -504,13 +491,12 @@ int32_t main (int32_t argc, char **argv)
 			}
 		}
 
-
 		// Now loop through them all again, and process their replies down the pipe
 
 		pConnection = NULL;
 
 		for (listOfConnections::iterator ii = theConnections.begin();
-			 ii != theConnections.end(); ++ii)
+         ii != theConnections.end(); ++ii)
 		{
 			if (pConnection = *ii)
 			{
@@ -527,99 +513,60 @@ int32_t main (int32_t argc, char **argv)
 			}
 		}
 
-
-
-
-
 		// The Server now processes certain things on a regular basis.
 		// This method call is what gives it the opportunity to do that.
 
 		theServer.ProcessCron();
-
-
-
 
 		// Now go to sleep for a tenth of a second.
 		// (Main loop processes ten times per second, currently.)
 
 		OTLog::SleepMilliseconds(100); // 100 ms == (1 second / 10)
 
+  } while (1);
 
-
-
-    } while (1);
-
-    // Close and Release Socket Resources
-    SFSocketRelease(socket);
+  // Close and Release Socket Resources
+  SFSocketRelease(socket);
 
 #ifdef _WIN32
 	WSACleanup();
 #endif
 
-    return(0);
+  return(0);
 }
 
 /*
- int32_t do_server_loop(SSL *ssl)
- {
- int32_t  err, nread;
- union u_header theCMD;
- int32_t retVal = 0;
- int32_t bClosed = 0;
+  int32_t do_server_loop(SSL *ssl)
+  {
+  int32_t  err, nread;
+  union u_header theCMD;
+  int32_t retVal = 0;
+  int32_t bClosed = 0;
 
- do
- {
- // clear the buffer.
- memset((void *)theCMD.buf, 0, OT_CMD_HEADER_SIZE);
+  do
+  {
+  // clear the buffer.
+  memset((void *)theCMD.buf, 0, OT_CMD_HEADER_SIZE);
 
- for (nread = 0;  nread < OT_CMD_HEADER_SIZE;  nread += err)
- {
- err = SSL_read(ssl, theCMD.buf + nread, OT_CMD_HEADER_SIZE - nread);
- if (err <= 0)
- {
- bClosed = 1;
- break;
- }
- }
+  for (nread = 0;  nread < OT_CMD_HEADER_SIZE;  nread += err)
+  {
+  err = SSL_read(ssl, theCMD.buf + nread, OT_CMD_HEADER_SIZE - nread);
+  if (err <= 0)
+  {
+  bClosed = 1;
+  break;
+  }
+  }
 
- if (bClosed)
- break;
+  if (bClosed)
+  break;
 
- OTLog::vOutput(0, "\n===> Processing header from client message. First 5 bytes are: %d %d %d %d %d...\n",
- theCMD.buf[0],theCMD.buf[1],theCMD.buf[2],theCMD.buf[3],theCMD.buf[4]);
+  OTLog::vOutput(0, "\n===> Processing header from client message. First 5 bytes are: %d %d %d %d %d...\n",
+  theCMD.buf[0],theCMD.buf[1],theCMD.buf[2],theCMD.buf[3],theCMD.buf[4]);
 
- ProcessMessage(ssl, &theCMD);
- }
- while (!(retVal = ((SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) ? 1 : 0)));
- return retVal;
- }
-
-
-
+  ProcessMessage(ssl, &theCMD);
+  }
+  while (!(retVal = ((SSL_get_shutdown(ssl) & SSL_RECEIVED_SHUTDOWN) ? 1 : 0)));
+  return retVal;
+  }
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

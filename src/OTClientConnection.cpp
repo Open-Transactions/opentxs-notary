@@ -128,7 +128,7 @@
  kamH0Y/n11lCvo1oQxM+
  =uSzz
  -----END PGP SIGNATURE-----
- **************************************************************/
+**************************************************************/
 
 #include <stdafx.hpp>
 
@@ -145,7 +145,6 @@
 
 #include <cstdio>
 
-
 extern "C"
 {
 #if defined (OPENTXS_HAVE_NETINET_IN_H)
@@ -153,15 +152,13 @@ extern "C"
 #endif
 }
 
-
-
 void SetupHeader( union u_header * pCMD, int32_t nTypeID, int32_t nCmdID, OTPayload & thePayload)
 {
 	OT_ASSERT(NULL != pCMD);
 
 	pCMD->fields.type_id	= (nTypeID > 0) ? static_cast<BYTE>(nTypeID) : '\0';
 	pCMD->fields.command_id	= (nCmdID > 0) ? static_cast<BYTE>(nCmdID) : '\0';
-//	pCMD->fields.size		= thePayload.GetSize();
+  //	pCMD->fields.size		= thePayload.GetSize();
 	pCMD->fields.size		= htonl(thePayload.GetSize()); // think this is causing problems
 	pCMD->fields.checksum	= CalcChecksum(pCMD->buf, OT_CMD_HEADER_SIZE-1);
 
@@ -172,11 +169,9 @@ void SetupHeader( union u_header * pCMD, int32_t nTypeID, int32_t nCmdID, OTPayl
 	OTLog::vOutput(4, "(Payload size %d, TYPE %d command, checksum: %d...)\n", nTemp, nTypeID, nChecksum);
 }
 
-
-
 /*
-void OTClientConnection::ProcessBuffer()
-{
+  void OTClientConnection::ProcessBuffer()
+  {
 	int32_t  err, nread;
 	union u_header theCMD;
 
@@ -186,59 +181,57 @@ void OTClientConnection::ProcessBuffer()
 	// Read the header
 	for (nread = 0;  nread < OT_CMD_HEADER_SIZE;  nread += err)
 	{
-		err = SFSocketRead(m_pSocket,
-						   theCMD.buf + nread, OT_CMD_HEADER_SIZE - nread);
-		if (err <= 0)
-		{
-			break;
-		}
-		else {
-			OTLog::Output(2, "Reading input from socket...\n");
-		}
+  err = SFSocketRead(m_pSocket,
+  theCMD.buf + nread, OT_CMD_HEADER_SIZE - nread);
+  if (err <= 0)
+  {
+  break;
+  }
+  else {
+  OTLog::Output(2, "Reading input from socket...\n");
+  }
 
 	}
 
 	if (nread)
 	{
-		OTLog::vOutput(4, "\n===> Processing header from client message. First 5 bytes are: %d %d %d %d %d...\n",
-				theCMD.buf[0],theCMD.buf[1],theCMD.buf[2],theCMD.buf[3],theCMD.buf[4]);
+  OTLog::vOutput(4, "\n===> Processing header from client message. First 5 bytes are: %d %d %d %d %d...\n",
+  theCMD.buf[0],theCMD.buf[1],theCMD.buf[2],theCMD.buf[3],theCMD.buf[4]);
 
-		// When the server knows for SURE it is receiving a message,
-		// then wait for 1 second to make sure we have the entire payload
-		// at once.
-		// TODO: rewrite socket code so that if a complete command has not yet
-		// come in, to buffer the data and wait until next time around the loop.
-		// Because right now, if you have a partial command, it reads it as an error
-		// and returns, discarding what had already been read. Obviously that will
-		// not work for a real server.
-		// In the meantime, this sleep allows me to do testing by insuring that,
-		// with a second's wait, the server will have time to read the entire message.
-		sleep(1);
+  // When the server knows for SURE it is receiving a message,
+  // then wait for 1 second to make sure we have the entire payload
+  // at once.
+  // TODO: rewrite socket code so that if a complete command has not yet
+  // come in, to buffer the data and wait until next time around the loop.
+  // Because right now, if you have a partial command, it reads it as an error
+  // and returns, discarding what had already been read. Obviously that will
+  // not work for a real server.
+  // In the meantime, this sleep allows me to do testing by insuring that,
+  // with a second's wait, the server will have time to read the entire message.
+  sleep(1);
 
-		ProcessMessage(theCMD);
+  ProcessMessage(theCMD);
 	}
-}
+  }
 */
 
 /*
 
- union u_header
- {
-	 BYTE buf[OT_CMD_HEADER_SIZE];
+  union u_header
+  {
+  BYTE buf[OT_CMD_HEADER_SIZE];
 
-	 struct
-	 {
-		 uint8_t type_id;    // 1 byte
-		 uint8_t command_id; // 1 byte
-		 BYTE filler[2];
-		 uint32_t size;     // 4 bytes to describe size of payload
-		 uint8_t  checksum;  // 1 byte
+  struct
+  {
+  uint8_t type_id;    // 1 byte
+  uint8_t command_id; // 1 byte
+  BYTE filler[2];
+  uint32_t size;     // 4 bytes to describe size of payload
+  uint8_t  checksum;  // 1 byte
 
-	 } fields;  // total of 9 bytes
- }
- */
-
-
+  } fields;  // total of 9 bytes
+  }
+*/
 
 void OTClientConnection::ProcessBuffer()
 {
@@ -253,20 +246,20 @@ void OTClientConnection::ProcessBuffer()
 		// Read the header
 		for (nread = 0;  nread < OT_CMD_HEADER_SIZE;  nread += err)
 		{
-//			err = SFSocketRead(m_pSocket,
-//							   theCMD.buf + nread, OT_CMD_HEADER_SIZE - nread);
+      //			err = SFSocketRead(m_pSocket,
+      //							   theCMD.buf + nread, OT_CMD_HEADER_SIZE - nread);
 
 #ifdef _WIN32
 			if (0 == err || SOCKET_ERROR == err) // 0 is a disconnect. error is error. otherwise err contains bytes read.
 #else
-			if (err <= 0)
+        if (err <= 0)
 #endif
-			{
-				break;
-			}
-			else {
-				OTLog::Output(2, "Reading input from socket...\n");
-			}
+        {
+          break;
+        }
+        else {
+          OTLog::Output(2, "Reading input from socket...\n");
+        }
 		}
 
 		if (nread == OT_CMD_HEADER_SIZE)
@@ -281,13 +274,13 @@ void OTClientConnection::ProcessBuffer()
 			int32_t nChecksum	= theCMD.fields.checksum;
 
 			OTLog::vOutput(2, "\n************************************************************\n===> Reading header from client message.\n"
-					"First 9 bytes are: %d %d %d %d %d %d %d %d %d.\nSize is: %d...\n",
-					theCMD.buf[0],theCMD.buf[1],theCMD.buf[2],theCMD.buf[3],theCMD.buf[4],
-					theCMD.buf[5], theCMD.buf[6], theCMD.buf[7], theCMD.buf[8], lSize);
+        "First 9 bytes are: %d %d %d %d %d %d %d %d %d.\nSize is: %d...\n",
+        theCMD.buf[0],theCMD.buf[1],theCMD.buf[2],theCMD.buf[3],theCMD.buf[4],
+        theCMD.buf[5], theCMD.buf[6], theCMD.buf[7], theCMD.buf[8], lSize);
 
 			OTLog::vOutput(2, "\nCMD HEADER:   CMD TYPE: %d -- CMD NUM: %d\n"
-					"PAYLOAD SIZE: %d -- CHECKSUM: %d\n", theCMD.fields.type_id,
-					theCMD.fields.command_id, lSize, nChecksum);
+        "PAYLOAD SIZE: %d -- CHECKSUM: %d\n", theCMD.fields.type_id,
+        theCMD.fields.command_id, lSize, nChecksum);
 
 			ReadBytesIntoBuffer();
 
@@ -301,9 +294,9 @@ void OTClientConnection::ProcessBuffer()
 			// not work for a real server.
 			// In the meantime, this sleep allows me to do testing by insuring that,
 			// with a second's wait, the server will have time to read the entire message.
-	//		sleep(1);
+      //		sleep(1);
 
-	//		ProcessMessage(theCMD);
+      //		ProcessMessage(theCMD);
 		}
 	}
 	else {
@@ -316,7 +309,6 @@ void OTClientConnection::ProcessBuffer()
 		else
 			ReadBytesIntoBuffer();
 	}
-
 }
 
 // We'll buffer 8K at a time for each user.
@@ -342,17 +334,17 @@ void OTClientConnection::ReadBytesIntoBuffer()
 	// actually read the payload from the socket into the buffer.
 	for (nread = 0;  nread < nNumberOfBytesToRead;  nread += err)
 	{
-//		err = SFSocketRead(m_pSocket,
-//						   szBuffer + nread,
-//						   nNumberOfBytesToRead - nread);
+    //		err = SFSocketRead(m_pSocket,
+    //						   szBuffer + nread,
+    //						   nNumberOfBytesToRead - nread);
 
 		// if we don't read anything more, stop reading and move on
 #ifdef _WIN32
 		if (0 == err || SOCKET_ERROR == err) // 0 means disconnect. error means error. >0 means bytes read.
 #else
-		if (err <= 0)
+      if (err <= 0)
 #endif
-		break;
+        break;
 	}
 
 	// If we read anything, up to 4K, we add it to the m_Buffer.
@@ -364,7 +356,6 @@ void OTClientConnection::ReadBytesIntoBuffer()
 		m_Buffer += toAddData;
 	}
 }
-
 
 // If a valid header is received, this function gets called.
 // The job of this function is to creae the message, read it, and add it to m_listIn.
@@ -409,7 +400,6 @@ void OTClientConnection::ProcessMessage(u_header & theCMD)
 		OTLog::vError("Unknown command type: %d\n", nCommandType);
 	}
 
-
 	// I added this for error correction. In the event that there are errors,
 	// just clean out whatever is in the pipe and throw it away.
 	// Should probably send an Error message back, as well.
@@ -419,7 +409,7 @@ void OTClientConnection::ProcessMessage(u_header & theCMD)
 
 		for(;;)
 		{
-//			err = SFSocketRead(m_pSocket, buffer, sizeJunkData);
+      //			err = SFSocketRead(m_pSocket, buffer, sizeJunkData);
 
 			if (err > 0)
 				nread += err;
@@ -427,9 +417,9 @@ void OTClientConnection::ProcessMessage(u_header & theCMD)
 #ifdef _WIN32
 			if (0 == err || SOCKET_ERROR == err) // 0 means disconnect. error means error. >0 means bytes read.
 #else
-			if (err <= 0)
+        if (err <= 0)
 #endif
-				break;
+          break;
 		}
 
 		OTLog::vError("Transmission error--%d bytes flushed.\n", nread);
@@ -443,17 +433,15 @@ void OTClientConnection::ProcessMessage(u_header & theCMD)
 		// TODO still need to process the commands and send the replies somewhere...
 		//if (bSuccess = theServer.ProcessUserCommand(theMessage, theReply))
 		//{
-	//		OTLog::vOutput(4, "Successfully processed user command: %s\n", theMessage.m_strCommand.Get());
-//			ProcessReply(ssl, theReply);
-//		}
-//		else
-//		{
-//			OTLog::vError("Unable to process user command in XML, or missing payload, in ProcessMessage.\n");
-//		}
+    //		OTLog::vOutput(4, "Successfully processed user command: %s\n", theMessage.m_strCommand.Get());
+    //			ProcessReply(ssl, theReply);
+    //		}
+    //		else
+    //		{
+    //			OTLog::vError("Unable to process user command in XML, or missing payload, in ProcessMessage.\n");
+    //		}
 	}
 }
-
-
 
 // A certain number of bytes are expected in the payload, according to the header.
 // This function tries to read that many bytes, and inserts them into an OTPayload object.
@@ -463,11 +451,11 @@ bool OTClientConnection::ProcessType1Cmd(u_header & theCMD, OTMessage & theMessa
 {
 	// At this point, the checksum has already validated.
 	// Might as well get the PAYLOAD next.
-//	int32_t  err;
+  //	int32_t  err;
 	uint32_t nread, lSize = theCMD.fields.size;
 
 	// Make sure our byte-order is correct here.
-//	theCMD.fields.size = ntohl(theCMD.fields.size); // I was doing this twice!! This is already done when the header is first read.
+  //	theCMD.fields.size = ntohl(theCMD.fields.size); // I was doing this twice!! This is already done when the header is first read.
 
 	// setup the buffer we are reading into
 	OTPayload thePayload;
@@ -477,19 +465,19 @@ bool OTClientConnection::ProcessType1Cmd(u_header & theCMD, OTMessage & theMessa
 	// actually read the payload from the socket into the buffer.
 	for (nread = 0;  nread < theCMD.fields.size;  nread += err)
 	{
-		err = SFSocketRead(m_pSocket,
-						   (uint8_t *)thePayload.GetPayloadPointer() + nread,
-						   theCMD.fields.size - nread);
+  err = SFSocketRead(m_pSocket,
+  (uint8_t *)thePayload.GetPayloadPointer() + nread,
+  theCMD.fields.size - nread);
 
-		// if we don't read anything more, stop reading and move on
-		if (err <= 0)
-			break;
+  // if we don't read anything more, stop reading and move on
+  if (err <= 0)
+  break;
 	}
 	*/
 	// TODO fix the buffering so that if a complete command has not yet been received, it saves the other
 	// bytes instead of discarding them.  For now I'll just sleep for a second to make sure the entire command
 	// was received.
-//	sleep(1);
+  //	sleep(1);
 
 	// ------------------------------------------------------------
 
@@ -502,11 +490,11 @@ bool OTClientConnection::ProcessType1Cmd(u_header & theCMD, OTMessage & theMessa
 			break;
 		case TYPE_1_CMD_2:
 			OTLog::Output(2, "Received Type 1 CMD 2:\n"
-					"There is an encrypted OTEnvelope (containing signed OTMessage) in the payload.\n");
+        "There is an encrypted OTEnvelope (containing signed OTMessage) in the payload.\n");
 			break;
 		default:
 			OTLog::vError("Received unexpected command number %d in OTClientConnection::ProcessType1Cmd\n",
-					theCMD.fields.command_id);
+        theCMD.fields.command_id);
 			break;
 	}
 
@@ -614,14 +602,13 @@ bool OTClientConnection::ProcessType1Cmd(u_header & theCMD, OTMessage & theMessa
 	return true;
 }
 
-
 // At certain times, when the server has verified that a Nym REALLY is who
 // he says he is, he sets the public key onto the connection object for
 // that nym.  That way, if the connection object ever needs to encrypt something
 // being sent to the client, he has access to the public key.
 void OTClientConnection::SetPublicKey(const OTString & strPublicKey)
 {
-    OT_ASSERT(NULL != m_pPublicKey);
+  OT_ASSERT(NULL != m_pPublicKey);
 
 	// SetPublicKey takes the ascii-encoded text, including bookends, and processes
 	// it into the OTAssymeticKey object. If successful, the OTAssymetricKey is now
@@ -631,14 +618,13 @@ void OTClientConnection::SetPublicKey(const OTString & strPublicKey)
 
 void OTClientConnection::SetPublicKey(const OTAsymmetricKey & thePublicKey)
 {
-    OT_ASSERT(NULL != m_pPublicKey);
+  OT_ASSERT(NULL != m_pPublicKey);
 
 	OTString strNymsPublicKey;
 
 	thePublicKey. GetPublicKey(strNymsPublicKey, true);
 	m_pPublicKey->SetPublicKey(strNymsPublicKey, true/*bEscaped*/);
 }
-
 
 // This function, you pass in a message and it returns true or false to let
 // you know whether the message was successfully sealed into theEnvelope.
@@ -647,7 +633,7 @@ void OTClientConnection::SetPublicKey(const OTAsymmetricKey & thePublicKey)
 //
 bool OTClientConnection::SealMessageForRecipient(OTMessage & theMsg, OTEnvelope & theEnvelope)
 {
-    OT_ASSERT(NULL != m_pPublicKey);
+  OT_ASSERT(NULL != m_pPublicKey);
 
 	if (!(m_pPublicKey->IsEmpty()) && m_pPublicKey->IsPublic())
 	{
@@ -660,7 +646,7 @@ bool OTClientConnection::SealMessageForRecipient(OTMessage & theMsg, OTEnvelope 
 	}
 	else
 		OTLog::Error("OTClientConnection::SealMessageForRecipient: "
-                     "Unable to seal message, possibly a missing public key. \n");
+      "Unable to seal message, possibly a missing public key. \n");
 	return false;
 }
 
@@ -671,9 +657,8 @@ void OTClientConnection::AddToInputList(OTMessage & theMessage)
 
 OTMessage * OTClientConnection::GetNextInputMessage()
 {
-    OT_FAIL_MSG("OTClientConnection::GetNextInputMessage: ASSERT: Should not be calling this...");
+  OT_FAIL_MSG("OTClientConnection::GetNextInputMessage: ASSERT: Should not be calling this...");
 }
-
 
 void OTClientConnection::AddToOutputList(OTMessage & theMessage)
 {
@@ -681,16 +666,14 @@ void OTClientConnection::AddToOutputList(OTMessage & theMessage)
 
 }
 
-
 OTMessage * OTClientConnection::GetNextOutputMessage()
 {
-    OT_FAIL_MSG("OTClientConnection::GetNextOutputMessage: ASSERT: Should not be calling this...");
+  OT_FAIL_MSG("OTClientConnection::GetNextOutputMessage: ASSERT: Should not be calling this...");
 }
-
 
 // For XmlRpc / HTTP mode.
 OTClientConnection::OTClientConnection(OTServer & theServer)
-: m_pServer(&theServer), m_pPublicKey(OTAsymmetricKey::KeyFactory())
+  : m_pServer(&theServer), m_pPublicKey(OTAsymmetricKey::KeyFactory())
 {
 	m_bHaveHeader	= false;
 	m_bFocused		= true; // rpc over http mode
@@ -698,27 +681,9 @@ OTClientConnection::OTClientConnection(OTServer & theServer)
 
 OTClientConnection::~OTClientConnection()
 {
-    if (NULL != m_pPublicKey)
-    {
-        delete m_pPublicKey;
-        m_pPublicKey = NULL;
-    }
+  if (NULL != m_pPublicKey)
+  {
+    delete m_pPublicKey;
+    m_pPublicKey = NULL;
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

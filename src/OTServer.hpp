@@ -128,21 +128,19 @@
  kamH0Y/n11lCvo1oQxM+
  =uSzz
  -----END PGP SIGNATURE-----
- **************************************************************/
-
+**************************************************************/
 
 #ifndef __OT_SERVER_HPP__
 #define __OT_SERVER_HPP__
 
-#include "OTCommon.hpp"
-
-#include "OTAccount.hpp"
-#include "OTAcctFunctor.hpp"
-#include "OTAcctList.hpp"
-#include "OTAssetContract.hpp"
-#include "OTCron.hpp"
-#include "OTPseudonym.hpp"
-#include "OTTransaction.hpp"
+#include <otlib/OTCommon.hpp>
+#include <otlib/OTAccount.hpp>
+#include <otlib/OTAcctFunctor.hpp>
+#include <otlib/OTAcctList.hpp>
+#include <otlib/OTAssetContract.hpp>
+#include <otlib/OTCron.hpp>
+#include <otlib/OTPseudonym.hpp>
+#include <otlib/OTTransaction.hpp>
 
 #include <cstddef>
 
@@ -172,14 +170,13 @@ typedef std::map<std::string, OTAccount *>		mapOfAccounts; // server side these 
 // type is the key in the multimap, we don't want to accidentally remove one from the list
 // every time another is added. Thus multimap is employed.
 
-
 class OTServer
 {
 	OTString	m_strWalletFilename;
 	OTString	m_strConfigFilename;
 	OTString	m_strLogFilename;
 
-    bool        m_bReadOnly;        // Used at least for whether or not to write to the PID.
+  bool        m_bReadOnly;        // Used at least for whether or not to write to the PID.
 	bool		m_bShutdownFlag;	// If the server wants to be shut down, it can set this flag so the caller knows to do so.
 
 	OTString	m_strVersion;		// Unused currently.
@@ -191,7 +188,7 @@ class OTServer
 	int64_t			m_lTransactionNumber;	// This stores the last VALID AND ISSUED transaction number.
 
 	OTPseudonym		m_nymServer; // the Nym for the server, so he can decrypt messages sent to him
-								// by paranoid users :-P  UPDATE: By ALL users. Everything encrypted now by default.
+  // by paranoid users :-P  UPDATE: By ALL users. Everything encrypted now by default.
 
 	mapOfContracts	m_mapContracts;	// The asset types supported by this server.
 	mapOfMints		m_mapMints;		// The mints for each asset type.
@@ -199,8 +196,8 @@ class OTServer
 	OTAcctList		m_VoucherAccts;	// The list of voucher accounts (see GetVoucherAccount below for details)
 
 	mapOfBaskets	m_mapBaskets;	// this map connects BASKET_ID with BASKET_ACCOUNT_ID (so you can look up the server's
-									// basket issuer account ID, which is *different* on each server, using the Basket Currency's
-									// ID, which is the *same* on every server.)
+  // basket issuer account ID, which is *different* on each server, using the Basket Currency's
+  // ID, which is the *same* on every server.)
 	mapOfBaskets	m_mapBasketContracts; // Need a way to look up a Basket Account ID using its Contract ID
 
 	// -------------------------------------------------------------------------------------------------------------
@@ -212,8 +209,8 @@ class OTServer
 	//
 	static int64_t			__min_market_scale;
 
-    static int32_t			__heartbeat_no_requests;	// The number of client requests that will be processed per heartbeat.
-    static int32_t			__heartbeat_ms_between_beats; // number of ms between each heartbeat.
+  static int32_t			__heartbeat_no_requests;	// The number of client requests that will be processed per heartbeat.
+  static int32_t			__heartbeat_ms_between_beats; // number of ms between each heartbeat.
 
 	static std::string	__override_nym_id;	// The Nym who's allowed to do certain commands even if they are turned off.
 
@@ -272,15 +269,15 @@ class OTServer
 public:
 	// From server.cfg:
 
-    static int64_t      GetMinMarketScale() { return __min_market_scale; }
+  static int64_t      GetMinMarketScale() { return __min_market_scale; }
 
-    static void     SetMinMarketScale(int64_t lVal) { __min_market_scale = lVal; }
+  static void     SetMinMarketScale(int64_t lVal) { __min_market_scale = lVal; }
 
-    static int32_t      GetHeartbeatNoRequests() { return __heartbeat_no_requests; }
-    static void     SetHeartbeatNoRequests(int32_t nVal) { __heartbeat_no_requests = nVal; }
+  static int32_t      GetHeartbeatNoRequests() { return __heartbeat_no_requests; }
+  static void     SetHeartbeatNoRequests(int32_t nVal) { __heartbeat_no_requests = nVal; }
 
-    static int32_t      GetHeartbeatMsBetweenBeats() { return __heartbeat_ms_between_beats; }
-    static void     SetHeartbeatMsBetweenBeats(int32_t nVal) { __heartbeat_ms_between_beats = nVal; }
+  static int32_t      GetHeartbeatMsBetweenBeats() { return __heartbeat_ms_between_beats; }
+  static void     SetHeartbeatMsBetweenBeats(int32_t nVal) { __heartbeat_ms_between_beats = nVal; }
 
 	// -----------------------------------------------
 
@@ -291,14 +288,14 @@ public:
 	OTServer();
 	virtual ~OTServer(); // Calls Release();
 
-    // delete various dynamically allocated things such as the map of Mints,
-    // and the map of asset contracts.
-    //
+  // delete various dynamically allocated things such as the map of Mints,
+  // and the map of asset contracts.
+  //
 	virtual void Release();
 
 	void Release_Server();
 
-    // -----------------------
+  // -----------------------
 
 	inline bool IsFlaggedForShutdown() const { return m_bShutdownFlag; }
 
@@ -311,7 +308,7 @@ public:
 	// But the trade MUST be heap-allocated, as the market and cron
 	// objects will own it and handle cleaning it up.
 	// not needed -- erase this function.
-//	bool AddTradeToMarket(OTTrade & theTrade);
+  //	bool AddTradeToMarket(OTTrade & theTrade);
 
 	// ---------------------------------------------------------------------------------
 
@@ -335,7 +332,7 @@ public:
 	OTAssetContract * GetAssetContract(const OTIdentifier & ASSET_TYPE_ID);
 
 	bool AddBasketAccountID(const OTIdentifier & BASKET_ID, const OTIdentifier & BASKET_ACCOUNT_ID,
-							const OTIdentifier & BASKET_CONTRACT_ID);
+    const OTIdentifier & BASKET_CONTRACT_ID);
 	bool LookupBasketAccountID(const OTIdentifier & BASKET_ID, OTIdentifier & BASKET_ACCOUNT_ID);
 	bool VerifyBasketAccountID(const OTIdentifier & BASKET_ACCOUNT_ID);
 
@@ -344,35 +341,35 @@ public:
 
 	const OTPseudonym & GetServerNym() const;
 
-    // -------------------------------
-    // Init():
-    //
-    // Loads the config file,
-    // Initializes OTDB:: default storage,
-    // Sets up the data folders,
-    // Loads the main file,
-    // and validates the server ID (for the Nym)
-    //
+  // -------------------------------
+  // Init():
+  //
+  // Loads the config file,
+  // Initializes OTDB:: default storage,
+  // Sets up the data folders,
+  // Loads the main file,
+  // and validates the server ID (for the Nym)
+  //
 	void Init(bool bReadOnly=false); // Loads the main file...
-    // -------------------------------
+  // -------------------------------
 	bool LoadConfigFile(); // loads the config file. (Called by Init.)
 	// -------------------------------
 	void ActivateCron();   // Starts up OT Cron, which processes recurring transactions,
-                           // such as market offers, payment plans, and smart contracts.
-                           // -------------------------------------------------------------
+  // such as market offers, payment plans, and smart contracts.
+  // -------------------------------------------------------------
 	void ProcessCron();    // Call this periodically, so Cron will have the chance to process its recurring transactions.
 	// -------------------------------
-    bool CreateMainFile(); // If the main file doesn't exist, OT will create it. (Asking you to paste some info.)
+  bool CreateMainFile(); // If the main file doesn't exist, OT will create it. (Asking you to paste some info.)
 	bool LoadMainFile(bool bReadOnly=false); // Called in Init. Loads latest transaction number, and any other server data members.
-    bool LoadServerUserAndContract(); // Called by LoadMainFile().
-    // -------------------------------
+  bool LoadServerUserAndContract(); // Called by LoadMainFile().
+  // -------------------------------
 	bool SaveMainFile();              // Called in IssueNextTransactionNumber.
 	bool SaveMainFileToString(OTString & strMainFile);
-    // -------------------------------
+  // -------------------------------
 	bool ProcessUserCommand(OTMessage & theMessage,
-                            OTMessage & msgOut,
-                            OTClientConnection * pConnection=NULL,
-                            OTPseudonym * pNym=NULL);
+    OTMessage & msgOut,
+    OTClientConnection * pConnection=NULL,
+    OTPseudonym * pNym=NULL);
 
 	bool ValidateServerIDfromUser(OTString & strServerID);
 	// --------------------------------------------------------------
@@ -381,36 +378,36 @@ public:
 	// never get out of sync.)  This is the function used for doing that.
 	//
 	void DropReplyNoticeToNymbox(const OTIdentifier & SERVER_ID,
-                                 const OTIdentifier & USER_ID,
-                                 const OTString     & strMessage,
-                                 const int64_t         & lRequestNum,
-                                 const bool           bReplyTransSuccess,
-                                       OTPseudonym  * pActualNym=NULL);
+    const OTIdentifier & USER_ID,
+    const OTString     & strMessage,
+    const int64_t         & lRequestNum,
+    const bool           bReplyTransSuccess,
+    OTPseudonym  * pActualNym=NULL);
 
-    // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
-    // They are higher-level, this is lower-level.
-    bool DropMessageToNymbox(const OTIdentifier & SERVER_ID,
-                             const OTIdentifier & SENDER_USER_ID,
-                             const OTIdentifier & RECIPIENT_USER_ID,
-                             OTTransaction::transactionType theType,
-                                   OTMessage    * pMsg=NULL,
-                             const OTString     * pstrMessage=NULL,
-                             const char         * szCommand=NULL);
+  // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
+  // They are higher-level, this is lower-level.
+  bool DropMessageToNymbox(const OTIdentifier & SERVER_ID,
+    const OTIdentifier & SENDER_USER_ID,
+    const OTIdentifier & RECIPIENT_USER_ID,
+    OTTransaction::transactionType theType,
+    OTMessage    * pMsg=NULL,
+    const OTString     * pstrMessage=NULL,
+    const char         * szCommand=NULL);
 
-    // calls DropMessageToNymbox
-    bool SendInstrumentToNym(const OTIdentifier & SERVER_ID,
-                             const OTIdentifier & SENDER_USER_ID,
-                             const OTIdentifier & RECIPIENT_USER_ID,
-                                   OTMessage    * pMsg=NULL,       // the request msg from payer, which is attached WHOLE to the Nymbox receipt. contains payment already.
-                             const OTPayment    * pPayment=NULL,   // or pass this instead: we will create our own msg here (with payment inside) to be attached to the receipt.
-                             const char         * szCommand=NULL); // for passing payDividend (as the message command instead of sendUserInstrument, the default.)
+  // calls DropMessageToNymbox
+  bool SendInstrumentToNym(const OTIdentifier & SERVER_ID,
+    const OTIdentifier & SENDER_USER_ID,
+    const OTIdentifier & RECIPIENT_USER_ID,
+    OTMessage    * pMsg=NULL,       // the request msg from payer, which is attached WHOLE to the Nymbox receipt. contains payment already.
+    const OTPayment    * pPayment=NULL,   // or pass this instead: we will create our own msg here (with payment inside) to be attached to the receipt.
+    const char         * szCommand=NULL); // for passing payDividend (as the message command instead of sendUserInstrument, the default.)
 
-    // calls DropMessageToNymbox
-    bool SendMessageToNym(const OTIdentifier & SERVER_ID,
-                          const OTIdentifier & SENDER_USER_ID,
-                          const OTIdentifier & RECIPIENT_USER_ID,
-                                OTMessage    * pMsg=NULL,      // the request msg from payer, which is attached WHOLE to the Nymbox receipt. contains message already.
-                          const OTString     * pstrMessage=NULL); // or pass this instead: we will create our own msg here (with message inside) to be attached to the receipt.
+  // calls DropMessageToNymbox
+  bool SendMessageToNym(const OTIdentifier & SERVER_ID,
+    const OTIdentifier & SENDER_USER_ID,
+    const OTIdentifier & RECIPIENT_USER_ID,
+    OTMessage    * pMsg=NULL,      // the request msg from payer, which is attached WHOLE to the Nymbox receipt. contains message already.
+    const OTString     * pstrMessage=NULL); // or pass this instead: we will create our own msg here (with message inside) to be attached to the receipt.
 
 	// --------------------------------------------------------------
 
@@ -455,9 +452,9 @@ public:
 	void UserCmdGetNym_MarketOffers(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut);
 
 	// Cancel a market offer. (CHANGING THIS INTO A TRANSACTION, INSTEAD OF A MESSAGE...)
-//	void UserCmdCancelNymMarketOffer(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut);
+  //	void UserCmdCancelNymMarketOffer(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut);
 	// Exchange in/out of a basket currency. (CHANGING THIS INTO A TRANSACTION, INSTEAD OF A MESSAGE...)
-//	void UserCmdExchangeBasket(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut);
+  //	void UserCmdExchangeBasket(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut);
 
 	bool IssueNextTransactionNumber(OTPseudonym & theNym, int64_t &lTransactionNumber, bool bStoreTheNumber=true);
 	bool VerifyTransactionNumber(OTPseudonym & theNym, const int64_t &lTransactionNumber);	// Verify a transaction number. passed by reference for speed :P
@@ -483,9 +480,8 @@ public:
 	void NotarizeCancelCronItem(OTPseudonym & theNym, OTAccount & theAssetAccount, OTTransaction & tranIn, OTTransaction & tranOut, bool & bOutSuccess);
 	void NotarizeExchangeBasket(OTPseudonym & theNym, OTAccount & theSourceAccount, OTTransaction & tranIn, OTTransaction & tranOut, bool & bOutSuccess);
 	// ---------------------------------------------------------------------------------
-    void NotarizePayDividend(OTPseudonym & theNym, OTAccount & theAccount, OTTransaction & tranIn, OTTransaction & tranOut, bool & bOutSuccess);
+  void NotarizePayDividend(OTPseudonym & theNym, OTAccount & theAccount, OTTransaction & tranIn, OTTransaction & tranOut, bool & bOutSuccess);
 };
-
 
 // Note: from OTAssetContract.h and .cpp.
 // This is a subclass of OTAcctFunctor, which is used whenever OTAssetContract needs to
@@ -495,37 +491,36 @@ public:
 //
 class OTAcctFunctor_PayDividend : public OTAcctFunctor
 {
-    OTIdentifier  * m_pUserID;
-    OTIdentifier  * m_pPayoutAssetID;
-    OTIdentifier  * m_pVoucherAcctID;
-    OTString      * m_pstrMemo; // contains the original payDividend item from the payDividend transaction request. (Stored in the memo field for each voucher.)
-    OTServer      * m_pServer;  // no need to cleanup. It's here for convenience only.
-    int64_t            m_lPayoutPerShare;
-    int64_t            m_lAmountPaidOut;  // as we pay each voucher out, we keep a running count.
-    int64_t            m_lAmountReturned; // as we pay each voucher out, we keep a running count.
+  OTIdentifier  * m_pUserID;
+  OTIdentifier  * m_pPayoutAssetID;
+  OTIdentifier  * m_pVoucherAcctID;
+  OTString      * m_pstrMemo; // contains the original payDividend item from the payDividend transaction request. (Stored in the memo field for each voucher.)
+  OTServer      * m_pServer;  // no need to cleanup. It's here for convenience only.
+  int64_t            m_lPayoutPerShare;
+  int64_t            m_lAmountPaidOut;  // as we pay each voucher out, we keep a running count.
+  int64_t            m_lAmountReturned; // as we pay each voucher out, we keep a running count.
 
 public:
-    OTAcctFunctor_PayDividend(const OTIdentifier  & theServerID,
-                              const OTIdentifier  & theUserID,
-                              const OTIdentifier  & thePayoutAssetID,
-                              const OTIdentifier  & theVoucherAcctID,
-                              const OTString      & strMemo,
-                                    OTServer      & theServer,
-                                    int64_t            lPayoutPerShare,
-                                    mapOfAccounts * pLoadedAccounts=NULL);
-    virtual ~OTAcctFunctor_PayDividend();
+  OTAcctFunctor_PayDividend(const OTIdentifier  & theServerID,
+    const OTIdentifier  & theUserID,
+    const OTIdentifier  & thePayoutAssetID,
+    const OTIdentifier  & theVoucherAcctID,
+    const OTString      & strMemo,
+    OTServer      & theServer,
+    int64_t            lPayoutPerShare,
+    mapOfAccounts * pLoadedAccounts=NULL);
+  virtual ~OTAcctFunctor_PayDividend();
 
-    OTIdentifier  * GetUserID()         { return m_pUserID;         }
-    OTIdentifier  * GetPayoutAssetID()  { return m_pPayoutAssetID;  }
-    OTIdentifier  * GetVoucherAcctID()  { return m_pVoucherAcctID;  }
-    OTString      * GetMemo()           { return m_pstrMemo;        }
-    OTServer      * GetServer()         { return m_pServer;         }
-    int64_t            GetPayoutPerShare() { return m_lPayoutPerShare; }
-    int64_t            GetAmountPaidOut()  { return m_lAmountPaidOut;  }
-    int64_t            GetAmountReturned() { return m_lAmountReturned; }
+  OTIdentifier  * GetUserID()         { return m_pUserID;         }
+  OTIdentifier  * GetPayoutAssetID()  { return m_pPayoutAssetID;  }
+  OTIdentifier  * GetVoucherAcctID()  { return m_pVoucherAcctID;  }
+  OTString      * GetMemo()           { return m_pstrMemo;        }
+  OTServer      * GetServer()         { return m_pServer;         }
+  int64_t            GetPayoutPerShare() { return m_lPayoutPerShare; }
+  int64_t            GetAmountPaidOut()  { return m_lAmountPaidOut;  }
+  int64_t            GetAmountReturned() { return m_lAmountReturned; }
 
-    virtual bool Trigger(OTAccount & theAccount);
+  virtual bool Trigger(OTAccount & theAccount);
 };
-
 
 #endif // __OT_SERVER_HPP__

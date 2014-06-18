@@ -5,10 +5,14 @@ language: cpp
 compiler:
   - gcc
   - clang
-install: ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
+install:
+  - ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
+  - ./scripts/travis/install-opentxs.sh "${CXX}" "${TRAVIS_OS_NAME}"
+before_script: ./scripts/travis/cppcheck_wrapper.sh ./src
 script:
-  - ./scripts/travis/cppcheck_wrapper.sh ./src
-#  - cmake . && make -j 2
+  - mkdir build
+  - cd build
+  - cmake .. && make -j 2
 branches:
   only:
     - master
