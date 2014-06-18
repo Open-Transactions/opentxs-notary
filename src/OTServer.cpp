@@ -1230,7 +1230,7 @@ void OTServer::Release_Server()
   // Erase various dynamically-allocated objects...
   // (asset contracts, and mints, for example.)
   //
-  while (m_mapContracts.size() > 0)
+  while (!m_mapContracts.empty())
   {
     mapOfContracts::iterator it = m_mapContracts.begin();
 		OTAssetContract * pContract = (*it).second;
@@ -1244,7 +1244,7 @@ void OTServer::Release_Server()
   // -------------------------------
   // Mints...
   //
-  while (m_mapMints.size() > 0)
+  while (!m_mapMints.empty())
   {
     mapOfMints::iterator it = m_mapMints.begin();
 		OTMint * pMint = (*it).second;
