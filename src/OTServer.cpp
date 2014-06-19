@@ -130,8 +130,6 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include <stdafx.hpp>
-
 #include "OTServer.hpp"
 #include "OTClientConnection.hpp"
 
@@ -162,7 +160,7 @@
 #include <OTToken.hpp>
 #include <OTTrade.hpp>
 
-#include "irrxml/irrXML.hpp"
+#include <irrxml/irrXML.hpp>
 
 #include <fstream>
 
