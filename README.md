@@ -1,7 +1,7 @@
 opentxs-server
 ==============
 
-Open Transactions Server
+[![Build Status](https://travis-ci.org/monetas/opentxs-server.svg?branch=develop)](https://travis-ci.org/monetas/opentxs-server)
 
 ### Contributing
 
