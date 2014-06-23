@@ -144,6 +144,8 @@
 
 #include <cstddef>
 
+namespace opentxs {
+
 class OTAccount;
 class OTAssetContract;
 class OTClientConnection;
@@ -522,5 +524,7 @@ public:
 
   virtual bool Trigger(OTAccount & theAccount);
 };
+
+} // namespace opentxs
 
 #endif // __OT_SERVER_HPP__

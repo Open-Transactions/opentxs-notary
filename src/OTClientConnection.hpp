@@ -138,6 +138,8 @@
 #include <otlib/OTData.hpp>
 #include <otlib/OTMessageBuffer.hpp>
 
+namespace opentxs {
+
 class OTAsymmetricKey;
 class OTMessage;
 class OTServer;
@@ -184,5 +186,7 @@ public:
 	// This is for XmlRpc mode (i.e. there is not actually an open connection being maintained.)
 	bool SealMessageForRecipient(OTMessage & theMsg, OTEnvelope & theEnvelope);
 };
+
+} // namespace opentxs
 
 #endif // __OT_CLIENT_CONNECTION_HPP__

@@ -160,6 +160,8 @@
 #define	SERVER_DEFAULT_LATENCY_DELAY_AFTER			50
 #define	SERVER_DEFAULT_IS_BLOCKING					false
 
+using namespace opentxs;
+
 typedef std::list<OTClientConnection *>	listOfConnections;
 
 bool ProcessMessage_ZMQ(OTServer & theServer, const std::string & str_Message, std::string & str_Reply);
