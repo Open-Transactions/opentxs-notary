@@ -13,7 +13,7 @@ fi
 
 aws_url="https://s3-eu-west-1.amazonaws.com"
 
-version="0.93"
+version="0.93.0"
 
 package="opentxs-${version}-${os}-${compiler}.tar.gz"
 url=`echo "${aws_url}/monetas-builds/monetas/opentxs/develop/${package}" | sed 's/+/%2B/g'`
