@@ -13,6 +13,19 @@ script:
   - mkdir build
   - cd build
   - cmake .. && make -j 2
+before_deploy:
+- ./scripts/travis/build_tar.sh "${TRAVIS_OS_NAME}"
+deploy:
+  provider: s3
+  access_key_id: AKIAIR7XPKSU5OIGJ5IA
+  secret_access_key:
+    secure: 1tz0XwZo6AWeD6SMx6oCJ3XjAXueODciduLAeJj0W7OKn9/+A5m/SWpyTuHiuko1ZWX3xyc4Ygswnh8MpLaNbAyau12KOBdJvmABEA+w1vV3OcOB0tH+Gmstxb5/Q3ZkkO0ADQAuyHjcgEJgaJNEIq9Z0wdbm+0yxW+ggwXDsZk=
+  bucket: monetas-builds
+  skip_cleanup: true
+  local-dir: s3
+  upload-dir: ${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH}
+  on:
+    branch: ${TRAVIS_BRANCH}
 branches:
   only:
     - master
