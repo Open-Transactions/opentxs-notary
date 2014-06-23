@@ -157,6 +157,8 @@
 #define KEY_PASSWORD        "test"
 //#define KEY_PASSWORD        ""
 
+using namespace opentxs;
+
 int main (int argc, char * const argv[])
 {
 	if (argc < 4)

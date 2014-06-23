@@ -149,6 +149,8 @@ extern "C"
 #endif
 }
 
+namespace opentxs {
+
 void SetupHeader( union u_header * pCMD, int32_t nTypeID, int32_t nCmdID, OTPayload & thePayload)
 {
 	OT_ASSERT(NULL != pCMD);
@@ -684,3 +686,5 @@ OTClientConnection::~OTClientConnection()
     m_pPublicKey = NULL;
   }
 }
+
+} // namespace opentxs

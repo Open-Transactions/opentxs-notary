@@ -175,6 +175,7 @@
 #define SERVER_PASSWORD_FOLDER ""
 #define SERVER_PID_FILENAME "ot.pid"
 
+namespace opentxs {
 
 typedef std::deque <OTToken *> dequeOfTokenPtrs;
 
@@ -14899,3 +14900,5 @@ bool OTServer::GetConnectInfo(OTString & strHostname, int32_t & nPort)
 
 	return m_pServerContract->GetConnectInfo(strHostname, nPort);
 }
+
+} // namespace opentxs
