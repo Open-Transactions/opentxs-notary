@@ -6,12 +6,11 @@ if [[ -z "$1" ]] ; then
     os="linux"
 fi
 
-mkdir s3
+mkdir opentxs-server/
 
-# opentxs
-cp -rf build/opentxs-server s3
+# opentxs-server
+cp -rf build/bin/opentxs-server opentxs-server/
 
-# deps
 version=`cat VERSION`
 compiler=${CXX}
 package="opentxs-server-${version}-${os}-${compiler}.tar.gz"
