@@ -18,4 +18,5 @@ package="opentxs-server-${version}-${os}-${compiler}.tar.gz"
 echo "Creating package ${package}"
 tar -vpczf ${package} opentxs-server/
 
+mkdir s3
 cp ${package} s3/
