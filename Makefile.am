@@ -16,6 +16,7 @@ opentxsserver_SOURCES		=   $(opentxsserver_dir)/main.cpp			\
 				    $(opentxsserver_headers)
 
 opentxsserver_CXXFLAGS		=  $(common_includes)		\
+                                   -I/home/locutus/installs/opentxs/src/otapi/.libs/
 				   -I$(opentxsserver_dir)	\
 				   -Iopentxs/include		\
 				   -Iopentxs/include/otlib	\
