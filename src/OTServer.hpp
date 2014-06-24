@@ -133,14 +133,14 @@
 #ifndef __OT_SERVER_HPP__
 #define __OT_SERVER_HPP__
 
-#include <otlib/OTCommon.hpp>
-#include <otlib/OTAccount.hpp>
-#include <otlib/OTAcctFunctor.hpp>
-#include <otlib/OTAcctList.hpp>
-#include <otlib/OTAssetContract.hpp>
-#include <otlib/OTCron.hpp>
-#include <otlib/OTPseudonym.hpp>
-#include <otlib/OTTransaction.hpp>
+#include <opentxs/core/OTCommon.hpp>
+#include <opentxs/core/OTAccount.hpp>
+#include <opentxs/core/OTAcctFunctor.hpp>
+#include <opentxs/core/OTAcctList.hpp>
+#include <opentxs/core/OTAssetContract.hpp>
+#include <opentxs/core/OTCron.hpp>
+#include <opentxs/core/OTPseudonym.hpp>
+#include <opentxs/core/OTTransaction.hpp>
 
 #include <cstddef>
 

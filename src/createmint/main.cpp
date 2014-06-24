@@ -126,13 +126,13 @@
 
 #include "../OTServer.hpp"
 
-#include <otlib/OTCrypto.hpp>
-#include <otlib/OTDataFolder.hpp>
-#include <otlib/OTFolders.hpp>
-#include <otlib/OTLog.hpp>
-#include <otlib/OTMint.hpp>
-#include <otlib/OTPaths.hpp>
-#include <otlib/OTStorage.hpp>
+#include <opentxs/core/OTCrypto.hpp>
+#include <opentxs/core/OTDataFolder.hpp>
+#include <opentxs/core/OTFolders.hpp>
+#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/OTMint.hpp>
+#include <opentxs/core/OTPaths.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <cstdio>
 

@@ -133,20 +133,18 @@
 #include "OTClientConnection.hpp"
 #include "OTServer.hpp"
 
-#include <otlib/OTAsymmetricKey.hpp>
-#include <otlib/OTDataCheck.hpp>
-#include <otlib/OTEnvelope.hpp>
-#include <otlib/OTLog.hpp>
-#include <otlib/OTMessage.hpp>
-#include <otlib/OTPayload.hpp>
+#include <opentxs/core/OTAsymmetricKey.hpp>
+#include <opentxs/core/OTDataCheck.hpp>
+#include <opentxs/core/OTEnvelope.hpp>
+#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/OTMessage.hpp>
+#include <opentxs/core/OTPayload.hpp>
 
 #include <cstdio>
 
 extern "C"
 {
-#if defined (OPENTXS_HAVE_NETINET_IN_H)
 #include <netinet/in.h>
-#endif
 }
 
 namespace opentxs {

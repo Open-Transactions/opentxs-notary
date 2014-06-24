@@ -133,10 +133,10 @@
 #ifndef __OT_CLIENT_CONNECTION_HPP__
 #define __OT_CLIENT_CONNECTION_HPP__
 
-#include <otlib/OTglobal.h>
-#include <otlib/OTCommon.hpp>
-#include <otlib/OTData.hpp>
-#include <otlib/OTMessageBuffer.hpp>
+#include <opentxs/core/OTglobal.h>
+#include <opentxs/core/OTCommon.hpp>
+#include <opentxs/core/OTData.hpp>
+#include <opentxs/core/OTMessageBuffer.hpp>
 
 namespace opentxs {
 
