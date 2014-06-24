@@ -132,16 +132,16 @@
 #include "OTServer.hpp"
 #include "OTClientConnection.hpp"
 
-#include <otlib/OTCachedKey.hpp>
-#include <otlib/OTCommon.hpp>
-#include <otlib/OTCrypto.hpp>
-#include <otlib/OTDataFolder.hpp>
-#include <otlib/OTEnvelope.hpp>
-#include <otlib/OTLog.hpp>
-#include <otlib/OTMessage.hpp>
-#include <otlib/OTPaths.hpp>
-#include <otextensions/OTSocket.hpp>
-#include <misc/Timer.hpp>
+#include <opentxs/core/OTCachedKey.hpp>
+#include <opentxs/core/OTCommon.hpp>
+#include <opentxs/core/OTCrypto.hpp>
+#include <opentxs/core/OTDataFolder.hpp>
+#include <opentxs/core/OTEnvelope.hpp>
+#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/OTMessage.hpp>
+#include <opentxs/core/OTPaths.hpp>
+#include <opentxs/ext/OTSocket.hpp>
+#include <opentxs/core/Timer.hpp>
 
 #include <cassert>
 

@@ -1,9 +1,8 @@
 # Copyright (c) Monetas AG, 2014
 
 include_directories(
-  ${PROJECT_SOURCE_DIR}/opentxs/include
-  ${PROJECT_SOURCE_DIR}/opentxs/include/otlib
-  ${PROJECT_SOURCE_DIR}/opentxs/include/misc
+  ${PROJECT_SOURCE_DIR}/opentxs/include/
+  ${PROJECT_SOURCE_DIR}/opentxs/include/opentxs
 )
 
 link_directories(
@@ -17,4 +16,4 @@ set(cxx-sources
 )
   
 add_executable(createmint ${cxx-sources})
-target_link_libraries(createmint otapi otextensions ot)
+target_link_libraries(createmint opentxs-api opentxs-ext opentxs-core)
