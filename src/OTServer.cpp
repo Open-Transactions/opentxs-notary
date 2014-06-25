@@ -160,7 +160,7 @@
 #include <opentxs/core/OTToken.hpp>
 #include <opentxs/core/OTTrade.hpp>
 
-#include <opentxs/irrxml/irrXML.hpp>
+#include <irrxml/irrXML.hpp>
 
 #include <fstream>
 
