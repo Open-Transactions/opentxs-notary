@@ -140,8 +140,8 @@
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTMessage.hpp>
 #include <opentxs/core/OTPaths.hpp>
-#include <opentxs/ext/OTSocket.hpp>
 #include <opentxs/core/Timer.hpp>
+#include <opentxs/ext/Socket_ZMQ4.hpp>
 
 #include <cassert>
 
@@ -378,14 +378,7 @@ int32_t main(int32_t argc, char* argv[])
     //
 	// Prepare our context and listening socket...
 
-#ifdef OT_ZMQ_2_MODE
-    OTSocket *  pSocket = new OTSocket_ZMQ_2();
-#endif
-
-#ifdef OT_ZMQ_4_MODE
-    OTSocket *  pSocket = new OTSocket_ZMQ_4();
-#endif
-
+    OTSocket* pSocket = new OTSocket_ZMQ_4();
 
     if (!OTDataFolder::IsInitialized()) { OT_FAIL; };
 

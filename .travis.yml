@@ -7,7 +7,7 @@ compiler:
   - clang
 install:
   - ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
-  - ./scripts/travis/install-opentxs.sh "${CXX}" "${TRAVIS_OS_NAME}"
+  - ./scripts/travis/install-opentxs.sh "0.93.0" "${CXX}" "${TRAVIS_OS_NAME}"
 before_script: ./scripts/travis/cppcheck_wrapper.sh ./src
 script:
   - mkdir build
