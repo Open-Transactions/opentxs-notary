@@ -1,6 +1,7 @@
 # Copyright (c) Monetas AG, 2014
 
 cmake_minimum_required(VERSION 2.8)
+
 project(opentxs-server)
 
 set(VERSION_MAJOR  0)
@@ -13,7 +14,6 @@ set(VERSION "0.0.1")
 
 option(BUILD_VERBOSE       "Verbose build output." ON)
 option(BUILD_TESTS         "Build the unit tests." ON)
-option(DISABLE_LIBCXX      "Disable using libc++ when compiling with clang." OFF)
 option(RPM                 "Build a RPM instead of a tarball" OFF)
 
 if(BUILD_VERBOSE)
@@ -36,7 +36,8 @@ message(STATUS "Build RPM:       ${RPM}")
 #-----------------------------------------------------------------------------
 # Collect all binaries into bin subdirectory
 
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
 
 #-----------------------------------------------------------------------------
@@ -69,10 +70,6 @@ message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
 message(STATUS "C++ link flags:  ${CMAKE_CXX_LINK_FLAGS}")
 
 
-## lclc Remove that when we moved to ZMQ 4 only
-add_definitions(-DOT_ZMQ_4_MODE)
-
-
 #-----------------------------------------------------------------------------
 # System libraries used for linking.
 
@@ -87,6 +84,9 @@ endif(MSVC)
 if (WIN32)
   add_definitions(-D_WIN32_WINNT=0x0501)
 endif(WIN32)
+
+## TODO: lclc Remove that when we moved to ZMQ 4 only
+add_definitions(-DOT_ZMQ_4_MODE)
 
 
 #-----------------------------------------------------------------------------
@@ -113,8 +113,6 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 ############################################################################
 ## Build Unit tests
@@ -191,6 +189,5 @@ if(RPM)
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-server.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec" @ONLY IMMEDIATE)
   set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec")
 endif(RPM)
-
 
 include(CPack)
