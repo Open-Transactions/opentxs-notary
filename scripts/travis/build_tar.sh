@@ -8,6 +8,7 @@ fi
 
 cp -r opentxs opentxs-server
 cp -rf build/bin/opentxs-server opentxs-server/bin/
+cp -rf build/bin/createmint opentxs-server/bin/
 
 version=`cat VERSION`
 compiler=${CXX}
