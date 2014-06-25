@@ -1,5 +1,7 @@
 # Copyright (c) Monetas AG, 2014
 
+set(name opentxs-server)
+
 include_directories(
   ${PROJECT_SOURCE_DIR}/opentxs/include
   ${PROJECT_SOURCE_DIR}/opentxs/include/opentxs
@@ -15,7 +17,7 @@ set(cxx-sources
   main.cpp
 )
 
-add_executable(opentxs-server ${cxx-sources})
-target_link_libraries(opentxs-server opentxs-api opentxs-ext opentxs-core)
+add_executable(${name} ${cxx-sources})
+target_link_libraries(${name} opentxs-api opentxs-ext opentxs-core)
 
 add_subdirectory(createmint)
