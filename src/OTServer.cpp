@@ -2126,7 +2126,7 @@ bool OTServer::LoadMainFile(bool bReadOnly/*=false*/)
 
 
 // Get the list of markets on this server.
-void OTServer::UserCmdGetMarketList(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetMarketList(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getMarketList";	// reply to getMarketList
@@ -2166,7 +2166,7 @@ void OTServer::UserCmdGetMarketList(OTPseudonym & theNym, OTMessage & MsgIn, OTM
 
 
 // Get the publicly-available list of offers on a specific market.
-void OTServer::UserCmdGetMarketOffers(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetMarketOffers(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getMarketOffers";	// reply to getMarketOffers
@@ -2218,7 +2218,7 @@ void OTServer::UserCmdGetMarketOffers(OTPseudonym & theNym, OTMessage & MsgIn, O
 
 
 // Get a report of recent trades that have occurred on a specific market.
-void OTServer::UserCmdGetMarketRecentTrades(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetMarketRecentTrades(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getMarketRecentTrades";	// reply to getMarketRecentTrades
@@ -2318,7 +2318,7 @@ void OTServer::UserCmdGetNym_MarketOffers(OTPseudonym & theNym, OTMessage & MsgI
 
 
 
-void OTServer::UserCmdCheckServerID(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdCheckServerID(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@checkServerID";	// reply to checkServerID
@@ -2938,7 +2938,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier & SERVER_ID,
 // -------------------------------------------------------------------------------------
 
 
-void OTServer::UserCmdCheckUser(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdCheckUser(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@checkUser";		// reply to checkUser
@@ -10148,7 +10148,7 @@ void OTServer::DropReplyNoticeToNymbox(const OTIdentifier & SERVER_ID,
 
 
 // Deprecated (replaced by UserCmdGetAccountFiles)
-void OTServer::UserCmdGetAccount(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetAccount(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getAccount";	// reply to getAccount
@@ -10188,7 +10188,7 @@ void OTServer::UserCmdGetAccount(OTPseudonym & theNym, OTMessage & MsgIn, OTMess
 }
 
 
-void OTServer::UserCmdGetAccountFiles(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetAccountFiles(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getAccountFiles";   // reply to getAccountFiles
@@ -10372,7 +10372,7 @@ void OTServer::UserCmdGetAccountFiles(OTPseudonym & theNym, OTMessage & MsgIn, O
 
 
 // Deprecated (replaced by UserCmdGetAccountFiles)
-void OTServer::UserCmdGetInbox(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetInbox(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getInbox";          // reply to getInbox
@@ -10441,7 +10441,7 @@ void OTServer::UserCmdGetInbox(OTPseudonym & theNym, OTMessage & MsgIn, OTMessag
 
 
 // Deprecated (replaced by UserCmdGetAccountFiles)
-void OTServer::UserCmdGetOutbox(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetOutbox(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getOutbox";         // reply to getOutbox
@@ -10510,7 +10510,7 @@ void OTServer::UserCmdGetOutbox(OTPseudonym & theNym, OTMessage & MsgIn, OTMessa
 
 
 
-void OTServer::UserCmdQueryAssetTypes(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdQueryAssetTypes(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@queryAssetTypes";	// reply to queryAssetTypes
@@ -10593,7 +10593,7 @@ void OTServer::UserCmdQueryAssetTypes(OTPseudonym & theNym, OTMessage & MsgIn, O
 
 
 
-void OTServer::UserCmdGetContract(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetContract(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getContract";	// reply to getContract
@@ -10782,7 +10782,7 @@ void OTServer::UserCmdTriggerClause(OTPseudonym & theNym, OTMessage & MsgIn, OTM
 
 
 
-void OTServer::UserCmdGetMint(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetMint(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand		= "@getMint";	// reply to getMint
@@ -10971,7 +10971,7 @@ void OTServer::UserCmdDeleteUser(OTPseudonym & theNym, OTMessage & MsgIn, OTMess
 // the "accountID" on this message will contain the NymID if retrieving a boxreceipt for
 // the Nymbox. Otherwise it will contain an AcctID if retrieving a boxreceipt for an Asset Acct.
 //
-void OTServer::UserCmdGetBoxReceipt(OTPseudonym & theNym, OTMessage & MsgIn, OTMessage & msgOut)
+void OTServer::UserCmdGetBoxReceipt(OTPseudonym&, OTMessage & MsgIn, OTMessage & msgOut)
 {
 	// (1) set up member variables
 	msgOut.m_strCommand			= "@getBoxReceipt";			// reply to getBoxReceipt
