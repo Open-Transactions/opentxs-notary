@@ -274,7 +274,7 @@ int main (int argc, char * const argv[])
 
 	// -----------------------------------------
 
-	int nReturnVal = 0;
+	int nReturnVal = 1;
 
 	OTString		strServerID(argv[1]),
     strServerNymID(argv[2]),
@@ -453,7 +453,7 @@ int main (int argc, char * const argv[])
 				pMint->SaveMint(".PUBLIC");  // save the public mint file.
         //				pMint->SaveContract(OTFolders::Mint().Get(), strPUBLICFilename.Get());  // save the public mint file.
 
-				nReturnVal = 1;
+				nReturnVal = 0;
 
 				OTLog::Output(0, "\nDone.\n\n");
 			}
