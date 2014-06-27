@@ -2399,7 +2399,7 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym & theNym, OTMessage & MsgIn,
 		OTIdentifier USER_ID, NYMBOX_HASH;
 		theNym.GetIdentifier(USER_ID);
 
-    bool        bSuccess = true, bCalculated = false;
+    bool        bSuccess = true;
     bool        bSavedNymbox = false;
 		OTLedger    theLedger(USER_ID, USER_ID, SERVER_ID); // Nymbox
 
@@ -2488,7 +2488,7 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym & theNym, OTMessage & MsgIn,
 				pTransaction->SaveBoxReceipt(theLedger);
 			}
       else
-        bCalculated = theLedger.CalculateNymboxHash(NYMBOX_HASH);
+        theLedger.CalculateNymboxHash(NYMBOX_HASH);
 		}
 		else
 		{
@@ -2518,7 +2518,7 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym & theNym, OTMessage & MsgIn,
     }
     else if (true == msgOut.m_bSuccess)
     {
-      bCalculated = theLedger.CalculateNymboxHash(NYMBOX_HASH);
+      theLedger.CalculateNymboxHash(NYMBOX_HASH);
 
       theNym.SetNymboxHashServerSide(NYMBOX_HASH);    // Save the hash onto the Nym
       theNym.SaveSignedNymfile(m_nymServer);
@@ -3059,7 +3059,6 @@ void OTServer::UserCmdUsageCredits(OTPseudonym & theNym, OTMessage & MsgIn, OTMe
 	OTPseudonym * pNym		= NULL;
 
 	bool bErrorCondition		= false;
-	bool bHaveToCreateNymfile	= false;
 
 	// If nym2 and theNym are already the same Nym, then pNym points to theNym by now already.
 	// (And we'll skip this block.) Otherwise we load up nym2, and point pNym to nym2 instead.
@@ -3074,7 +3073,6 @@ void OTServer::UserCmdUsageCredits(OTPseudonym & theNym, OTMessage & MsgIn, OTMe
 		if (!bLoadSignedNymfile && !bLoadedPublicKey) // Nym didn't already exist.
 		{
 			pNym = &nym2;
-			bHaveToCreateNymfile = true;
 		}
 		else if (bLoadedPublicKey && !bLoadSignedNymfile) // Error -- if key was there, then nymfile should have been also.
 		{
