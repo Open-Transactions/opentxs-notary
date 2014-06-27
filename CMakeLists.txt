@@ -14,7 +14,8 @@ set(VERSION "0.0.1")
 
 option(BUILD_VERBOSE       "Verbose build output." ON)
 option(BUILD_TESTS         "Build the unit tests." ON)
-option(RPM                 "Build a RPM instead of a tarball" OFF)
+option(RPM                 "Build a RPM" OFF)
+option(DEB                 "Build a DEB" OFF)
 
 if(BUILD_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE true)
@@ -31,6 +32,7 @@ message(STATUS "Processor:       ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Verbose:         ${BUILD_VERBOSE}")
 message(STATUS "Testing:         ${BUILD_TESTS}")
 message(STATUS "Build RPM:       ${RPM}")
+message(STATUS "Build DEB:       ${DEB}")
 
 
 #-----------------------------------------------------------------------------
@@ -177,6 +179,8 @@ INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/opentxs-server ${CMAKE_CURRENT_
         DESTINATION bin)
 
 ###Packaging
+set(CPACK_GENERATOR "TGZ")
+
 set(CPACK_PACKAGE_VERSION ${VERSION})
 set(CPACK_PACKAGE_NAME "opentxs-server")
 set(CPACK_PACKAGE_RELEASE 1)
@@ -184,12 +188,29 @@ set(CPACK_PACKAGE_CONTACT "Lucas Betschart")
 set(CPACK_PACKAGE_VENDOR "Monetas AG")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Transactions Server")
+set(CPACK_PACKAGE_DESCRIPTION "
+Open-Transactions democratizes financial and monetary actions.
+You can use it for issuing currencies/stock, paying dividends, creating asset accounts, sending/receiving digital cash, writing/depositing cheques, cashier's cheques, creating basket currencies, trading on markets, scripting custom agreements, recurring payments, escrow, etc.
+")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(OPEN_TRANSACTIONS_WEBSITE "http://opentransactions.org")
 
 #RPM
 if(RPM)
-  set(CPACK_GENERATOR "RPM")
+  set(CPACK_GENERATOR "${CPACK_GENERATOR};RPM")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-server.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec" @ONLY IMMEDIATE)
   set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec")
 endif(RPM)
+
+#DEB
+if(DEB)
+  set(CPACK_GENERATOR "${CPACK_GENERATOR};DEB")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "opentxs")
+  set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
+  set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+  set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${OPEN_TRANSACTIONS_WEBSITE})
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Lucas Betschart")
+endif(DEB)
 
 include(CPack)
