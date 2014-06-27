@@ -177,7 +177,7 @@ bool ProcessMessage_ZMQ(OTServer & theServer, const std::string & str_Message, s
 //
 // After initialization, this function becomes the "main loop" of OT server.
 //
-int32_t main(int32_t argc, char* argv[])
+int32_t main(int32_t, char* [])
 {
 	if(!OTLog::Init(SERVER_CONFIG_KEY,0)) { assert(false); };  // setup the logger.
 
