@@ -13742,20 +13742,6 @@ bool OTServer::ProcessUserCommand(OTMessage & theMessage,
 		OTLog::vOutput(0, "\n==> Received a checkServerID message. Nym: %s ...\n", strMsgNymID.Get());
 		// ------------------------------------------------------------
 		OT_ENFORCE_PERMISSION_MSG(__cmd_check_server_id);
-		/*
-      #define OT_ENFORCE_PERMISSION_MSG(BOOL_VAR_NAME) \
-      { \
-			const char * pNymAllowedIDStr	= theMessage.m_strNymID.Get(); \
-			const char * pActionNameStr		= theMessage.m_strCommand.Get(); \
-			\
-			if (false == NYM_IS_ALLOWED(pNymAllowedIDStr, (BOOL_VAR_NAME))) \
-			{ \
-      OTLog::vOutput(0, "Nym %s attempted an action (%s), but based on server configuration, he's not allowed.\n", \
-      pNymAllowedIDStr, pActionNameStr); \
-      return false; \
-			} \
-      }
-		*/
 		// ------------------------------------------------------------
     OTAsymmetricKey * pNymAuthentKey = OTAsymmetricKey::KeyFactory();
     OTAsymmetricKey * pNymEncryptKey = OTAsymmetricKey::KeyFactory();
