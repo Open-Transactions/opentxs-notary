@@ -8,7 +8,9 @@ compiler:
 install:
   - ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
   - ./scripts/travis/install-opentxs.sh "0.93.0" "${CXX}" "${TRAVIS_OS_NAME}"
-before_script: ./scripts/travis/cppcheck_wrapper.sh ./src
+before_script:
+  - ./scripts/travis/cppcheck_wrapper.sh ./src
+  - ./scripts/travis/clang-format-checker.sh
 script:
   - mkdir build
   - cd build
