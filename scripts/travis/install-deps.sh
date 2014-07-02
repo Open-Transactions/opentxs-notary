@@ -28,6 +28,8 @@ case "$os" in
         brew link --force openssl
         ;;
     linux|"" )
+        sudo echo 'deb http://llvm.org/apt/precise/ '\
+            'llvm-toolchain-precise-3.4 main' >>/etc/apt/sources.list
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt-get -qq update
         sudo apt-get -qq install g++-4.8
@@ -35,6 +37,8 @@ case "$os" in
             libboost-all-dev doxygen
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
+        wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo apt-get -qq install clang-format-3.4
         install_cppcheck
         ;;
     *)
