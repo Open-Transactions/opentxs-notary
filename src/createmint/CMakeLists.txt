@@ -18,4 +18,4 @@ set(cxx-sources
 )
   
 add_executable(${name} ${cxx-sources})
-target_link_libraries(${name} opentxs-api opentxs-ext opentxs-core)
+target_link_libraries(${name} opentxs-ext opentxs-core)
