@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if ! command -v clang-format >/dev/null; then
+    echo -n "error: please install clang-format in order to be able"
+    echo    " to use this pre-commit git-hook"
+    exit 1
+fi
+
 if git rev-parse --verify HEAD >/dev/null 2>&1; then
     against=HEAD
 else
