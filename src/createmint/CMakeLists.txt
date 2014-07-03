@@ -2,9 +2,10 @@
 
 set(name createmint)
 
+find_path(opentxsIncludePath opentxs/core/OTglobal.h)
+
 include_directories(
-  ${PROJECT_SOURCE_DIR}/opentxs/include
-  ${PROJECT_SOURCE_DIR}/opentxs/include/opentxs
+  ${opentxsIncludePath}
 )
 
 set(cxx-sources
