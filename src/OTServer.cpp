@@ -6310,7 +6310,6 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                     const OTIdentifier VOUCHER_ACCOUNT_ID(
                         theVoucherReserveAcct);
 
-                    // *********************************************************************************
                     // This amount must be the total amount based on the amount
                     // issued.
                     // For example if 1000 shares of Pepsi were issued, and the
@@ -6340,7 +6339,6 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                                           "dividend. Source Acct ID: %s\n",
                                        szFunc, strAccountID.Get());
                     }
-                    // *********************************************************************************
                     else // successfully verified the balance agreement.
                     {
                         pResponseBalanceItem->SetStatus(
@@ -6482,7 +6480,7 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                                 //
                                 const bool bForEachAcct =
                                     pSharesContract->ForEachAccountRecord(
-                                        actionPayDividend); // <==================
+                                        actionPayDividend); // <================
                                                             // pay all the
                                                             // dividends here.
 
@@ -7712,7 +7710,6 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                 true; // since a voucher source account is owned
                                       // by server and has no inbox.
                     }
-                    // *********************************************************************
 
                     // Try to load the remitter account (that voucher was
                     // originally financed from) up into memory.
@@ -9159,7 +9156,6 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                                       "object.\n",
                                                    __FUNCTION__);
 
-                                    // ***************************************************************
 
                                     // Server side, the Nym stores a list of all
                                     // open cron item numbers.
@@ -9199,7 +9195,6 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // Closing number when the finalReceipt is
                                     // accepted.
 
-                                    // ***************************************************************
 
                                     std::set<int64_t>& theIDSet2 =
                                         pRecipientNym->GetSetOpenCronItems();
@@ -9229,7 +9224,6 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                         pPlan->GetRecipientClosingNum(),
                                         true); // bSave=true
 
-                                    // ***************************************************************
                                     // Send success notice to other parties.
                                     // (So they can deal with their payments
                                     // inbox and outpayments box,
@@ -9595,7 +9589,6 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                         "to any smart contracts. (Pending security review.)\n",
                         __FUNCTION__);
                 }
-                // *********************************************************
                 //
                 // VERIFY SMART CONTRACT
                 /*
@@ -9997,7 +9990,7 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                         // pContract->GetTransactionNum());
                     }
                 } // smart contract is no good.
-                // *********************************************************
+
                 // The smart contract is good...
                 //
                 // NOTIFY ALL PARTIES and ACTIVATE.
@@ -10395,7 +10388,6 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                                 // RESPONSE to tranIn's balance
                                                 // agreement
 
-        // ***************************************************************************
         //      OTLog::Error("BELOW THE LOOP===> ABout to call VERIFY BALANCE
         // STATEMENT \n");
 
@@ -10410,7 +10402,6 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                               "verifying balance statement.\n");
 
         }
-        // **********************************************************************
         else // BALANCE AGREEMENT WAS SUCCESSFUL.......
         {
             pResponseBalanceItem->SetStatus(
@@ -10879,7 +10870,6 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                     } // User and Server sub-accounts are good.
                                 }     // pBasketItem and pRequestItem are good.
                             }         // for (loop through basketitems)
-                            // *****************************************************************************
                             // Load up the two main accounts and perform the
                             // exchange...
                             // (Above we did the sub-accounts for server and
@@ -11657,7 +11647,6 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
             pItem->GetTransactionNum()); // This response item is IN RESPONSE to
                                          // pItem and its Owner Transaction.
 
-        // *******************************************************************************************
 
         if (false == (pBalanceItem->VerifyTransactionStatement(
                          theNym, tranIn))) // bIsRealTransaction = true;
@@ -11665,7 +11654,6 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
             OTLog::vOutput(0, "ERROR verifying transaction statement in "
                               "NotarizeMarketOffer.\n");
         }
-        // *******************************************************************************************
         else {
             pResponseBalanceItem->SetStatus(
                 OTItem::acknowledgement); // the transaction agreement was
@@ -12576,7 +12564,6 @@ send_message:
 
     // (You are in UserCmdNotarizeTransactions.)
 
-    // *************************************************************
     // REPLY NOTICE TO NYMBOX
     //
     // Now that we signed / saved the reply message...
@@ -12798,7 +12785,6 @@ void OTServer::UserCmdGetAccountFiles(OTPseudonym&, OTMessage& MsgIn,
         pAccount->SaveContractRaw(
             strAccount); // first grab it in plaintext string form
 
-        // ******************************************************************************
         // Get the Inbox.
         //
         {
@@ -12858,7 +12844,6 @@ void OTServer::UserCmdGetAccountFiles(OTPseudonym&, OTMessage& MsgIn,
                     theHash.GetString(strInboxHash);
             }
         }
-        // ******************************************************************************
         // Now get the OUTBOX.
         //
         if (bSuccessLoadingInbox) // (Which we don't bother to do unless the
@@ -12923,7 +12908,6 @@ void OTServer::UserCmdGetAccountFiles(OTPseudonym&, OTMessage& MsgIn,
             }
         }
     }
-    // ******************************************************************************
     // TODO optimize: Really only !SuccessLoadingOutbox is needed here.
     // If it is false, then the others are definitely false as well.
     //
@@ -13414,7 +13398,6 @@ void OTServer::UserCmdTriggerClause(OTPseudonym& theNym, OTMessage& MsgIn,
                     // party_may_execute_clause(party_name,
                     // clause_name)
                 {
-                    // *****************************************************************************
                     //
                     // Execute the clause.
                     //
@@ -13450,7 +13433,6 @@ void OTServer::UserCmdTriggerClause(OTPseudonym& theNym, OTMessage& MsgIn,
                                        pSmartContract->GetTransactionNum());
                     }
                 }
-                // *****************************************************************************
 
                 // If we just removed the smart contract from cron, that means a
                 // finalReceipt was just dropped
@@ -13691,7 +13673,6 @@ void OTServer::UserCmdDeleteUser(OTPseudonym& theNym, OTMessage& MsgIn,
     // TODO: We may also need to mark the Nymbox, as well as the credential
     // files, as "Marked For Deletion."
 
-    // *************************************************************
     // REPLY NOTICE TO NYMBOX
     //
     // Now that we signed / saved the reply message...
@@ -14070,7 +14051,6 @@ void OTServer::UserCmdDeleteAssetAcct(OTPseudonym& theNym, OTMessage& MsgIn,
 
     // (You are in UserCmdDeleteAssetAcct.)
 
-    // *************************************************************
     // REPLY NOTICE TO NYMBOX
     //
     // Now that we signed / saved the reply message...
@@ -14426,7 +14406,6 @@ send_message:
 
     // (You are in UserCmdProcessNymbox.)
 
-    // *************************************************************
     // REPLY NOTICE TO NYMBOX
     //
     // Now that we signed / saved the reply message...
@@ -14671,7 +14650,6 @@ void OTServer::NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
         }
         // (else true == success finding all transaction...)
         //
-        // **********************************************************************************
         // VERIFY TRANSACTION STATEMENT!
         //
         else if (false ==
@@ -14690,7 +14668,6 @@ void OTServer::NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
                 theNym.RemoveIssuedNum(m_strServerID, lTemp);
             }
         }
-        // **********************************************************************************
         else // TRANSACTION AGREEMENT WAS SUCCESSFUL.......
         {
             // Remove all issued nums from theNym that are stored on theTempNym
@@ -15474,7 +15451,6 @@ send_message:
 
     // (You are in UserCmdProcessInbox.)
 
-    // *************************************************************
     // REPLY NOTICE TO NYMBOX
     //
     // Now that we signed / saved the reply message...
@@ -15758,7 +15734,6 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
 
             // BELOW THIS POINT, WE KNOW THAT pServerTransaction was FOUND (and
             // validated.)
-            // *****************************************************************************
 
             switch (pItem->GetType()) {
             case OTItem::acceptCronReceipt:
@@ -16112,7 +16087,6 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                 break;
         } // for loop (list of "process inbox" items)
 
-        // ***************************************************************************
 
         //      OTLog::Error("OTServer::NotarizeProcessInbox   BELOW THE
         // LOOP===> ABout to call VERIFY BALANCE STATEMENT \n");
@@ -16159,14 +16133,12 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                 theNym.RemoveIssuedNum(m_strServerID, lTemp);
             }
 
-            // **********************************************************************
             // FINALLY after all that setup, we can do the balance agreement!!
             //
             const bool bVerifiedBalanceStatement =
                 pBalanceItem->VerifyBalanceStatement(
                     lTotalBeingAccepted, // <========================
                     theNym, *pInbox, *pOutbox, theAccount, tranIn);
-            // **********************************************************************
 
             // Here, add all the issued nums back (that had been temporarily
             // removed from theNym) that were stored on theTempNym for
@@ -17233,7 +17205,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
 
     if (bNymIsServerNym) pNym = &m_nymServer;
 
-    //**********************************************************************************************
 
     // This command is special because the User sent his public key, not just
     // his ID.
@@ -17923,7 +17894,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             if (bNymIsServerNym || pNym->LoadSignedNymfile(m_nymServer)) {
                 OTLog::Output(2, "Successfully loaded Nymfile into memory.\n");
 
-                // *****************************************************************************
                 // ENTERING THE INNER SANCTUM OF SECURITY. If the user got all
                 // the way to here,
                 // Then he has passed multiple levels of security, and all
@@ -17934,7 +17904,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                 // But still need to verify the Request Number for all other
                 // commands except
                 // Get Request Number itself...
-                // *****************************************************************************
 
                 // Request numbers start at 100 (currently). (Since certain
                 // special messages USE 1 already...
@@ -18065,7 +18034,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                         // the number, and let the command process.
                         pNym->IncrementRequestNum(m_nymServer, m_strServerID);
 
-                        // *****************************************************************************
                         // **INSIDE** THE INNER SANCTUM OF SECURITY. If the user
                         // got all the way to here,
                         // Then he has passed multiple levels of security, and
@@ -18075,7 +18043,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                         // also assume that the request number has been verified
                         // on this message.
                         // EVERYTHING checks out.
-                        // *****************************************************************************
 
                         // NO RETURN HERE!!!! ON PURPOSE!!!!
                     }
@@ -18349,7 +18316,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                                       // msgOut.m_strServerID is already set.
                                       // (It uses it.)
 
-    // ****************************************************************************************************
 
     if (theMessage.m_strCommand.Compare("getRequest")) // This command is
                                                        // special because it's
