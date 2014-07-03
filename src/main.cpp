@@ -193,7 +193,6 @@ int32_t main(int32_t, char * [])
         OTLog::Version());
 
 // WINSOCK WINDOWS
-// -----------------------------------------------------------------------
 #ifdef OT_ZMQ_2_MODE
 #ifdef _WIN32
 
@@ -242,12 +241,9 @@ int32_t main(int32_t, char * [])
         {
             return m_pServer;
         }
-        // -----------------------------------
         __ot_server_() : m_pServer(NULL) // INIT
         {
-// -----------------------------------------------------------------------
 
-// -----------------------------------------------------------------------
 // OTLog class exists on both client and server sides.
 // #define OT_NO_SIGNAL_HANDLING if you want to turn off OT's signal handling.
 //
@@ -255,7 +251,6 @@ int32_t main(int32_t, char * [])
             OTLog::SetupSignalHandler(); // This is optional! (I, of course, am
                                          // using it in this test app...)
 #endif
-            // -----------------------------------------------------------------------
             // I instantiate this here (instead of globally) so that I am
             // assured that any globals and other
             // setup is already done before we instantiate the server object
@@ -288,8 +283,6 @@ int32_t main(int32_t, char * [])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-            // -----------------------------------------------------------------------
-
             OTCrypto::It()->Init(); // <========== (OpenSSL gets initialized
                                     // here.)
         }
@@ -301,12 +294,9 @@ int32_t main(int32_t, char * [])
                 0, "\n\n OT version %s, shutting down and cleaning up.\n",
                 OTLog::Version());
 
-            // ------------------------------
             if (NULL != m_pServer) delete m_pServer;
             m_pServer = NULL;
-            // ------------------------------
             OTCachedKey::Cleanup();
-            // ------------------------------
             // We clean these up in reverse order from the Init function, which
             // just seems
             // like the best default, in absence of any brighter ideas.
@@ -314,7 +304,6 @@ int32_t main(int32_t, char * [])
             OTCrypto::It()->Cleanup(); // <======= (OpenSSL gets cleaned up
                                        // here.)
 
-// -------------------------
 // (This is at the bottom, since we do the cleanup in the
 // reverse order from initialization.)
 #ifdef _WIN32
@@ -331,7 +320,6 @@ int32_t main(int32_t, char * [])
     __ot_server_ the_server_obj;
     OTServer* pServer = the_server_obj.GetServer();
     OT_ASSERT(NULL != pServer);
-    // -----------------------------------------------------------------------
     //    OTString strCAFile, strDHFile, strKeyFile;  //, strSSLPassword;
     //    strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
     // CA_FILE);
@@ -339,7 +327,6 @@ int32_t main(int32_t, char * [])
     // DH_FILE);
     //    strKeyFile.Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
     // KEY_FILE);
-    // -----------------------------------------------------------------------
     //
     // UPDATE: This was moved to OTLog::OT_Init(), which is called above, by the
     // nested cleanup class.
@@ -348,7 +335,6 @@ int32_t main(int32_t, char * [])
     //    SSL_library_init();
     //    SSL_load_error_strings();
 
-    // -----------------------------------------------------------------------
     // OTServer::Init loads up server's nym so it can decrypt messages sent in
     // envelopes. It also does various other initialization work.
     //
@@ -365,7 +351,6 @@ int32_t main(int32_t, char * [])
     pServer->Init(); // Keys, etc are loaded here. ===> Assumes main path is
                      // set! <===
 
-    // -----------------------------------------------------------------------
     // We're going to listen on the same port that is listed in our server
     // contract.
     //
@@ -385,7 +370,6 @@ int32_t main(int32_t, char * [])
 
     const int32_t nServerPort = nPort;
 
-    // -----------------------------------------------------------------------
     // OT CRON
     //
     // A heartbeat for recurring transactions, such as markets, payment plans,
@@ -412,7 +396,6 @@ int32_t main(int32_t, char * [])
     // every X seconds.
     //
 
-    // --------------------------------------
     //
     // NETWORK
     //
@@ -489,9 +472,7 @@ int32_t main(int32_t, char * [])
         pServer->ProcessCron(); // Internally this is smart enough to know how
                                 // often to actually activate itself.
         // Most often it just returns doing nothing (waiting for its timer.)
-        // -----------------------------------------------------------------------
         // Wait for client http requests (and process replies out to them.)
-        // ----------------------------------------------------------------------
         // Number of requests to process per heartbeat:
         // OTServer::GetHeartbeatNoRequests()
         //
@@ -510,7 +491,6 @@ int32_t main(int32_t, char * [])
         Timer t; // start timer
         t.start();
         const double tick1 = t.getElapsedTimeInMilliSec();
-        // -----------------------------------------------------
         //
         // PROCESS X NUMBER OF REQUESTS (THIS PULSE.)
         //
@@ -540,8 +520,7 @@ int32_t main(int32_t, char * [])
                     OTLog::Error("server main: Received a message, but of 0 "
                                  "length or less. Weird. (Skipping it.)\n");
                 }
-                else // ------------------------------------
-                {
+                else {
                     // true  == YES, DISCONNECT m_pSocket, something must have
                     // gone wrong.
                     // false ==  NO, do NOT disconnect m_pSocket, everything
@@ -551,7 +530,6 @@ int32_t main(int32_t, char * [])
                     const bool bShouldDisconnect = ProcessMessage_ZMQ(
                         *pServer, strMsg,
                         str_Reply); // <================== PROCESS the message!
-                    // --------------------------------------------------
 
                     if ((str_Reply.length() <= 0) || bShouldDisconnect) {
                         OTLog::vOutput(
@@ -573,13 +551,11 @@ int32_t main(int32_t, char * [])
                                           "back to client! \n\n "
                                           "MESSAGE:\n%s\n\nREPLY:\n%s\n\n",
                                           strMsg.c_str(), str_Reply.c_str());
-                        // --------------------------------------------------
                     }
                 }
             }
         } //  for
 
-        // -----------------------------------------------------------------------
         //
         // IF the time we had available wasn't all used up -- if some of it is
         // still
@@ -602,7 +578,6 @@ int32_t main(int32_t, char * [])
             OTLog::SleepMilliseconds(lSleepMS); // 100 ms == (1 second / 10)
         }
 
-        // -----------------------------------------------------------------------
         // ARTIFICIAL LIMIT:
         // 10 requests per heartbeat, 10 rounds per second == 100 requests per
         // second.
@@ -615,7 +590,6 @@ int32_t main(int32_t, char * [])
         // LOAD TESTING,
         // to see if OT can handle it. (Not counting optimization of course.)
         //
-        // -----------------------------------------------------------------------
 
         if (pServer->IsFlaggedForShutdown()) {
             OTLog::Output(0,
@@ -625,7 +599,6 @@ int32_t main(int32_t, char * [])
     }
     if (NULL != pSocket) delete pSocket;
 
-    // ------------------------------------
     return 0;
 }
 
@@ -636,8 +609,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                         std::string& str_Reply)
 {
     if (str_Message.size() < 1) return false;
-
-    // --------------------
 
     // return value.
     std::string resultString =
@@ -759,8 +730,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                         1, "%s: Successfully processed user command: %s.\n",
                         __FUNCTION__, theMsg.m_strCommand.Get());
 
-                // -------------------------------------------------------------------------------------
-
                 // IF ProcessUserCommand returned true, THEN we process the
                 // message for the recipient.
                 // ELSE IF ProcessUserCommand returned false, YET the PubKey
@@ -797,7 +766,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                         OTASCIIArmor ascReply;
                         if (theRecipientEnvelope.GetAsciiArmoredData(
                                 ascReply)) {
-                            // -----------------------------------------
                             OTString strOutput;
                             const bool bSuccess =
                                 ascReply.Exists() &&
@@ -806,7 +774,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                                                             // default, to force
                                                             // you to enter the
                                                             // right string.
-                            // -----------------------------------------
                             if (bSuccess && strOutput.Exists())
                                 resultString.assign(
                                     strOutput.Get(),
@@ -833,7 +800,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                         }
                     }
                 }
-                // -------------------------------------------------------------------------------------
                 // ELSE we send the message in the CLEAR. (As an armored
                 // message, instead of as an armored envelope.)
                 else {
@@ -841,7 +807,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
 
                     if (strReply.Exists()) {
                         OTASCIIArmor ascReply(strReply);
-                        // ------------------------------------
                         OTString strOutput;
                         const bool bSuccess =
                             ascReply.Exists() &&
@@ -849,7 +814,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                                 strOutput, "MESSAGE"); // There's no default, to
                                                        // force you to enter the
                                                        // right string.
-                        // -----------------------------------------
                         if (bSuccess && strOutput.Exists())
                             resultString.assign(
                                 strOutput.Get(),
@@ -873,7 +837,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                         bReturnVal = true; // disconnect the socket!
                     }
                 }
-                // -------------------------------------------------------------------------------------
             }
             else {
                 OTLog::vError("%s: Error loading message from envelope "
@@ -883,7 +846,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
             }
         }
     }
-    // ----------------------------------------------------------------------
 
     str_Reply = resultString;
 

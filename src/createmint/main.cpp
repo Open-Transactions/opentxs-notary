@@ -153,8 +153,6 @@
 #define SERVER_MASTER_KEY_TIMEOUT_DEFAULT -1
 #define SERVER_MAIN_FILENAME "notaryServer.xml"
 
-// ----------------------------------------------------------------
-
 #define KEY_PASSWORD "test"
 //#define KEY_PASSWORD        ""
 
@@ -199,7 +197,6 @@ int main(int argc, char* const argv[])
             OTLog::vOutput(0, "\n\nWelcome to Open Transactions -- "
                               "'createmint', version %s\n",
                            OTLog::Version());
-// ------------------------------------
 #ifdef _WIN32
             WSADATA wsaData;
             WORD wVersionRequested = MAKEWORD(2, 2);
@@ -231,7 +228,6 @@ int main(int argc, char* const argv[])
             /* then call WSACleanup when done using the Winsock dll */
             OTLog::vOutput(0, "The Winsock 2.2 dll was found okay\n");
 #endif
-// ------------------------------------
 // SIGNALS
 //
 #if defined(OT_SIGNAL_HANDLING)
@@ -241,7 +237,6 @@ int main(int argc, char* const argv[])
 // This is optional! You can always remove it using the OT_NO_SIGNAL_HANDLING
 //  option, and plus, the internals only execute once anyway. (It keeps count.)
 #endif
-            // ------------------------------------
 
             //
             // OT Server Path:
@@ -258,11 +253,7 @@ int main(int argc, char* const argv[])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-            // -----------------------------------------------------------------------
-
             OTCrypto::It()->Init(); // (OpenSSL gets initialized here.)
-
-            // ------------------------------------
         }
         ~__OTcreatemint_RAII()
         {
@@ -272,22 +263,17 @@ int main(int argc, char* const argv[])
             //
             OTCrypto::It()->Cleanup(); // (OpenSSL gets cleaned up here.)
 
-// ------------------------------------
 #ifdef _WIN32
             WSACleanup(); // Corresponds to WSAStartup() in InitOTAPI().
 #endif
-            // ------------------------------------
         }
     };
-    // --------------------------------------------
 
     __OTcreatemint_RAII the_createmint_cleanup;
 
     // **************************************************************************
 
     OTServer theServer;
-
-    // -----------------------------------------
 
     int nReturnVal = 1;
 
@@ -330,7 +316,6 @@ int main(int argc, char* const argv[])
     // strNotaryFile.c_str());
     //        return 0;
     //    }
-    // -----------------------------------------
 
     OTString strMintPath;
     bool bFileIsPresent = false;
@@ -374,7 +359,6 @@ int main(int argc, char* const argv[])
                          "program in order to continue. Sorry.\n\n");
         return 0;
     }
-    // ---------------------------------------------------------------------
 
     // nSeries now contains the number we need to use for the next series.
     // and strMintPath now contains the correct file path.
@@ -453,8 +437,6 @@ int main(int argc, char* const argv[])
             // should be: 1, 2, 4,   8,  16,  32,   64,  128,   256,    512,
             // 1024, 2048, 4096, 8192, 16384, 32768, 65536
 
-            // ---------------------------------------
-
             //            OTString strFilename;// strPUBLICFilename;
             //            strFilename.        Format("%s%s%s",
             // strServerID.Get(), OTLog::PathSeparator(), strAssetTypeID.Get());
@@ -486,7 +468,6 @@ int main(int argc, char* const argv[])
 
             bool bFolderCreated;
             if (OTPaths::BuildFolderPath(strServerFolder, bFolderCreated)) {
-                // -------------------------------------------------------------------
                 // This causes the next serialization to save the private, not
                 // just public, keys.
                 pMint->SetSavePrivateKeys(); // <== PRIVATE MINT VERSION.
@@ -520,7 +501,6 @@ int main(int argc, char* const argv[])
                 //                pMint->SaveContract(OTFolders::Mint().Get(),
                 // strFilename.Get());  // save the mint file.
 
-                // -------------------------------------------------------------------
                 // Now I sign it again, to get the private keys out of there.
                 pMint->ReleaseSignatures();
                 pMint->SignContract(theNym);
