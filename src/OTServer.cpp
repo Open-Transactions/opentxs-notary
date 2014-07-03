@@ -7072,7 +7072,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                             (false == RemoveTransactionNumber(
                                           theNym, theCheque.GetTransactionNum(),
                                           true)) // bSave=true
-                            ) // -----------------------------------------------------------------------
+                            ) 
                     {
                         OTLog::vError("%s: Failed marking the transaction "
                                       "number as in use. (Should never "
@@ -7910,7 +7910,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                                           : pSenderNym),
                                            theCheque.GetTransactionNum(),
                                            true) // bSave=true
-                                       ) // -----------------------------------------------------------------------
+                                       ) 
                         {
                             OTLog::vError("%s: Strange: Failed removing "
                                           "transaction number from sender or "
@@ -8984,7 +8984,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                         OTLog::Output(0, "ERROR verifying Recipient's "
                                          "signature on Payment Plan.\n");
                     }
-                    else // -----------------------------------------------------------------
+                    else 
                     {
                         // Verify that BOTH of the Recipient's transaction
                         // numbers
@@ -10672,7 +10672,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                         bSuccess = false;
                                         break;
                                     }
-                                    else // -------------------------------------------------------------------------------
+                                    else 
                                     {
                                         // the amount being transferred between
                                         // these two accounts is the minimum

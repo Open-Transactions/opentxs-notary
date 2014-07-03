@@ -521,7 +521,7 @@ int32_t main(int32_t, char * [])
                     OTLog::Error("server main: Received a message, but of 0 "
                                  "length or less. Weird. (Skipping it.)\n");
                 }
-                else // ------------------------------------
+                else 
                 {
                     // true  == YES, DISCONNECT m_pSocket, something must have
                     // gone wrong.
