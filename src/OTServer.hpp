@@ -194,11 +194,9 @@ class OTServer
     OTString m_strServerID;     // A hash of the server contract
     OTString m_strServerUserID; // A hash of the public key that signed the
                                 // server contract.
-    // -----------------------------------------------
     OTServerContract* m_pServerContract; // This is the server's own contract,
                                          // containing its public key and
                                          // connect info.
-    // -----------------------------------------------
     int64_t m_lTransactionNumber; // This stores the last VALID AND ISSUED
                                   // transaction number.
 
@@ -222,11 +220,9 @@ class OTServer
     mapOfBaskets m_mapBasketContracts; // Need a way to look up a Basket Account
                                        // ID using its Contract ID
 
-    // -------------------------------------------------------------------------------------------------------------
 
     OTCron m_Cron; // This is where re-occurring and expiring tasks go.
 
-    // -------------------------------------------------------------------------------------------------------------
     // From server.cfg:
     //
     static int64_t __min_market_scale;
@@ -326,7 +322,6 @@ public:
         __heartbeat_ms_between_beats = nVal;
     }
 
-    // -----------------------------------------------
 
     static const std::string& GetOverrideNymID()
     {
@@ -337,7 +332,6 @@ public:
         __override_nym_id = the_id;
     }
 
-    // -----------------------------------------------
     OTServer();
     virtual ~OTServer(); // Calls Release();
 
@@ -348,14 +342,12 @@ public:
 
     void Release_Server();
 
-    // -----------------------
 
     inline bool IsFlaggedForShutdown() const
     {
         return m_bShutdownFlag;
     }
 
-    // ---------------------------------------------------------------------------------
 
     // Obviously this will only work once the server contract has been loaded
     // from storage.
@@ -367,7 +359,6 @@ public:
     // not needed -- erase this function.
     //    bool AddTradeToMarket(OTTrade & theTrade);
 
-    // ---------------------------------------------------------------------------------
 
     OTMint* GetMint(const OTIdentifier& ASSET_TYPE_ID,
                     int32_t nSeries); // Each asset contract has its own series
@@ -415,7 +406,6 @@ public:
 
     const OTPseudonym& GetServerNym() const;
 
-    // -------------------------------
     // Init():
     //
     // Loads the config file,
@@ -425,32 +415,25 @@ public:
     // and validates the server ID (for the Nym)
     //
     void Init(bool bReadOnly = false); // Loads the main file...
-                                       // -------------------------------
     bool LoadConfigFile(); // loads the config file. (Called by Init.)
-    // -------------------------------
     void ActivateCron(); // Starts up OT Cron, which processes recurring
                          // transactions,
     // such as market offers, payment plans, and smart contracts.
-    // -------------------------------------------------------------
     void ProcessCron(); // Call this periodically, so Cron will have the chance
                         // to process its recurring transactions.
-                        // -------------------------------
     bool CreateMainFile(); // If the main file doesn't exist, OT will create it.
                            // (Asking you to paste some info.)
     bool LoadMainFile(bool bReadOnly = false); // Called in Init. Loads latest
                                                // transaction number, and any
                                                // other server data members.
     bool LoadServerUserAndContract();          // Called by LoadMainFile().
-    // -------------------------------
     bool SaveMainFile(); // Called in IssueNextTransactionNumber.
     bool SaveMainFileToString(OTString& strMainFile);
-    // -------------------------------
     bool ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                             OTClientConnection* pConnection = NULL,
                             OTPseudonym* pNym = NULL);
 
     bool ValidateServerIDfromUser(OTString& strServerID);
-    // --------------------------------------------------------------
     // After EVERY / ANY transaction, plus certain messages, we drop a copy of
     // the server's reply into
     // the Nymbox.  This way we are GUARANTEED that the Nym will receive and
@@ -501,7 +484,6 @@ public:
                                      // own msg here (with message inside) to be
                                      // attached to the receipt.
 
-    // --------------------------------------------------------------
 
     void UserCmdCheckServerID(OTPseudonym& theNym, OTMessage& MsgIn,
                               OTMessage& msgOut);
@@ -613,7 +595,6 @@ public:
     // and for each transaction within, it calls THIS method.
     void NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
                              OTTransaction& tranOut, bool& bOutSuccess);
-    // ---------------------------------------------------------------------------------
     void NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
                           OTTransaction& tranIn, OTTransaction& tranOut,
                           bool& bOutSuccess);
@@ -623,13 +604,11 @@ public:
     void NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
                             OTTransaction& tranIn, OTTransaction& tranOut,
                             bool& bOutSuccess);
-    // ---------------------------------------------------------------------------------
     void NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                               OTTransaction& tranIn, OTTransaction& tranOut,
                               bool& bOutSuccess);
     void NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
                                OTTransaction& tranOut, bool& bOutSuccess);
-    // ---------------------------------------------------------------------------------
     void NotarizeMarketOffer(OTPseudonym& theNym, OTAccount& theAssetAccount,
                              OTTransaction& tranIn, OTTransaction& tranOut,
                              bool& bOutSuccess);
@@ -641,7 +620,6 @@ public:
                                OTAccount& theActivatingAccount,
                                OTTransaction& tranIn, OTTransaction& tranOut,
                                bool& bOutSuccess);
-    // ---------------------------------------------------------------------------------
     void NotarizeCancelCronItem(OTPseudonym& theNym, OTAccount& theAssetAccount,
                                 OTTransaction& tranIn, OTTransaction& tranOut,
                                 bool& bOutSuccess);
@@ -649,7 +627,6 @@ public:
                                 OTAccount& theSourceAccount,
                                 OTTransaction& tranIn, OTTransaction& tranOut,
                                 bool& bOutSuccess);
-    // ---------------------------------------------------------------------------------
     void NotarizePayDividend(OTPseudonym& theNym, OTAccount& theAccount,
                              OTTransaction& tranIn, OTTransaction& tranOut,
                              bool& bOutSuccess);
