@@ -2,13 +2,10 @@
 
 set(name createmint)
 
-include_directories(
-  ${PROJECT_SOURCE_DIR}/opentxs/include
-  ${PROJECT_SOURCE_DIR}/opentxs/include/opentxs
-)
+find_path(opentxsIncludePath opentxs/core/OTglobal.h)
 
-link_directories(
-  ${PROJECT_SOURCE_DIR}/opentxs/lib
+include_directories(
+  ${opentxsIncludePath}
 )
 
 set(cxx-sources
@@ -16,6 +13,11 @@ set(cxx-sources
   ../OTClientConnection.cpp
   main.cpp
 )
-  
+
+find_library(core opentxs-core)
+find_library(ext opentxs-ext)
+
 add_executable(${name} ${cxx-sources})
-target_link_libraries(${name} opentxs-ext opentxs-core)
+target_link_libraries(${name} ${core} ${ext})
+
+install(TARGETS createmint DESTINATION bin)

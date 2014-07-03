@@ -174,10 +174,6 @@ add_subdirectory(src)
 
 
 ############################################################################
-### Install
-INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bin/opentxs-server ${CMAKE_CURRENT_BINARY_DIR}/bin/createmint
-        DESTINATION bin)
-
 ###Packaging
 set(CPACK_GENERATOR "TGZ")
 
