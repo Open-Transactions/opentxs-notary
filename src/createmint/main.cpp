@@ -153,7 +153,6 @@
 #define SERVER_MASTER_KEY_TIMEOUT_DEFAULT -1
 #define SERVER_MAIN_FILENAME "notaryServer.xml"
 
-
 #define KEY_PASSWORD "test"
 //#define KEY_PASSWORD        ""
 
@@ -254,9 +253,7 @@ int main(int argc, char* const argv[])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-
             OTCrypto::It()->Init(); // (OpenSSL gets initialized here.)
-
         }
         ~__OTcreatemint_RAII()
         {
@@ -277,7 +274,6 @@ int main(int argc, char* const argv[])
     // **************************************************************************
 
     OTServer theServer;
-
 
     int nReturnVal = 1;
 
@@ -440,7 +436,6 @@ int main(int argc, char* const argv[])
                 theNym, 1, 5, 10, 25, 100, 500, 1000, 2000, 10000, 100000);
             // should be: 1, 2, 4,   8,  16,  32,   64,  128,   256,    512,
             // 1024, 2048, 4096, 8192, 16384, 32768, 65536
-
 
             //            OTString strFilename;// strPUBLICFilename;
             //            strFilename.        Format("%s%s%s",

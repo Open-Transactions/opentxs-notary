@@ -283,7 +283,6 @@ int32_t main(int32_t, char * [])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-
             OTCrypto::It()->Init(); // <========== (OpenSSL gets initialized
                                     // here.)
         }
@@ -521,8 +520,7 @@ int32_t main(int32_t, char * [])
                     OTLog::Error("server main: Received a message, but of 0 "
                                  "length or less. Weird. (Skipping it.)\n");
                 }
-                else 
-                {
+                else {
                     // true  == YES, DISCONNECT m_pSocket, something must have
                     // gone wrong.
                     // false ==  NO, do NOT disconnect m_pSocket, everything
@@ -611,7 +609,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                         std::string& str_Reply)
 {
     if (str_Message.size() < 1) return false;
-
 
     // return value.
     std::string resultString =
@@ -732,7 +729,6 @@ bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
                     OTLog::vOutput(
                         1, "%s: Successfully processed user command: %s.\n",
                         __FUNCTION__, theMsg.m_strCommand.Get());
-
 
                 // IF ProcessUserCommand returned true, THEN we process the
                 // message for the recipient.

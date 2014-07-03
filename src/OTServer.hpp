@@ -220,7 +220,6 @@ class OTServer
     mapOfBaskets m_mapBasketContracts; // Need a way to look up a Basket Account
                                        // ID using its Contract ID
 
-
     OTCron m_Cron; // This is where re-occurring and expiring tasks go.
 
     // From server.cfg:
@@ -322,7 +321,6 @@ public:
         __heartbeat_ms_between_beats = nVal;
     }
 
-
     static const std::string& GetOverrideNymID()
     {
         return __override_nym_id;
@@ -342,12 +340,10 @@ public:
 
     void Release_Server();
 
-
     inline bool IsFlaggedForShutdown() const
     {
         return m_bShutdownFlag;
     }
-
 
     // Obviously this will only work once the server contract has been loaded
     // from storage.
@@ -358,7 +354,6 @@ public:
     // objects will own it and handle cleaning it up.
     // not needed -- erase this function.
     //    bool AddTradeToMarket(OTTrade & theTrade);
-
 
     OTMint* GetMint(const OTIdentifier& ASSET_TYPE_ID,
                     int32_t nSeries); // Each asset contract has its own series
@@ -416,8 +411,8 @@ public:
     //
     void Init(bool bReadOnly = false); // Loads the main file...
     bool LoadConfigFile(); // loads the config file. (Called by Init.)
-    void ActivateCron(); // Starts up OT Cron, which processes recurring
-                         // transactions,
+    void ActivateCron();   // Starts up OT Cron, which processes recurring
+                           // transactions,
     // such as market offers, payment plans, and smart contracts.
     void ProcessCron(); // Call this periodically, so Cron will have the chance
                         // to process its recurring transactions.
@@ -483,7 +478,6 @@ public:
                               NULL); // or pass this instead: we will create our
                                      // own msg here (with message inside) to be
                                      // attached to the receipt.
-
 
     void UserCmdCheckServerID(OTPseudonym& theNym, OTMessage& MsgIn,
                               OTMessage& msgOut);

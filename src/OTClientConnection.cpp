@@ -505,7 +505,6 @@ bool OTClientConnection::ProcessType1Cmd(u_header& theCMD,
     // was received.
     //    sleep(1);
 
-
     // Try to interpret the command number.
     // Right now we support signed messages and encrypted envelopes containing
     // signed messages.
@@ -555,7 +554,6 @@ bool OTClientConnection::ProcessType1Cmd(u_header& theCMD,
     }
     else
         OTLog::vOutput(2, "Loaded a payload, size: %d\n", theCMD.fields.size);
-
 
     // Okay so now we've received the expected size from the socket. Let's
     // transfer it
