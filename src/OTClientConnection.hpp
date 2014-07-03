@@ -1,13 +1,13 @@
 /*******************************************************************
- *    
+ *
  *  OTClientConnection.h
- *  
+ *
  */
 
 /************************************************************
  -----BEGIN PGP SIGNED MESSAGE-----
  Hash: SHA1
- 
+
  *                 OPEN TRANSACTIONS
  *
  *       Financial Cryptography and Digital Cash
@@ -110,10 +110,10 @@
  *   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
  *   PURPOSE.  See the GNU Affero General Public License for
  *   more details.
- 
+
  -----BEGIN PGP SIGNATURE-----
  Version: GnuPG v1.4.9 (Darwin)
- 
+
  iQIcBAEBAgAGBQJRSsfJAAoJEAMIAO35UbuOQT8P/RJbka8etf7wbxdHQNAY+2cC
  vDf8J3X8VI+pwMqv6wgTVy17venMZJa4I4ikXD/MRyWV1XbTG0mBXk/7AZk7Rexk
  KTvL/U1kWiez6+8XXLye+k2JNM6v7eej8xMrqEcO0ZArh/DsLoIn1y8p8qjBI7+m
@@ -138,7 +138,8 @@
 #include <opentxs/core/OTData.hpp>
 #include <opentxs/core/OTMessageBuffer.hpp>
 
-namespace opentxs {
+namespace opentxs
+{
 
 class OTAsymmetricKey;
 class OTMessage;
@@ -148,43 +149,47 @@ class OTEnvelope;
 
 class OTClientConnection
 {
-	u_header		m_CMD;			// We'll load a header and put it here, then wait until the bytes received matches the count
-  // before processing.
-	OTData			m_Buffer;		// As we read data, we buffer it here and chunk it out into messages.
-	
-	bool			m_bHaveHeader;	// If we've loaded a header already, and we're waiting for the byte count, this is true.
-	OTMessageBuffer m_listIn;
-	OTMessageBuffer m_listOut;
-	OTServer	*	m_pServer;
-	
-	OTAsymmetricKey * m_pPublicKey;
-	
-	bool			m_bFocused;		// Defaults to false. If true, it means we're in XmlRpc mode, or some such, instead of TCP over SSL streaming.
-	
+    u_header m_CMD;  // We'll load a header and put it here, then wait until the
+                     // bytes received matches the count
+                     // before processing.
+    OTData m_Buffer; // As we read data, we buffer it here and chunk it out into
+                     // messages.
+
+    bool m_bHaveHeader; // If we've loaded a header already, and we're waiting
+                        // for the byte count, this is true.
+    OTMessageBuffer m_listIn;
+    OTMessageBuffer m_listOut;
+    OTServer* m_pServer;
+
+    OTAsymmetricKey* m_pPublicKey;
+
+    bool m_bFocused; // Defaults to false. If true, it means we're in XmlRpc
+                     // mode, or some such, instead of TCP over SSL streaming.
+
 public:
-	
-	void ProcessBuffer();
-	void ReadBytesIntoBuffer();
+    void ProcessBuffer();
+    void ReadBytesIntoBuffer();
 
-	void ProcessMessage(u_header & theCMD);
-	bool ProcessType1Cmd(u_header & theCMD, OTMessage & theMessage);
+    void ProcessMessage(u_header& theCMD);
+    bool ProcessType1Cmd(u_header& theCMD, OTMessage& theMessage);
 
-	void ProcessReply(OTMessage &theReply);
+    void ProcessReply(OTMessage& theReply);
 
-	OTClientConnection(OTServer & theServer);						// XmlRpc	/ over HTTP mode.
-	~OTClientConnection();
-	
-	void AddToInputList(OTMessage & theMessage);
-	OTMessage * GetNextInputMessage();
+    OTClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
+    ~OTClientConnection();
 
-	void AddToOutputList(OTMessage & theMessage);
-	OTMessage * GetNextOutputMessage();
+    void AddToInputList(OTMessage& theMessage);
+    OTMessage* GetNextInputMessage();
 
-	void SetPublicKey(const OTString & strPublicKey);
-	void SetPublicKey(const OTAsymmetricKey & thePublicKey);
-	
-	// This is for XmlRpc mode (i.e. there is not actually an open connection being maintained.)
-	bool SealMessageForRecipient(OTMessage & theMsg, OTEnvelope & theEnvelope);
+    void AddToOutputList(OTMessage& theMessage);
+    OTMessage* GetNextOutputMessage();
+
+    void SetPublicKey(const OTString& strPublicKey);
+    void SetPublicKey(const OTAsymmetricKey& thePublicKey);
+
+    // This is for XmlRpc mode (i.e. there is not actually an open connection
+    // being maintained.)
+    bool SealMessageForRecipient(OTMessage& theMsg, OTEnvelope& theEnvelope);
 };
 
 } // namespace opentxs
