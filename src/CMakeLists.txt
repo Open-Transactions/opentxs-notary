@@ -6,10 +6,6 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/opentxs/include
   ${PROJECT_SOURCE_DIR}/opentxs/include/opentxs
 )
-
-link_directories(
-  ${PROJECT_SOURCE_DIR}/opentxs/lib
-)
    
 set(cxx-sources
   OTClientConnection.cpp
@@ -17,7 +13,12 @@ set(cxx-sources
   main.cpp
 )
 
+find_library(core opentxs-core)
+find_library(ext opentxs-ext)
+
 add_executable(${name} ${cxx-sources})
-target_link_libraries(${name} opentxs-ext opentxs-core)
+target_link_libraries(${name} ${core} ${ext})
 
 add_subdirectory(createmint)
+
+install(TARGETS opentxs-server DESTINATION bin)
