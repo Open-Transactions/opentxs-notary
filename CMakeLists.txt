@@ -14,6 +14,7 @@ set(VERSION "0.0.1")
 
 option(BUILD_VERBOSE       "Verbose build output." ON)
 option(BUILD_TESTS         "Build the unit tests." ON)
+option(KEYRING_FLATFILE    "Build with Flatfile Keyring" OFF)
 option(RPM                 "Build a RPM" OFF)
 option(DEB                 "Build a DEB" OFF)
 
@@ -25,14 +26,15 @@ endif()
 #-----------------------------------------------------------------------------
 # Print system information
 
-message(STATUS "CMake version:   ${CMAKE_VERSION}")
-message(STATUS "System:          ${CMAKE_SYSTEM}")
-message(STATUS "Processor:       ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "CMake version:      ${CMAKE_VERSION}")
+message(STATUS "System:             ${CMAKE_SYSTEM}")
+message(STATUS "Processor:          ${CMAKE_SYSTEM_PROCESSOR}")
 
-message(STATUS "Verbose:         ${BUILD_VERBOSE}")
-message(STATUS "Testing:         ${BUILD_TESTS}")
-message(STATUS "Build RPM:       ${RPM}")
-message(STATUS "Build DEB:       ${DEB}")
+message(STATUS "Verbose:            ${BUILD_VERBOSE}")
+message(STATUS "Testing:            ${BUILD_TESTS}")
+message(STATUS "Flatfile keyring:   ${KEYRING_FLATFILE}")
+message(STATUS "Build RPM:          ${RPM}")
+message(STATUS "Build DEB:          ${DEB}")
 
 
 #-----------------------------------------------------------------------------
@@ -164,6 +166,18 @@ endif()
 #      set(CPP-NETLIB_GENERATE_DOCS ON)
 #    endif(DOXYGEN_FOUND)
 # endif(BUILD_DOCUMENTATION)
+
+
+#-----------------------------------------------------------------------------
+# Source Definitions
+
+if(KEYRING_FLATFILE)
+  add_definitions(-DOT_KEYRING_FLATFILE)
+endif()
+
+
+#-----------------------------------------------------------------------------
+# Build source
 
 add_subdirectory(src)
 
