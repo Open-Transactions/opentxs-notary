@@ -215,60 +215,50 @@ std::string OTServer::__override_nym_id; // The Nym who's allowed to do certain
 //       (The ACTUAL values are configured in ~/.ot/server.cfg)
 //
 bool OTServer::__admin_usage_credits =
-    false; // Bool. Are usage credits REQUIRED in order to use this server?
+    false; // Are usage credits REQUIRED in order to use this server?
 bool OTServer::__admin_server_locked =
-    false; // Bool. Is server currently locked to non-override Nyms?
-
+    false; // Is server currently locked to non-override Nyms?
 bool OTServer::__cmd_usage_credits =
-    false; // Bool. Command for setting / viewing usage credits.
-
-bool OTServer::__cmd_issue_asset = true;     // Bool.
-bool OTServer::__cmd_get_contract = true;    // Bool.
-bool OTServer::__cmd_check_server_id = true; // Bool.
-
-bool OTServer::__cmd_create_user_acct = true; // Bool.
-bool OTServer::__cmd_del_user_acct = true;    // Bool.
-bool OTServer::__cmd_check_user = true;       // Bool.
-bool OTServer::__cmd_get_request = true;      // Bool.
-bool OTServer::__cmd_get_trans_num = true;    // Bool.
-bool OTServer::__cmd_send_message = true;     // Bool.
-bool OTServer::__cmd_get_nymbox = true;       // Bool.
-bool OTServer::__cmd_process_nymbox = true;   // Bool.
-
-bool OTServer::__cmd_create_asset_acct = true; // Bool.
-bool OTServer::__cmd_del_asset_acct = true;    // Bool.
-bool OTServer::__cmd_get_acct = true;          // Bool.
-bool OTServer::__cmd_get_inbox = true;         // Bool.
-bool OTServer::__cmd_get_outbox = true;        // Bool.
-bool OTServer::__cmd_process_inbox = true;     // Bool.
-
-bool OTServer::__cmd_issue_basket = false;        // Bool.
-bool OTServer::__transact_exchange_basket = true; // Bool.
-
-bool OTServer::__cmd_notarize_transaction = true;  // Bool.
-bool OTServer::__transact_process_inbox = true;    // Bool.
-bool OTServer::__transact_transfer = true;         // Bool.
-bool OTServer::__transact_withdrawal = true;       // Bool.
-bool OTServer::__transact_deposit = true;          // Bool.
-bool OTServer::__transact_withdraw_voucher = true; // Bool.
-bool OTServer::__transact_deposit_cheque = true;   // Bool.
-bool OTServer::__transact_pay_dividend = true;     // Bool.
-
-bool OTServer::__cmd_get_mint = true;           // Bool.
-bool OTServer::__transact_withdraw_cash = true; // Bool.
-bool OTServer::__transact_deposit_cash = true;  // Bool.
-
-bool OTServer::__cmd_get_market_list = true;          // Bool.
-bool OTServer::__cmd_get_market_offers = true;        // Bool.
-bool OTServer::__cmd_get_market_recent_trades = true; // Bool.
-bool OTServer::__cmd_get_nym_market_offers = true;    // Bool.
-
-bool OTServer::__transact_market_offer = true;     // Bool.
-bool OTServer::__transact_payment_plan = true;     // Bool.
-bool OTServer::__transact_cancel_cron_item = true; // Bool.
-
-bool OTServer::__transact_smart_contract = true; // Bool.
-bool OTServer::__cmd_trigger_clause = true;      // Bool.
+    false; // Command for setting / viewing usage credits.
+bool OTServer::__cmd_issue_asset = true;
+bool OTServer::__cmd_get_contract = true;
+bool OTServer::__cmd_check_server_id = true;
+bool OTServer::__cmd_create_user_acct = true;
+bool OTServer::__cmd_del_user_acct = true;
+bool OTServer::__cmd_check_user = true;
+bool OTServer::__cmd_get_request = true;
+bool OTServer::__cmd_get_trans_num = true;
+bool OTServer::__cmd_send_message = true;
+bool OTServer::__cmd_get_nymbox = true;
+bool OTServer::__cmd_process_nymbox = true;
+bool OTServer::__cmd_create_asset_acct = true;
+bool OTServer::__cmd_del_asset_acct = true;
+bool OTServer::__cmd_get_acct = true;
+bool OTServer::__cmd_get_inbox = true;
+bool OTServer::__cmd_get_outbox = true;
+bool OTServer::__cmd_process_inbox = true;
+bool OTServer::__cmd_issue_basket = false;
+bool OTServer::__transact_exchange_basket = true;
+bool OTServer::__cmd_notarize_transaction = true;
+bool OTServer::__transact_process_inbox = true;
+bool OTServer::__transact_transfer = true;
+bool OTServer::__transact_withdrawal = true;
+bool OTServer::__transact_deposit = true;
+bool OTServer::__transact_withdraw_voucher = true;
+bool OTServer::__transact_deposit_cheque = true;
+bool OTServer::__transact_pay_dividend = true;
+bool OTServer::__cmd_get_mint = true;
+bool OTServer::__transact_withdraw_cash = true;
+bool OTServer::__transact_deposit_cash = true;
+bool OTServer::__cmd_get_market_list = true;
+bool OTServer::__cmd_get_market_offers = true;
+bool OTServer::__cmd_get_market_recent_trades = true;
+bool OTServer::__cmd_get_nym_market_offers = true;
+bool OTServer::__transact_market_offer = true;
+bool OTServer::__transact_payment_plan = true;
+bool OTServer::__transact_cancel_cron_item = true;
+bool OTServer::__transact_smart_contract = true;
+bool OTServer::__cmd_trigger_clause = true;
 
 // Todo: Might set ALL of these to false (so you're FORCED to set them true
 // in the server.cfg file.) This way you're also assured that the right data
