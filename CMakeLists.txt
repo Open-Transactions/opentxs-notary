@@ -36,7 +36,7 @@ message(STATUS "Flatfile keyring:   ${KEYRING_FLATFILE}")
 message(STATUS "Build RPM:          ${RPM}")
 message(STATUS "Build DEB:          ${DEB}")
 
-OT_KEYRING_FLATFILE
+
 #-----------------------------------------------------------------------------
 # Collect all binaries into bin subdirectory
 

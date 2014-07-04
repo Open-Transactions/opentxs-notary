@@ -1,0 +1,111 @@
+#########################################################################
+#									#
+#									#
+#	##		INSTALL - Debian, Ubuntu		##	#
+#									#
+#									#
+#########################################################################
+
+This instructions have only been tested with openSUSE 13.1,
+but should work with all recent openSUSE versions.
+
+################# Dependencies #################
+# install general developer tools
+$ sudo aptitude install git build-essential cmake pkg-config
+
+# install general developer dependencies
+$ sudo aptitude install protobuf-compiler libprotobuf-dev
+
+
+################# Get opentxs ##################
+Install opentxs (the library). Follow this instructions:
+https://github.com/Open-Transactions/opentxs/blob/develop/docs/INSTALL-Debian_Ubuntu.txt
+
+
+################# Get opentxs-server ###########
+# git pull from master branch (current stable)
+$ git clone git://github.com/Open-Transactions/opentxs-server.git
+$ cd opentxs-server
+$ mkdir build && cd build
+
+
+##################   Build   ###################
+$ cmake ..
+$ make -j2
+
+Build Multithreaded, need about 1gb of ram per thread.
+-j (int)
+
+
+##############   CMake Options:   ##############
+
+Set opentxs path: -DCMAKE_PREFIX_PATH=/home/lucas/tmp/opentxs/
+(Only needed if not installed systemwide (/usr/local)
+
+Set install dir: -DCMAKE_INSTALL_PREFIX=/home/your/prefix/
+(Default is /usr/local)
+
+Debug Mode:	 -DCMAKE_BUILD_TYPE=Debug
+(Default is Release)
+
+System Keyring (Optional):
+    Flatfile    : -DKEYRING_FLATFILE=ON
+
+Build Packages:
+       RPM:      -DRPM=ON
+       DEB:      -DDEB=ON
+
+You can't build an RPM and use an install to a custom directory (CMAKE_INSTALL_PREFIX).
+
+
+##################   Install   #################
+## Install to system
+$ sudo make install
+
+## Link the libraries
+$ sudo ldconfig
+
+## Build (RPM/DEB/TAR) package
+$ make package
+
+
+###########   Miscellaneous Notes:   ###########
+
+## Load some sample data to look at an example wallet 
+!!! WARNING : will reset all user data !!!
+$ ./script/install_sample_data.sh
+
+# also can checkout sample contracts,baskets,
+# server-contracts at https://github.com/monetas/opentxs-sample-data
+
+# to run the server as a foreground process:
+$ opentxs-sserver
+
+# to run the server as a background process, configure it using:
+$ cmake .. -DKEYRING_FLATFILE=ON
+# plus any other desired options, compile and install as usual,
+
+# copy sample-data/ot-sample-data/background_server.cfg to $HOME/.ot/server.cfg
+
+# and change the password_folder path to a location appropriate for your system.
+$ mkdir $HOME/.ot/server_data/passphrase
+
+# Run and create opentxs-server as usual as a foreground process and enter the passphrase when requested.
+# Then press Ctrl-c to exit the server, 
+$ rm $HOME/.ot/server_data/ot.pid
+$ cd $HOME/.ot (or any other folder you want to run otserver from and store its log file in)
+
+# The following command will run opentxs-server as a daemon process in the background:
+
+$ nohup opentxs-server &
+
+# All server output will be redirected to a 'nohup.out' file in the folder you 
+# launch otserver from. The pid of the daemon process will be listed after you 
+# press return. It is also listed in $HOME/.ot/server_data/ot.pid, in case you forget it.
+
+# To kill the server daemon process, enter:
+
+$ cd $HOME/.ot/server_data
+$ cat ot.pid to display the process id <pid> of the daemon process that is running the server
+$ kill <pid>
+$ rm ot.pid
