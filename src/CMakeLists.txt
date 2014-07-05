@@ -2,6 +2,8 @@
 
 set(name opentxs-server)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
+
 find_path(opentxsIncludePath opentxs/core/OTglobal.h)
 
 include_directories(
