@@ -69,7 +69,7 @@ elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   endif()
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Werror")
+set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic")
 
 message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
@@ -120,41 +120,25 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 
-############################################################################
-## Build Unit tests
-#
-# if(BUILD_TESTS)
-#   enable_testing()
-#   if(MSVC11)
-#     add_definitions(-D_VARIADIC_MAX=10)
-#   endif(MSVC11)
-# 
-#   if(MSVC)
-#     set(gtest_force_shared_crt ON CACHE BOOL "Override gtest option.")
-#   endif(MSVC)
-# 
-#   # gmock automatically searches for gtest
-#   add_subdirectory(deps/gmock)
-# 
-#   set(GTEST_ROOT ${opentxs-server_SOURCE_DIR}/deps/gtest)
-#   set(GTEST_FOUND ON)
-#   set(GTEST_INCLUDE_DIRS ${GTEST_ROOT}/include)
-#   set(GTEST_LIBRARY gtest)
-#   set(GTEST_MAIN_LIBRARY gtest_main)
-#   set(GTEST_BOTH_LIBRARIES ${GTEST_LIBRARY} ${GTEST_MAIN_LIBRARY})
-# 
-#   set(GMOCK_ROOT ${opentxs-server_SOURCE_DI}/deps/gmock)
-#   set(GMOCK_FOUND ON)
-#   set(GMOCK_INCLUDE_DIRS ${GTEST_INCLUDE_DIRS} ${GMOCK_ROOT}/include)
-#   set(GMOCK_LIBRARY ${GTEST_LIBRARIES} gmock)
-#   set(GMOCK_MAIN_LIBRARY gmock_main)
-#   set(GMOCK_BOTH_LIBRARIES ${GMOCK_LIBRARY} ${GMOCK_MAIN_LIBRARY})
-# endif()
+#-----------------------------------------------------------------------------
+# Unit Testing
+
+if(BUILD_TESTS)
+  include(CTest)
+  enable_testing()
+
+  set(GTEST_ROOT ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/gtest)
+  set(GTEST_FOUND ON)
+  set(GTEST_INCLUDE_DIRS ${GTEST_ROOT}/include)
+  set(GTEST_LIBRARIES gtest)
+  set(GTEST_MAIN_LIBRARIES gtest_main)
+  set(GTEST_BOTH_LIBRARIES ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
+endif()
 
 
-############################################################################
-## Build Documentation
-#
+#-----------------------------------------------------------------------------
+# Build Documentation
+
 # if(BUILD_DOCUMENTATION)
 #    find_package(Doxygen)
 #    if (DOXYGEN_FOUND)
@@ -179,12 +163,9 @@ endif()
 #-----------------------------------------------------------------------------
 # Build source
 
+add_subdirectory(deps)
 add_subdirectory(src)
-
-# if(BUILD_TESTS)
-#   enable_testing()
-#   add_subdirectory(tests)
-# endif(BUILD_TESTS)
+add_subdirectory(tests)
 
 
 ############################################################################

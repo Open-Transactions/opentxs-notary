@@ -14,7 +14,7 @@ before_script:
 script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_PREFIX_PATH=${TRAVIS_BUILD_DIR}/opentxs && make -j 2
+  - cmake .. -DCMAKE_PREFIX_PATH=${TRAVIS_BUILD_DIR}/opentxs && make -j 2 && make test
   - cd ..
 before_deploy:
 - ./scripts/travis/build_tar.sh "${TRAVIS_OS_NAME}"
