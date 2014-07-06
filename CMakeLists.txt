@@ -153,6 +153,12 @@ endif()
 
 
 #-----------------------------------------------------------------------------
+# Get submodules
+
+execute_process(COMMAND git "submodule" "update" "--init" "--recursive")
+
+
+#-----------------------------------------------------------------------------
 # Source Definitions
 
 if(KEYRING_FLATFILE)
