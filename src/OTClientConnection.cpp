@@ -143,7 +143,9 @@
 #include <cstdio>
 
 extern "C" {
+#ifndef _WIN32
 #include <netinet/in.h>
+#endif
 }
 
 namespace opentxs

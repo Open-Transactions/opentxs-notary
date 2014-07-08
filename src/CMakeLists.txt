@@ -4,11 +4,26 @@ set(name opentxs-server)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
 
-find_path(opentxsIncludePath opentxs/core/OTglobal.h)
+if(MSVC)
+  include_directories(
+    ${PROJECT_SOURCE_DIR}/../opentxs/include
+    ${PROJECT_SOURCE_DIR}/../opentxs/deps
+  )
+  link_directories(
+    ${PROJECT_SOURCE_DIR}/../opentxs/build/lib
+  )
+  set(core opentxs-core)
+  set(ext opentxs-ext)
+else()
+  find_path(opentxsIncludePath opentxs/core/OTglobal.h)
 
-include_directories(
-  ${opentxsIncludePath}
-)
+  include_directories(
+    ${opentxsIncludePath}
+  )
+
+  find_library(core opentxs-core)
+  find_library(ext opentxs-ext)
+endif(MSVC)
    
 set(cxx-sources
   OTClientConnection.cpp
@@ -16,11 +31,12 @@ set(cxx-sources
   main.cpp
 )
 
-find_library(core opentxs-core)
-find_library(ext opentxs-ext)
-
 add_executable(${name} ${cxx-sources})
-target_link_libraries(${name} ${core} ${ext})
+if(MSVC)
+  target_link_libraries(${name} ${core} ${ext} irrxml)
+else()
+  target_link_libraries(${name} ${core} ${ext})
+endif(MSVC)
 
 add_subdirectory(createmint)
 

@@ -69,7 +69,12 @@ elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   endif()
 endif()
 
-set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic")
+if (MSVC)
+  option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." ON)
+  add_definitions(-D_UNICODE)
+else()
+  set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic")
+endif(MSVC)
 
 message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
@@ -84,12 +89,6 @@ if(UNIX AND NOT APPLE)
   list(APPEND OPENTXS_AUDITOR_SYSTEM_LIBRARIES dl)
 endif()
 
-if (MSVC)
-  add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-endif(MSVC)
-if (WIN32)
-  add_definitions(-D_WIN32_WINNT=0x0501)
-endif(WIN32)
 
 ## TODO: lclc Remove that when we moved to ZMQ 4 only
 add_definitions(-DOT_ZMQ_4_MODE)
