@@ -2,22 +2,17 @@
 
 set(name createmint)
 
-find_path(opentxsIncludePath opentxs/core/OTglobal.h)
-
-include_directories(
-  ${opentxsIncludePath}
-)
-
 set(cxx-sources
   ../OTServer.cpp
   ../OTClientConnection.cpp
   main.cpp
 )
 
-find_library(core opentxs-core)
-find_library(ext opentxs-ext)
-
 add_executable(${name} ${cxx-sources})
-target_link_libraries(${name} ${core} ${ext})
+if(MSVC)
+  target_link_libraries(${name} ${core} ${ext} irrxml)
+else()
+  target_link_libraries(${name} ${core} ${ext})
+endif(MSVC)
 
 install(TARGETS createmint DESTINATION bin)
