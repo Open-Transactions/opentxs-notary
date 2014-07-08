@@ -392,12 +392,12 @@ public:
                                OTIdentifier& BASKET_ACCOUNT_ID);
     bool VerifyBasketAccountID(const OTIdentifier& BASKET_ACCOUNT_ID);
 
-    bool
-    LookupBasketAccountIDByContractID(const OTIdentifier& BASKET_CONTRACT_ID,
-                                      OTIdentifier& BASKET_ACCOUNT_ID);
-    bool
-    LookupBasketContractIDByAccountID(const OTIdentifier& BASKET_ACCOUNT_ID,
-                                      OTIdentifier& BASKET_CONTRACT_ID);
+    bool LookupBasketAccountIDByContractID(
+        const OTIdentifier& BASKET_CONTRACT_ID,
+        OTIdentifier& BASKET_ACCOUNT_ID);
+    bool LookupBasketContractIDByAccountID(
+        const OTIdentifier& BASKET_ACCOUNT_ID,
+        OTIdentifier& BASKET_CONTRACT_ID);
 
     const OTPseudonym& GetServerNym() const;
 

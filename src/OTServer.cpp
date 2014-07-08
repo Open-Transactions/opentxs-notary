@@ -471,8 +471,8 @@ bool OTServer::LookupBasketAccountID(const OTIdentifier& BASKET_ID,
 /// also will GENERATE it if it cannot be found, add it to the list, and return
 /// the pointer. Should
 /// always succeed.
-_SharedPtr<OTAccount>
-OTServer::GetVoucherAccount(const OTIdentifier& ASSET_TYPE_ID)
+_SharedPtr<OTAccount> OTServer::GetVoucherAccount(
+    const OTIdentifier& ASSET_TYPE_ID)
 {
     _SharedPtr<OTAccount> pAccount;
     const OTIdentifier SERVER_USER_ID(m_nymServer), SERVER_ID(m_strServerID);
