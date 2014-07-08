@@ -169,6 +169,16 @@ endif()
 #-----------------------------------------------------------------------------
 # Build source
 
+#Fix RPATH
+if(APPLE)
+  set(CMAKE_INSTALL_NAME_DIR @rpath)
+endif()
+if(NOT RPM)
+  include(GNUInstallDirs)
+  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+
 add_subdirectory(deps)
 add_subdirectory(src)
 add_subdirectory(tests)
