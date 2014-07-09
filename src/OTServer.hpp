@@ -373,7 +373,8 @@ public:
     // remove that total from the Voucher Account once the cheque has expired:
     // it is his money now.
     // OTAccount * GetVoucherAccount(const OTIdentifier & ASSET_TYPE_ID);
-    _SharedPtr<OTAccount> GetVoucherAccount(const OTIdentifier& ASSET_TYPE_ID);
+    std::shared_ptr<OTAccount> GetVoucherAccount(
+        const OTIdentifier& ASSET_TYPE_ID);
 
     // When a user uploads an asset contract, the server adds it to the list
     // (and verifies the user's key against the
