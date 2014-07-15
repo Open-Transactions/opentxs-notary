@@ -599,7 +599,7 @@ int main()
 
     __ot_server_ the_server_obj;
     OTServer* server = the_server_obj.GetServer();
-    OT_ASSERT(nullptr != server);
+
     //    OTString strCAFile, strDHFile, strKeyFile;  //, strSSLPassword;
     //    strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
     // CA_FILE);
