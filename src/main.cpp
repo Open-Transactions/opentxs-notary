@@ -158,10 +158,238 @@
 
 using namespace opentxs;
 
-typedef std::list<OTClientConnection*> listOfConnections;
+namespace
+{
 
-bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
-                        std::string& str_Reply);
+bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
+                    std::string& str_Reply)
+{
+    if (str_Message.size() < 1) return false;
+
+    std::string resultString =
+        ""; // Whatever we put in this string is what will get returned.
+
+    // First we grab the client's message
+    OTASCIIArmor ascMessage;
+    ascMessage.MemSet(str_Message.data(),
+                      static_cast<uint32_t>(str_Message.size()));
+
+    bool bReturnVal = false; // "false" == no, do NOT disconnect. No errors.
+                             // ("True" means YES, DISCONNECT!)
+
+    OTMessage theMsg, theReply;
+    OTEnvelope theEnvelope;
+
+    if (false == theEnvelope.SetAsciiArmoredData(ascMessage)) {
+        OTLog::vError("%s: Error retrieving envelope.\n", __FUNCTION__);
+        bReturnVal = true; // disconnect the socket!
+    }
+    else { // Now the base64 is decoded and the envelope is in binary form
+             // again.
+        OTLog::vOutput(
+            2, "%s: Successfully retrieved envelope from ZMQ message...\n",
+            __FUNCTION__);
+
+        OTString strEnvelopeContents;
+
+        // Decrypt the Envelope.
+        if (false ==
+            theEnvelope.Open(theServer.GetServerNym(),
+                             strEnvelopeContents)) // now strEnvelopeContents
+                                                   // contains the decoded
+                                                   // message.
+        {
+            OTLog::vError("%s: Unable to open envelope.\n", __FUNCTION__);
+            bReturnVal = true; // disconnect the socket!
+        }
+        else {
+            // All decrypted--now let's load the results into an OTMessage.
+            // No need to call theMsg.ParseRawFile() after, since
+            // LoadContractFromString handles it.
+            if (strEnvelopeContents.Exists() &&
+                theMsg.LoadContractFromString(strEnvelopeContents)) {
+                theReply.m_strCommand.Format("@%s", theMsg.m_strCommand.Get());
+                theReply.m_strNymID = theMsg.m_strNymID; // UserID
+                theReply.m_strServerID =
+                    theMsg.m_strServerID;    // ServerID, a hash of the server
+                                             // contract.
+                theReply.m_bSuccess = false; // The default reply. In fact this
+                                             // is probably superfluous.
+
+                // By constructing this without a socket, I put it in ZMQ mode,
+                // instead of tcp/ssl.
+                OTClientConnection theClient(theServer);
+
+                OTPseudonym theNym(theMsg.m_strNymID);
+
+                const bool bProcessedUserCmd = theServer.ProcessUserCommand(
+                    theMsg, theReply, &theClient, &theNym);
+
+                // By optionally passing in &theClient, the client Nym's public
+                // key will be
+                // set on it whenever verification is complete. (So for the
+                // reply, I'll
+                // have the key and thus I'll be able to encrypt reply to the
+                // recipient.)
+                if (false == bProcessedUserCmd) {
+                    const OTString s1(theMsg);
+
+                    OTLog::vOutput(
+                        0,
+                        "%s: Unable to process user command: %s\n ********** "
+                        "REQUEST:\n\n%s\n\n",
+                        __FUNCTION__, theMsg.m_strCommand.Get(), s1.Get());
+
+                    // NOTE: normally you would even HAVE a true or false if
+                    // we're in this block. ProcessUserCommand()
+                    // is what tries to process a command and then sets false
+                    // if/when it fails. Until that point, you
+                    // wouldn't get any server reply.  I'm now changing this
+                    // slightly, so you still get a reply (defaulted
+                    // to success==false.) That way if a client needs to re-sync
+                    // his request number, he will get the false
+                    // and therefore know to resync the # as his next move, vs
+                    // being stuck with no server reply (and thus
+                    // stuck with a bad socket.)
+                    // We sign the reply here, but not in the else block, since
+                    // it's already signed in cases where
+                    // ProcessUserCommand() is a success, by the time that call
+                    // returns.
+
+                    theReply.m_bSuccess =
+                        false; // Since the process call definitely failed, I'm
+                               // making sure this here is definitely set to
+                               // false (even though it probably was already.)
+                    theReply.SignContract(theServer.GetServerNym());
+                    theReply.SaveContract();
+
+                    const OTString s2(theReply);
+
+                    OTLog::vOutput(0, " ********** RESPONSE:\n\n%s\n\n",
+                                   s2.Get());
+
+                }
+                else // At this point the reply is ready to go, and theClient
+                       // has the public key of the recipient...
+                    OTLog::vOutput(
+                        1, "%s: Successfully processed user command: %s.\n",
+                        __FUNCTION__, theMsg.m_strCommand.Get());
+
+                // IF ProcessUserCommand returned true, THEN we process the
+                // message for the recipient.
+                // ELSE IF ProcessUserCommand returned false, YET the PubKey
+                // DOES exist, THEN in this case also, we process the message
+                // for the recipient.
+                //
+                if (bProcessedUserCmd ||
+                    theNym.Server_PubKeyExists()) // if success + Nym's pub key
+                                                  // exists here on server.
+                {
+                    // The transaction is now processed (or not), and the
+                    // server's reply message is in theReply.
+                    // Let's seal it up to the recipient's nym (in an envelope)
+                    // and send back to the user...
+                    //
+                    OTEnvelope theRecipientEnvelope;
+
+                    const bool bSealed = theClient.SealMessageForRecipient(
+                        theReply, theRecipientEnvelope);
+
+                    if (false == bSealed) {
+                        OTLog::vOutput(0, "%s: Unable to seal envelope. (No "
+                                          "reply will be sent.)\n",
+                                       __FUNCTION__);
+                        bReturnVal = true; // disconnect the socket!
+                    }
+                    else {
+                        OTASCIIArmor ascReply;
+                        if (theRecipientEnvelope.GetAsciiArmoredData(
+                                ascReply)) {
+                            OTString strOutput;
+                            const bool bSuccess =
+                                ascReply.Exists() &&
+                                ascReply.WriteArmoredString(
+                                    strOutput, "ENVELOPE"); // There's no
+                                                            // default, to force
+                                                            // you to enter the
+                                                            // right string.
+                            if (bSuccess && strOutput.Exists())
+                                resultString.assign(
+                                    strOutput.Get(),
+                                    strOutput.GetLength()); // <==============
+                                                            // REPLY ENVELOPE...
+                            else {
+                                OTLog::vOutput(0, "%s: Unable to "
+                                                  "WriteArmoredString from "
+                                                  "OTASCIIArmor object into "
+                                                  "OTString object. (No reply "
+                                                  "envelope will be sent.)\n",
+                                               __FUNCTION__);
+                                bReturnVal = true; // disconnect the socket!
+                            }
+                        }
+                        else {
+                            OTLog::vOutput(0, "%s: Unable to "
+                                              "GetAsciiArmoredData from sealed "
+                                              "envelope into "
+                                              "OTASCIIArmor object. (No reply "
+                                              "envelope will be sent.)\n",
+                                           __FUNCTION__);
+                            bReturnVal = true; // disconnect the socket!
+                        }
+                    }
+                }
+                // ELSE we send the message in the CLEAR. (As an armored
+                // message, instead of as an armored envelope.)
+                else {
+                    const OTString strReply(theReply);
+
+                    if (strReply.Exists()) {
+                        OTASCIIArmor ascReply(strReply);
+                        OTString strOutput;
+                        const bool bSuccess =
+                            ascReply.Exists() &&
+                            ascReply.WriteArmoredString(
+                                strOutput, "MESSAGE"); // There's no default, to
+                                                       // force you to enter the
+                                                       // right string.
+                        if (bSuccess && strOutput.Exists())
+                            resultString.assign(
+                                strOutput.Get(),
+                                strOutput.GetLength()); // <============== REPLY
+                                                        // MESSAGE...
+                        else {
+                            OTLog::vOutput(0, "%s: Unable to "
+                                              "WriteArmoredString from "
+                                              "OTASCIIArmor object into "
+                                              "OTString object. (No reply "
+                                              "message will be sent.)\n",
+                                           __FUNCTION__);
+                            bReturnVal = true; // disconnect the socket!
+                        }
+                    }
+                    else {
+                        OTLog::vOutput(0, "%s: Failed trying to grab theReply "
+                                          "in OTString form. "
+                                          "(No reply message will be sent.)\n",
+                                       __FUNCTION__);
+                        bReturnVal = true; // disconnect the socket!
+                    }
+                }
+            }
+            else {
+                OTLog::vError("%s: Error loading message from envelope "
+                              "contents:\n\n%s\n\n",
+                              __FUNCTION__, strEnvelopeContents.Get());
+                bReturnVal = true; // disconnect the socket!
+            }
+        }
+    }
+    str_Reply = resultString;
+    return bReturnVal;
+}
+
+} // namespace
 
 int32_t main(int32_t, char * [])
 {
@@ -463,7 +691,7 @@ int32_t main(int32_t, char * [])
                 else {
                     const std::string strMsg(str_Message.Get());
                     const bool bShouldDisconnect =
-                        ProcessMessage_ZMQ(*pServer, strMsg, str_Reply);
+                        ProcessMessage(*pServer, strMsg, str_Reply);
 
                     if ((str_Reply.length() <= 0) || bShouldDisconnect) {
                         OTLog::vOutput(
@@ -532,232 +760,4 @@ int32_t main(int32_t, char * [])
     if (NULL != pSocket) delete pSocket;
 
     return 0;
-}
-
-bool ProcessMessage_ZMQ(OTServer& theServer, const std::string& str_Message,
-                        std::string& str_Reply)
-{
-    if (str_Message.size() < 1) return false;
-
-    std::string resultString =
-        ""; // Whatever we put in this string is what will get returned.
-
-    // First we grab the client's message
-    OTASCIIArmor ascMessage;
-    ascMessage.MemSet(str_Message.data(),
-                      static_cast<uint32_t>(str_Message.size()));
-
-    bool bReturnVal = false; // "false" == no, do NOT disconnect. No errors.
-                             // ("True" means YES, DISCONNECT!)
-
-    OTMessage theMsg, theReply;
-    OTEnvelope theEnvelope;
-
-    if (false == theEnvelope.SetAsciiArmoredData(ascMessage)) {
-        OTLog::vError("%s: Error retrieving envelope.\n", __FUNCTION__);
-        bReturnVal = true; // disconnect the socket!
-    }
-    else { // Now the base64 is decoded and the envelope is in binary form
-             // again.
-        OTLog::vOutput(
-            2, "%s: Successfully retrieved envelope from ZMQ message...\n",
-            __FUNCTION__);
-
-        OTString strEnvelopeContents;
-
-        // Decrypt the Envelope.
-        if (false ==
-            theEnvelope.Open(theServer.GetServerNym(),
-                             strEnvelopeContents)) // now strEnvelopeContents
-                                                   // contains the decoded
-                                                   // message.
-        {
-            OTLog::vError("%s: Unable to open envelope.\n", __FUNCTION__);
-            bReturnVal = true; // disconnect the socket!
-        }
-        else {
-            // All decrypted--now let's load the results into an OTMessage.
-            // No need to call theMsg.ParseRawFile() after, since
-            // LoadContractFromString handles it.
-            if (strEnvelopeContents.Exists() &&
-                theMsg.LoadContractFromString(strEnvelopeContents)) {
-                theReply.m_strCommand.Format("@%s", theMsg.m_strCommand.Get());
-                theReply.m_strNymID = theMsg.m_strNymID; // UserID
-                theReply.m_strServerID =
-                    theMsg.m_strServerID;    // ServerID, a hash of the server
-                                             // contract.
-                theReply.m_bSuccess = false; // The default reply. In fact this
-                                             // is probably superfluous.
-
-                // By constructing this without a socket, I put it in ZMQ mode,
-                // instead of tcp/ssl.
-                OTClientConnection theClient(theServer);
-
-                OTPseudonym theNym(theMsg.m_strNymID);
-
-                const bool bProcessedUserCmd = theServer.ProcessUserCommand(
-                    theMsg, theReply, &theClient, &theNym);
-
-                // By optionally passing in &theClient, the client Nym's public
-                // key will be
-                // set on it whenever verification is complete. (So for the
-                // reply, I'll
-                // have the key and thus I'll be able to encrypt reply to the
-                // recipient.)
-                if (false == bProcessedUserCmd) {
-                    const OTString s1(theMsg);
-
-                    OTLog::vOutput(
-                        0,
-                        "%s: Unable to process user command: %s\n ********** "
-                        "REQUEST:\n\n%s\n\n",
-                        __FUNCTION__, theMsg.m_strCommand.Get(), s1.Get());
-
-                    // NOTE: normally you would even HAVE a true or false if
-                    // we're in this block. ProcessUserCommand()
-                    // is what tries to process a command and then sets false
-                    // if/when it fails. Until that point, you
-                    // wouldn't get any server reply.  I'm now changing this
-                    // slightly, so you still get a reply (defaulted
-                    // to success==false.) That way if a client needs to re-sync
-                    // his request number, he will get the false
-                    // and therefore know to resync the # as his next move, vs
-                    // being stuck with no server reply (and thus
-                    // stuck with a bad socket.)
-                    // We sign the reply here, but not in the else block, since
-                    // it's already signed in cases where
-                    // ProcessUserCommand() is a success, by the time that call
-                    // returns.
-
-                    theReply.m_bSuccess =
-                        false; // Since the process call definitely failed, I'm
-                               // making sure this here is definitely set to
-                               // false (even though it probably was already.)
-                    theReply.SignContract(theServer.GetServerNym());
-                    theReply.SaveContract();
-
-                    const OTString s2(theReply);
-
-                    OTLog::vOutput(0, " ********** RESPONSE:\n\n%s\n\n",
-                                   s2.Get());
-
-                }
-                else // At this point the reply is ready to go, and theClient
-                       // has the public key of the recipient...
-                    OTLog::vOutput(
-                        1, "%s: Successfully processed user command: %s.\n",
-                        __FUNCTION__, theMsg.m_strCommand.Get());
-
-                // IF ProcessUserCommand returned true, THEN we process the
-                // message for the recipient.
-                // ELSE IF ProcessUserCommand returned false, YET the PubKey
-                // DOES exist, THEN in this case also, we process the message
-                // for the recipient.
-                //
-                if (bProcessedUserCmd ||
-                    theNym.Server_PubKeyExists()) // if success + Nym's pub key
-                                                  // exists here on server.
-                {
-                    // The transaction is now processed (or not), and the
-                    // server's reply message is in theReply.
-                    // Let's seal it up to the recipient's nym (in an envelope)
-                    // and send back to the user...
-                    //
-                    OTEnvelope theRecipientEnvelope;
-
-                    const bool bSealed = theClient.SealMessageForRecipient(
-                        theReply, theRecipientEnvelope);
-
-                    if (false == bSealed) {
-                        OTLog::vOutput(0, "%s: Unable to seal envelope. (No "
-                                          "reply will be sent.)\n",
-                                       __FUNCTION__);
-                        bReturnVal = true; // disconnect the socket!
-                    }
-                    else {
-                        OTASCIIArmor ascReply;
-                        if (theRecipientEnvelope.GetAsciiArmoredData(
-                                ascReply)) {
-                            OTString strOutput;
-                            const bool bSuccess =
-                                ascReply.Exists() &&
-                                ascReply.WriteArmoredString(
-                                    strOutput, "ENVELOPE"); // There's no
-                                                            // default, to force
-                                                            // you to enter the
-                                                            // right string.
-                            if (bSuccess && strOutput.Exists())
-                                resultString.assign(
-                                    strOutput.Get(),
-                                    strOutput.GetLength()); // <==============
-                                                            // REPLY ENVELOPE...
-                            else {
-                                OTLog::vOutput(0, "%s: Unable to "
-                                                  "WriteArmoredString from "
-                                                  "OTASCIIArmor object into "
-                                                  "OTString object. (No reply "
-                                                  "envelope will be sent.)\n",
-                                               __FUNCTION__);
-                                bReturnVal = true; // disconnect the socket!
-                            }
-                        }
-                        else {
-                            OTLog::vOutput(0, "%s: Unable to "
-                                              "GetAsciiArmoredData from sealed "
-                                              "envelope into "
-                                              "OTASCIIArmor object. (No reply "
-                                              "envelope will be sent.)\n",
-                                           __FUNCTION__);
-                            bReturnVal = true; // disconnect the socket!
-                        }
-                    }
-                }
-                // ELSE we send the message in the CLEAR. (As an armored
-                // message, instead of as an armored envelope.)
-                else {
-                    const OTString strReply(theReply);
-
-                    if (strReply.Exists()) {
-                        OTASCIIArmor ascReply(strReply);
-                        OTString strOutput;
-                        const bool bSuccess =
-                            ascReply.Exists() &&
-                            ascReply.WriteArmoredString(
-                                strOutput, "MESSAGE"); // There's no default, to
-                                                       // force you to enter the
-                                                       // right string.
-                        if (bSuccess && strOutput.Exists())
-                            resultString.assign(
-                                strOutput.Get(),
-                                strOutput.GetLength()); // <============== REPLY
-                                                        // MESSAGE...
-                        else {
-                            OTLog::vOutput(0, "%s: Unable to "
-                                              "WriteArmoredString from "
-                                              "OTASCIIArmor object into "
-                                              "OTString object. (No reply "
-                                              "message will be sent.)\n",
-                                           __FUNCTION__);
-                            bReturnVal = true; // disconnect the socket!
-                        }
-                    }
-                    else {
-                        OTLog::vOutput(0, "%s: Failed trying to grab theReply "
-                                          "in OTString form. "
-                                          "(No reply message will be sent.)\n",
-                                       __FUNCTION__);
-                        bReturnVal = true; // disconnect the socket!
-                    }
-                }
-            }
-            else {
-                OTLog::vError("%s: Error loading message from envelope "
-                              "contents:\n\n%s\n\n",
-                              __FUNCTION__, strEnvelopeContents.Get());
-                bReturnVal = true; // disconnect the socket!
-            }
-        }
-    }
-    str_Reply = resultString;
-    return bReturnVal;
 }
