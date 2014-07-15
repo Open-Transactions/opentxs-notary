@@ -573,7 +573,7 @@ int32_t main(int32_t, char * [])
     //
     // Prepare our context and listening socket...
 
-    OTSocket* pSocket = new OTSocket_ZMQ_4();
+    OTSocket_ZMQ_4 socket;
 
     if (!OTDataFolder::IsInitialized()) {
         OT_FAIL;
@@ -598,7 +598,7 @@ int32_t main(int32_t, char * [])
                 SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES,
                 SERVER_DEFAULT_LATENCY_DELAY_AFTER, SERVER_DEFAULT_IS_BLOCKING);
 
-            if (!pSocket->Init(socketDefaults, pSettings)) {
+            if (!socket.Init(socketDefaults, pSettings)) {
                 OT_FAIL;
             };
         }
@@ -612,7 +612,7 @@ int32_t main(int32_t, char * [])
         pSettings = NULL;
     }
 
-    if (!pSocket->NewContext()) {
+    if (!socket.NewContext()) {
         OT_FAIL;
     };
 
@@ -623,7 +623,7 @@ int32_t main(int32_t, char * [])
         OTString strBindPath;
         strBindPath.Format("%s%d", "tcp://*:", nServerPort);
 
-        if (!pSocket->Listen(strBindPath)) {
+        if (!socket.Listen(strBindPath)) {
             OT_FAIL;
         };
     }
@@ -677,7 +677,7 @@ int32_t main(int32_t, char * [])
             // Therefore I will be using a real Timer for Cron, instead of the
             // damn intervals.
             //
-            bool bReceived = pSocket->Receive(str_Message);
+            bool bReceived = socket.Receive(str_Message);
 
             if (bReceived) {
                 std::string str_Reply;
@@ -699,10 +699,10 @@ int32_t main(int32_t, char * [])
                                "Msg:\n\n%s\n\n",
                             strMsg.c_str());
 
-                        pSocket->Listen();
+                        socket.Listen();
                     }
                     else {
-                        bool bSuccessSending = pSocket->Send(str_Reply.c_str());
+                        bool bSuccessSending = socket.Send(str_Reply.c_str());
 
                         if (!bSuccessSending)
                             OTLog::vError("server main: Socket ERROR: failed "
@@ -755,7 +755,6 @@ int32_t main(int32_t, char * [])
             break;
         }
     }
-    if (pSocket) delete pSocket;
 
     return 0;
 }
