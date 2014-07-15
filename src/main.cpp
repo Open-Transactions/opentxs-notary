@@ -397,6 +397,114 @@ bool ProcessMessage(OTServer& server, const std::string& messageString,
     return false;
 }
 
+void run(OTServer* server, OTSocket& socket)
+{
+    for (;;) {
+        // =-=-=- HEARTBEAT -=-=-=
+        //
+        // The Server now processes certain things on a regular basis.
+        // ProcessCron is what gives it the opportunity to do that.
+        // All of the Cron Items (including market trades, payment plans, smart
+        // contracts...)
+        // they all have their hooks here...
+        //
+        // Internally this is smart enough to know how often to actually
+        // activate itself.
+        server->ProcessCron();
+        // Most often it just returns doing nothing (waiting for its timer.)
+        // Wait for client http requests (and process replies out to them.)
+        // Number of requests to process per heartbeat:
+        // OTServer::GetHeartbeatNoRequests()
+        //
+        // Loop: process up to 10 client requests, then sleep for 1/10th second.
+        // That's a total of 100 requests per second. Can the computers handle
+        // it?
+        // Is it too much or too little? Todo: load testing.
+        //
+        // Then: check for shutdown flag.
+        //
+        // Then: go back to the top ("do") and repeat the loop.... process cron,
+        // process 10 client requests, sleep, check for shutdown, etc.
+
+        Timer t;
+        t.start();
+        double startTick = t.getElapsedTimeInMilliSec();
+
+        // PROCESS X NUMBER OF REQUESTS (THIS PULSE.)
+        //
+        // Theoretically the "number of requests" that we process EACH PULSE.
+        // (The timing code here is still pretty new, need to do some load
+        // testing.)
+        for (int32_t i = 0; i < OTServer::GetHeartbeatNoRequests(); i++) {
+            OTString messageString;
+
+            // With 100ms heartbeat, receive will try 100 ms, then 200 ms, then
+            // 400 ms, total of 700.
+            // That's about 15 Receive() calls every 10 seconds. Therefore if I
+            // want the ProcessCron()
+            // to trigger every 10 seconds, I need to set the cron interval to
+            // roll over every 15 heartbeats.
+            // Therefore I will be using a real Timer for Cron, instead of the
+            // damn intervals.
+            bool received = socket.Receive(messageString);
+
+            if (received) {
+                std::string reply;
+
+                if (messageString.GetLength() <= 0) {
+                    OTLog::Error("server main: Received a message, but of 0 "
+                                 "length or less. Weird. (Skipping it.)\n");
+                }
+                else {
+                    std::string strMsg(messageString.Get());
+                    bool shouldDisconnect =
+                        ProcessMessage(*server, strMsg, reply);
+
+                    if ((reply.length() <= 0) || shouldDisconnect) {
+                        OTLog::vOutput(
+                            0, "server main: ERROR: Unfortunately, not every "
+                               "client request is "
+                               "legible or worthy of a server response. :-)  "
+                               "Msg:\n\n%s\n\n",
+                            strMsg.c_str());
+
+                        socket.Listen();
+                    }
+                    else {
+                        bool successSending = socket.Send(reply.c_str());
+
+                        if (!successSending) {
+                            OTLog::vError("server main: Socket ERROR: failed "
+                                          "while trying to send reply "
+                                          "back to client! \n\n "
+                                          "MESSAGE:\n%s\n\nREPLY:\n%s\n\n",
+                                          strMsg.c_str(), reply.c_str());
+                        }
+                    }
+                }
+            }
+        }
+
+        // IF the time we had available wasn't all used up -- if some of it is
+        // still available, then SLEEP until we reach the NEXT PULSE. (In
+        // practice, we will probably use TOO MUCH time, not too little--but
+        // then again OT isn't ALWAYS processing a message. There could be
+        // plenty of dead time in between...)
+        double endTick = t.getElapsedTimeInMilliSec();
+        int64_t elapsed = static_cast<int64_t>(endTick - startTick);
+
+        if (elapsed < OTServer::GetHeartbeatMsBetweenBeats()) {
+            int64_t sleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
+            OTLog::SleepMilliseconds(sleepMS);
+        }
+
+        if (server->IsFlaggedForShutdown()) {
+            OTLog::Output(0, "opentxs server is shutting down gracefully.\n");
+            break;
+        }
+    }
+}
+
 } // namespace
 
 int main()
@@ -570,110 +678,7 @@ int main()
         };
     }
 
-    for (;;) {
-        // =-=-=- HEARTBEAT -=-=-=
-        //
-        // The Server now processes certain things on a regular basis.
-        // ProcessCron is what gives it the opportunity to do that.
-        // All of the Cron Items (including market trades, payment plans, smart
-        // contracts...)
-        // they all have their hooks here...
-        //
-        // Internally this is smart enough to know how often to actually
-        // activate itself.
-        server->ProcessCron();
-        // Most often it just returns doing nothing (waiting for its timer.)
-        // Wait for client http requests (and process replies out to them.)
-        // Number of requests to process per heartbeat:
-        // OTServer::GetHeartbeatNoRequests()
-        //
-        // Loop: process up to 10 client requests, then sleep for 1/10th second.
-        // That's a total of 100 requests per second. Can the computers handle
-        // it?
-        // Is it too much or too little? Todo: load testing.
-        //
-        // Then: check for shutdown flag.
-        //
-        // Then: go back to the top ("do") and repeat the loop.... process cron,
-        // process 10 client requests, sleep, check for shutdown, etc.
-
-        Timer t;
-        t.start();
-        double startTick = t.getElapsedTimeInMilliSec();
-
-        // PROCESS X NUMBER OF REQUESTS (THIS PULSE.)
-        //
-        // Theoretically the "number of requests" that we process EACH PULSE.
-        // (The timing code here is still pretty new, need to do some load
-        // testing.)
-        for (int32_t i = 0; i < OTServer::GetHeartbeatNoRequests(); i++) {
-            OTString messageString;
-
-            // With 100ms heartbeat, receive will try 100 ms, then 200 ms, then
-            // 400 ms, total of 700.
-            // That's about 15 Receive() calls every 10 seconds. Therefore if I
-            // want the ProcessCron()
-            // to trigger every 10 seconds, I need to set the cron interval to
-            // roll over every 15 heartbeats.
-            // Therefore I will be using a real Timer for Cron, instead of the
-            // damn intervals.
-            bool received = socket.Receive(messageString);
-
-            if (received) {
-                std::string reply;
-
-                if (messageString.GetLength() <= 0) {
-                    OTLog::Error("server main: Received a message, but of 0 "
-                                 "length or less. Weird. (Skipping it.)\n");
-                }
-                else {
-                    std::string strMsg(messageString.Get());
-                    bool shouldDisconnect =
-                        ProcessMessage(*server, strMsg, reply);
-
-                    if ((reply.length() <= 0) || shouldDisconnect) {
-                        OTLog::vOutput(
-                            0, "server main: ERROR: Unfortunately, not every "
-                               "client request is "
-                               "legible or worthy of a server response. :-)  "
-                               "Msg:\n\n%s\n\n",
-                            strMsg.c_str());
-
-                        socket.Listen();
-                    }
-                    else {
-                        bool successSending = socket.Send(reply.c_str());
-
-                        if (!successSending) {
-                            OTLog::vError("server main: Socket ERROR: failed "
-                                          "while trying to send reply "
-                                          "back to client! \n\n "
-                                          "MESSAGE:\n%s\n\nREPLY:\n%s\n\n",
-                                          strMsg.c_str(), reply.c_str());
-                        }
-                    }
-                }
-            }
-        }
-
-        // IF the time we had available wasn't all used up -- if some of it is
-        // still available, then SLEEP until we reach the NEXT PULSE. (In
-        // practice, we will probably use TOO MUCH time, not too little--but
-        // then again OT isn't ALWAYS processing a message. There could be
-        // plenty of dead time in between...)
-        double endTick = t.getElapsedTimeInMilliSec();
-        int64_t elapsed = static_cast<int64_t>(endTick - startTick);
-
-        if (elapsed < OTServer::GetHeartbeatMsBetweenBeats()) {
-            int64_t sleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
-            OTLog::SleepMilliseconds(sleepMS);
-        }
-
-        if (server->IsFlaggedForShutdown()) {
-            OTLog::Output(0, "opentxs server is shutting down gracefully.\n");
-            break;
-        }
-    }
+    run(server, socket);
 
     return 0;
 }
