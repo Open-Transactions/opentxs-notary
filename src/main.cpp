@@ -162,14 +162,14 @@ namespace
 
 class __ot_server_
 {
-    OTServer* m_pServer;
+    OTServer* server_;
 
 public:
     OTServer* GetServer()
     {
-        return m_pServer;
+        return server_;
     }
-    __ot_server_() : m_pServer(nullptr)
+    __ot_server_() : server_(nullptr)
     {
 // This is optional! (I, of course, am using it in this test app...)
 #if defined(OT_SIGNAL_HANDLING)
@@ -179,23 +179,23 @@ public:
         // assured that any globals and other
         // setup is already done before we instantiate the server object
         // itself.
-        OT_ASSERT_MSG(nullptr == m_pServer,
-                      "server main(): ASSERT: nullptr == m_pServer.");
-        m_pServer = new OTServer;
+        OT_ASSERT_MSG(nullptr == server_,
+                      "server main(): ASSERT: nullptr == server_.");
+        server_ = new OTServer;
 
         OT_ASSERT_MSG(
-            nullptr != m_pServer,
+            nullptr != server_,
             "server main(): ASSERT: Unable to instantiate OT server.\n");
 
         {
-            bool bSetupPathsSuccess = false;
+            bool setupPathsSuccess = false;
             if (!OTDataFolder::Init(SERVER_CONFIG_KEY)) {
                 OT_FAIL;
             }
             else {
-                bSetupPathsSuccess = true;
+                setupPathsSuccess = true;
             }
-            OT_ASSERT_MSG(bSetupPathsSuccess,
+            OT_ASSERT_MSG(setupPathsSuccess,
                           "main(): Assert failed: Failed to set OT Path");
         }
         OTCrypto::It()->Init();
@@ -207,9 +207,9 @@ public:
                        "\n\n OT version %s, shutting down and cleaning up.\n",
                        OTLog::Version());
 
-        if (m_pServer) {
-            delete m_pServer;
-            m_pServer = nullptr;
+        if (server_) {
+            delete server_;
+            server_ = nullptr;
         }
         OTCachedKey::Cleanup();
         OTCrypto::It()->Cleanup();
@@ -219,76 +219,73 @@ public:
     }
 };
 
-bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
-                    std::string& str_Reply)
+bool ProcessMessage(OTServer& server, const std::string& messageString,
+                    std::string& reply)
 {
-    if (str_Message.size() < 1) return false;
-
-    // Whatever we put in this string is what will get returned.
-    std::string resultString = "";
+    if (messageString.size() < 1) return false;
 
     // First we grab the client's message
     OTASCIIArmor ascMessage;
-    ascMessage.MemSet(str_Message.data(),
-                      static_cast<uint32_t>(str_Message.size()));
+    ascMessage.MemSet(messageString.data(), messageString.size());
 
     // "false" == no, do NOT disconnect. No errors.
     // ("True" means YES, DISCONNECT!)
-    bool bReturnVal = false;
+    bool success = false;
 
-    OTMessage theMsg, theReply;
-    OTEnvelope theEnvelope;
+    OTMessage message, replyMessage;
+    OTEnvelope envelope;
 
-    if (!theEnvelope.SetAsciiArmoredData(ascMessage)) {
+    if (!envelope.SetAsciiArmoredData(ascMessage)) {
         OTLog::vError("Error retrieving envelope.\n");
-        bReturnVal = true; // disconnect the socket!
+        success = true; // disconnect the socket!
     }
     else {
         // Now the base64 is decoded and the envelope is in binary form again.
         OTLog::vOutput(2, "Successfully retrieved envelope from message.\n");
 
-        OTString strEnvelopeContents;
+        OTString envelopeContents;
 
         // Decrypt the Envelope.
-        // now strEnvelopeContents contains the decoded message.
-        if (!theEnvelope.Open(theServer.GetServerNym(), strEnvelopeContents)) {
+        // now envelopeContents contains the decoded message.
+        if (!envelope.Open(server.GetServerNym(), envelopeContents)) {
             OTLog::vError("Unable to open envelope.\n");
-            bReturnVal = true; // disconnect the socket!
+            success = true; // disconnect the socket!
         }
         else {
             // All decrypted--now let's load the results into an OTMessage.
-            // No need to call theMsg.ParseRawFile() after, since
+            // No need to call message.ParseRawFile() after, since
             // LoadContractFromString handles it.
-            if (strEnvelopeContents.Exists() &&
-                theMsg.LoadContractFromString(strEnvelopeContents)) {
-                theReply.m_strCommand.Format("@%s", theMsg.m_strCommand.Get());
+            if (envelopeContents.Exists() &&
+                message.LoadContractFromString(envelopeContents)) {
+                replyMessage.m_strCommand.Format("@%s",
+                                                 message.m_strCommand.Get());
                 // UserID
-                theReply.m_strNymID = theMsg.m_strNymID;
+                replyMessage.m_strNymID = message.m_strNymID;
                 // ServerID, a hash of the server contract
-                theReply.m_strServerID = theMsg.m_strServerID;
+                replyMessage.m_strServerID = message.m_strServerID;
                 // The default reply. In fact this is probably superfluous
-                theReply.m_bSuccess = false;
+                replyMessage.m_bSuccess = false;
 
                 // By constructing this without a socket, I put it in ZMQ mode,
                 // instead of tcp/ssl.
-                OTClientConnection theClient(theServer);
+                OTClientConnection client(server);
 
-                OTPseudonym theNym(theMsg.m_strNymID);
+                OTPseudonym nym(message.m_strNymID);
 
-                const bool bProcessedUserCmd = theServer.ProcessUserCommand(
-                    theMsg, theReply, &theClient, &theNym);
+                bool processedUserCmd = server.ProcessUserCommand(
+                    message, replyMessage, &client, &nym);
 
-                // By optionally passing in &theClient, the client Nym's public
+                // By optionally passing in &client, the client Nym's public
                 // key will be set on it whenever verification is complete. (So
                 // for the reply, I'll  have the key and thus I'll be able to
                 // encrypt reply to the recipient.)
-                if (!bProcessedUserCmd) {
-                    const OTString s1(theMsg);
+                if (!processedUserCmd) {
+                    OTString s1(message);
 
                     OTLog::vOutput(
                         0, "Unable to process user command: %s\n ********** "
                            "REQUEST:\n\n%s\n\n",
-                        theMsg.m_strCommand.Get(), s1.Get());
+                        message.m_strCommand.Get(), s1.Get());
 
                     // NOTE: normally you would even HAVE a true or false if
                     // we're in this block. ProcessUserCommand()
@@ -306,25 +303,25 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                     // ProcessUserCommand() is a success, by the time that call
                     // returns.
 
-                    theReply.m_bSuccess =
+                    replyMessage.m_bSuccess =
                         false; // Since the process call definitely failed, I'm
                                // making sure this here is definitely set to
                                // false (even though it probably was already.)
-                    theReply.SignContract(theServer.GetServerNym());
-                    theReply.SaveContract();
+                    replyMessage.SignContract(server.GetServerNym());
+                    replyMessage.SaveContract();
 
-                    const OTString s2(theReply);
+                    OTString s2(replyMessage);
 
                     OTLog::vOutput(0, " ********** RESPONSE:\n\n%s\n\n",
                                    s2.Get());
 
                 }
                 else {
-                    // At this point the reply is ready to go, and theClient
+                    // At this point the reply is ready to go, and client
                     // has the public key of the recipient...
                     OTLog::vOutput(1,
                                    "Successfully processed user command: %s.\n",
-                                   theMsg.m_strCommand.Get());
+                                   message.m_strCommand.Get());
                 }
                 // IF ProcessUserCommand returned true, THEN we process the
                 // message for the recipient.
@@ -333,36 +330,33 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                 // for the recipient.
                 //
                 // if success + Nym's pub key exists here on server.
-                if (bProcessedUserCmd || theNym.Server_PubKeyExists()) {
+                if (processedUserCmd || nym.Server_PubKeyExists()) {
                     // The transaction is now processed (or not), and the
-                    // server's reply message is in theReply.
+                    // server's reply message is in replyMessage.
                     // Let's seal it up to the recipient's nym (in an envelope)
                     // and send back to the user...
-                    OTEnvelope theRecipientEnvelope;
+                    OTEnvelope recipientEnvelope;
 
-                    const bool bSealed = theClient.SealMessageForRecipient(
-                        theReply, theRecipientEnvelope);
+                    bool sealed = client.SealMessageForRecipient(
+                        replyMessage, recipientEnvelope);
 
-                    if (!bSealed) {
+                    if (!sealed) {
                         OTLog::vOutput(0, "Unable to seal envelope. (No "
                                           "reply will be sent.)\n");
-                        bReturnVal = true; // disconnect the socket!
+                        success = true; // disconnect the socket!
                     }
                     else {
                         OTASCIIArmor ascReply;
-                        if (theRecipientEnvelope.GetAsciiArmoredData(
-                                ascReply)) {
-                            OTString strOutput;
-                            const bool bSuccess =
-                                ascReply.Exists() &&
-                                ascReply.WriteArmoredString(
-                                    strOutput, "ENVELOPE"); // There's no
-                                                            // default, to force
-                                                            // you to enter the
-                                                            // right string.
-                            if (bSuccess && strOutput.Exists()) {
-                                resultString.assign(strOutput.Get(),
-                                                    strOutput.GetLength());
+                        if (recipientEnvelope.GetAsciiArmoredData(ascReply)) {
+                            OTString output;
+                            bool val = ascReply.Exists() &&
+                                       ascReply.WriteArmoredString(
+                                           output, "ENVELOPE"); // There's no
+                            // default, to force
+                            // you to enter the
+                            // right string.
+                            if (val && output.Exists()) {
+                                reply.assign(output.Get(), output.GetLength());
                             }
                             else {
                                 OTLog::vOutput(0, "Unable to "
@@ -370,7 +364,7 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                                                   "OTASCIIArmor object into "
                                                   "OTString object. (No reply "
                                                   "envelope will be sent.)\n");
-                                bReturnVal = true; // disconnect the socket!
+                                success = true; // disconnect the socket!
                             }
                         }
                         else {
@@ -379,27 +373,26 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                                               "envelope into "
                                               "OTASCIIArmor object. (No reply "
                                               "envelope will be sent.)\n");
-                            bReturnVal = true; // disconnect the socket!
+                            success = true; // disconnect the socket!
                         }
                     }
                 }
                 // ELSE we send the message in the CLEAR. (As an armored
                 // message, instead of as an armored envelope.)
                 else {
-                    const OTString strReply(theReply);
+                    OTString replyString(replyMessage);
 
-                    if (strReply.Exists()) {
-                        OTASCIIArmor ascReply(strReply);
-                        OTString strOutput;
-                        const bool bSuccess =
+                    if (replyString.Exists()) {
+                        OTASCIIArmor ascReply(replyString);
+                        OTString output;
+                        bool val =
                             ascReply.Exists() &&
                             ascReply.WriteArmoredString(
-                                strOutput, "MESSAGE"); // There's no default, to
-                                                       // force you to enter the
-                                                       // right string.
-                        if (bSuccess && strOutput.Exists()) {
-                            resultString.assign(strOutput.Get(),
-                                                strOutput.GetLength());
+                                output, "MESSAGE"); // There's no default, to
+                                                    // force you to enter the
+                                                    // right string.
+                        if (val && output.Exists()) {
+                            reply.assign(output.Get(), output.GetLength());
                         }
                         else {
                             OTLog::vOutput(0, "Unable to "
@@ -407,27 +400,26 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                                               "OTASCIIArmor object into "
                                               "OTString object. (No reply "
                                               "message will be sent.)\n");
-                            bReturnVal = true; // disconnect the socket!
+                            success = true; // disconnect the socket!
                         }
                     }
                     else {
-                        OTLog::vOutput(0, "Failed trying to grab theReply "
+                        OTLog::vOutput(0, "Failed trying to grab the reply "
                                           "in OTString form. "
                                           "(No reply message will be sent.)\n");
-                        bReturnVal = true; // disconnect the socket!
+                        success = true; // disconnect the socket!
                     }
                 }
             }
             else {
                 OTLog::vError("Error loading message from envelope "
                               "contents:\n\n%s\n\n",
-                              strEnvelopeContents.Get());
-                bReturnVal = true; // disconnect the socket!
+                              envelopeContents.Get());
+                success = true; // disconnect the socket!
             }
         }
     }
-    str_Reply = resultString;
-    return bReturnVal;
+    return success;
 }
 
 } // namespace
@@ -462,13 +454,13 @@ int main()
     /*    2.2 in wVersion since that is the version we        */
     /*    requested.                                            */
 
-    bool bWinsock =
+    bool winsock =
         (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2);
 
     /* Tell the user that we could not find a usable */
     /* WinSock DLL.                                  */
 
-    if (!bWinsock) WSACleanup(); // do cleanup.
+    if (!winsock) WSACleanup(); // do cleanup.
     OT_ASSERT_MSG((!bWinsock),
                   "Could not find a usable version of Winsock.dll\n");
 
@@ -480,8 +472,8 @@ int main()
 #endif // OT_ZMQ_2_MODE
 
     __ot_server_ the_server_obj;
-    OTServer* pServer = the_server_obj.GetServer();
-    OT_ASSERT(nullptr != pServer);
+    OTServer* server = the_server_obj.GetServer();
+    OT_ASSERT(nullptr != server);
     //    OTString strCAFile, strDHFile, strKeyFile;  //, strSSLPassword;
     //    strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
     // CA_FILE);
@@ -510,7 +502,7 @@ int main()
                       "for a password, to unlock\n"
                       "its private key.\n");
 
-    pServer->Init(); // Keys, etc are loaded here. Assumes main path is set!
+    server->Init(); // Keys, etc are loaded here. Assumes main path is set!
 
     // We're going to listen on the same port that is listed in our server
     // contract.
@@ -518,7 +510,7 @@ int main()
                           // contract.
     int32_t nPort = 0; // The port of this server according to its own contract
 
-    const bool bConnectInfo = pServer->GetConnectInfo(strHostname, nPort);
+    bool bConnectInfo = server->GetConnectInfo(strHostname, nPort);
 
     OT_ASSERT_MSG(bConnectInfo, "server main: Unable to find my own connect "
                                 "info (which SHOULD be in my server contract, "
@@ -526,14 +518,14 @@ int main()
                                 "contract? Have you tried the test password? "
                                 "(\"test\")\n");
 
-    const int32_t nServerPort = nPort;
+    int32_t nServerPort = nPort;
 
     // OT CRON
     //
     // A heartbeat for recurring transactions, such as markets, payment plans,
     // and smart contracts.
 
-    pServer->ActivateCron();
+    server->ActivateCron();
 
     // NOTE: Currently we trigger OT Cron's processing internally, but there's
     // no reason why, in the
@@ -575,7 +567,7 @@ int main()
             OT_FAIL;
         };
         {
-            const OTSocket::Defaults socketDefaults(
+            OTSocket::Defaults socketDefaults(
                 SERVER_DEFAULT_LATENCY_SEND_MS,
                 SERVER_DEFAULT_LATENCY_SEND_NO_TRIES,
                 SERVER_DEFAULT_LATENCY_RECEIVE_MS,
@@ -625,7 +617,7 @@ int main()
         //
         // Internally this is smart enough to know how often to actually
         // activate itself.
-        pServer->ProcessCron();
+        server->ProcessCron();
         // Most often it just returns doing nothing (waiting for its timer.)
         // Wait for client http requests (and process replies out to them.)
         // Number of requests to process per heartbeat:
@@ -643,7 +635,7 @@ int main()
 
         Timer t;
         t.start();
-        const double tick1 = t.getElapsedTimeInMilliSec();
+        double startTick = t.getElapsedTimeInMilliSec();
 
         // PROCESS X NUMBER OF REQUESTS (THIS PULSE.)
         //
@@ -653,7 +645,7 @@ int main()
         //
         for (int32_t i = 0; i < /*10*/ OTServer::GetHeartbeatNoRequests();
              i++) {
-            OTString str_Message;
+            OTString messageString;
 
             // With 100ms heartbeat, receive will try 100 ms, then 200 ms, then
             // 400 ms, total of 700.
@@ -664,21 +656,21 @@ int main()
             // Therefore I will be using a real Timer for Cron, instead of the
             // damn intervals.
             //
-            bool bReceived = socket.Receive(str_Message);
+            bool received = socket.Receive(messageString);
 
-            if (bReceived) {
-                std::string str_Reply;
+            if (received) {
+                std::string reply;
 
-                if (str_Message.GetLength() <= 0) {
+                if (messageString.GetLength() <= 0) {
                     OTLog::Error("server main: Received a message, but of 0 "
                                  "length or less. Weird. (Skipping it.)\n");
                 }
                 else {
-                    const std::string strMsg(str_Message.Get());
-                    const bool bShouldDisconnect =
-                        ProcessMessage(*pServer, strMsg, str_Reply);
+                    std::string strMsg(messageString.Get());
+                    bool shouldDisconnect =
+                        ProcessMessage(*server, strMsg, reply);
 
-                    if ((str_Reply.length() <= 0) || bShouldDisconnect) {
+                    if ((reply.length() <= 0) || shouldDisconnect) {
                         OTLog::vOutput(
                             0, "server main: ERROR: Unfortunately, not every "
                                "client request is "
@@ -689,14 +681,14 @@ int main()
                         socket.Listen();
                     }
                     else {
-                        bool bSuccessSending = socket.Send(str_Reply.c_str());
+                        bool successSending = socket.Send(reply.c_str());
 
-                        if (!bSuccessSending) {
+                        if (!successSending) {
                             OTLog::vError("server main: Socket ERROR: failed "
                                           "while trying to send reply "
                                           "back to client! \n\n "
                                           "MESSAGE:\n%s\n\nREPLY:\n%s\n\n",
-                                          strMsg.c_str(), str_Reply.c_str());
+                                          strMsg.c_str(), reply.c_str());
                         }
                     }
                 }
@@ -712,16 +704,16 @@ int main()
         // processing a message. There could be plenty of dead time in
         // between...)
         //
-        const double tick2 = t.getElapsedTimeInMilliSec();
-        const int64_t elapsed = static_cast<int64_t>(tick2 - tick1);
-        int64_t lSleepMS = 0;
+        double endTick = t.getElapsedTimeInMilliSec();
+        int64_t elapsed = static_cast<int64_t>(endTick - startTick);
+        int64_t sleepMS = 0;
 
         if (elapsed < /*100*/ OTServer::GetHeartbeatMsBetweenBeats()) {
-            lSleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
+            sleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
 
             // Now go to sleep.
             // (The main loop processes ten times per second, currently.)
-            OTLog::SleepMilliseconds(lSleepMS); // 100 ms == (1 second / 10)
+            OTLog::SleepMilliseconds(sleepMS); // 100 ms == (1 second / 10)
         }
 
         // ARTIFICIAL LIMIT:
@@ -737,7 +729,7 @@ int main()
         // to see if OT can handle it. (Not counting optimization of course.)
         //
 
-        if (pServer->IsFlaggedForShutdown()) {
+        if (server->IsFlaggedForShutdown()) {
             OTLog::Output(0, "opentxs server is shutting down gracefully.\n");
             break;
         }
