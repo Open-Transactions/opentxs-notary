@@ -397,6 +397,49 @@ bool ProcessMessage(OTServer& server, const std::string& messageString,
     return false;
 }
 
+void init(OTSocket& socket, int port)
+{
+    OTString configFolderPath = "";
+    if (!OTDataFolder::GetConfigFilePath(configFolderPath)) {
+        OT_FAIL;
+    };
+    OTSettings settings(configFolderPath);
+
+    settings.Reset();
+    if (!settings.Load()) {
+        OT_FAIL;
+    };
+
+    OTSocket::Defaults socketDefaults(
+        SERVER_DEFAULT_LATENCY_SEND_MS, SERVER_DEFAULT_LATENCY_SEND_NO_TRIES,
+        SERVER_DEFAULT_LATENCY_RECEIVE_MS,
+        SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES,
+        SERVER_DEFAULT_LATENCY_DELAY_AFTER, SERVER_DEFAULT_IS_BLOCKING);
+
+    if (!socket.Init(socketDefaults, &settings)) {
+        OT_FAIL;
+    };
+
+    if (!settings.Save()) {
+        OT_FAIL;
+    };
+    settings.Reset();
+
+    if (!socket.NewContext()) {
+        OT_FAIL;
+    };
+
+    if (port == 0) {
+        OT_FAIL;
+    };
+    OTString bindPath;
+    bindPath.Format("%s%d", "tcp://*:", port);
+
+    if (!socket.Listen(bindPath)) {
+        OT_FAIL;
+    };
+}
+
 void run(OTServer* server, OTSocket& socket)
 {
     for (;;) {
@@ -631,53 +674,7 @@ int main()
     };
 
     OTSocket_ZMQ_4 socket;
-
-    {
-        OTString configFolderPath = "";
-        if (!OTDataFolder::GetConfigFilePath(configFolderPath)) {
-            OT_FAIL;
-        };
-        OTSettings settings(configFolderPath);
-
-        settings.Reset();
-        if (!settings.Load()) {
-            OT_FAIL;
-        };
-        {
-            OTSocket::Defaults socketDefaults(
-                SERVER_DEFAULT_LATENCY_SEND_MS,
-                SERVER_DEFAULT_LATENCY_SEND_NO_TRIES,
-                SERVER_DEFAULT_LATENCY_RECEIVE_MS,
-                SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES,
-                SERVER_DEFAULT_LATENCY_DELAY_AFTER, SERVER_DEFAULT_IS_BLOCKING);
-
-            if (!socket.Init(socketDefaults, &settings)) {
-                OT_FAIL;
-            };
-        }
-
-        if (!settings.Save()) {
-            OT_FAIL;
-        };
-        settings.Reset();
-    }
-
-    if (!socket.NewContext()) {
-        OT_FAIL;
-    };
-
-    {
-        if (port == 0) {
-            OT_FAIL;
-        };
-        OTString bindPath;
-        bindPath.Format("%s%d", "tcp://*:", port);
-
-        if (!socket.Listen(bindPath)) {
-            OT_FAIL;
-        };
-    }
-
+    init(socket, port);
     run(server, socket);
 
     return 0;
