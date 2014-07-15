@@ -671,38 +671,17 @@ int main()
         }
 
         // IF the time we had available wasn't all used up -- if some of it is
-        // still
-        // available, then SLEEP until we reach the NEXT PULSE. (In practice, we
-        // will
-        // probably use TOO MUCH time, not too little--but then again OT isn't
-        // ALWAYS
-        // processing a message. There could be plenty of dead time in
-        // between...)
-        //
+        // still available, then SLEEP until we reach the NEXT PULSE. (In
+        // practice, we will probably use TOO MUCH time, not too little--but
+        // then again OT isn't ALWAYS processing a message. There could be
+        // plenty of dead time in between...)
         double endTick = t.getElapsedTimeInMilliSec();
         int64_t elapsed = static_cast<int64_t>(endTick - startTick);
-        int64_t sleepMS = 0;
 
-        if (elapsed < /*100*/ OTServer::GetHeartbeatMsBetweenBeats()) {
-            sleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
-
-            // Now go to sleep.
-            // (The main loop processes ten times per second, currently.)
-            OTLog::SleepMilliseconds(sleepMS); // 100 ms == (1 second / 10)
+        if (elapsed < OTServer::GetHeartbeatMsBetweenBeats()) {
+            int64_t sleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
+            OTLog::SleepMilliseconds(sleepMS);
         }
-
-        // ARTIFICIAL LIMIT:
-        // 10 requests per heartbeat, 10 rounds per second == 100 requests per
-        // second.
-        //
-        // *** ONE HUNDRED CLIENT MESSAGES PER SECOND is the same as:
-        //
-        //     6000 PER MINUTE == 360,000 PER HOUR == 8,640,000 PER DAY***
-        //
-        // Speeding it up is just a matter of adjusting the above numbers, and
-        // LOAD TESTING,
-        // to see if OT can handle it. (Not counting optimization of course.)
-        //
 
         if (server->IsFlaggedForShutdown()) {
             OTLog::Output(0, "opentxs server is shutting down gracefully.\n");
