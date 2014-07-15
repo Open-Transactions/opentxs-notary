@@ -476,8 +476,8 @@ int main()
     /* Add network programming using Winsock here */
     /* then call WSACleanup when done using the Winsock dll */
     OTLog::vOutput(0, "The Winsock 2.2 dll was found okay\n");
-#endif
-#endif
+#endif // _WIN32
+#endif // OT_ZMQ_2_MODE
 
     __ot_server_ the_server_obj;
     OTServer* pServer = the_server_obj.GetServer();
