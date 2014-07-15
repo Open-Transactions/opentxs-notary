@@ -169,7 +169,7 @@ public:
     {
         return m_pServer;
     }
-    __ot_server_() : m_pServer(NULL)
+    __ot_server_() : m_pServer(nullptr)
     {
 // This is optional! (I, of course, am using it in this test app...)
 #if defined(OT_SIGNAL_HANDLING)
@@ -179,12 +179,12 @@ public:
         // assured that any globals and other
         // setup is already done before we instantiate the server object
         // itself.
-        OT_ASSERT_MSG(NULL == m_pServer,
-                      "server main(): ASSERT: NULL == m_pServer.");
+        OT_ASSERT_MSG(nullptr == m_pServer,
+                      "server main(): ASSERT: nullptr == m_pServer.");
         m_pServer = new OTServer;
 
         OT_ASSERT_MSG(
-            NULL != m_pServer,
+            nullptr != m_pServer,
             "server main(): ASSERT: Unable to instantiate OT server.\n");
 
         {
@@ -209,7 +209,7 @@ public:
 
         if (m_pServer) {
             delete m_pServer;
-            m_pServer = NULL;
+            m_pServer = nullptr;
         }
         OTCachedKey::Cleanup();
         OTCrypto::It()->Cleanup();
@@ -481,7 +481,7 @@ int main()
 
     __ot_server_ the_server_obj;
     OTServer* pServer = the_server_obj.GetServer();
-    OT_ASSERT(NULL != pServer);
+    OT_ASSERT(nullptr != pServer);
     //    OTString strCAFile, strDHFile, strKeyFile;  //, strSSLPassword;
     //    strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
     // CA_FILE);
@@ -594,7 +594,7 @@ int main()
 
         if (pSettings) {
             delete pSettings;
-            pSettings = NULL;
+            pSettings = nullptr;
         }
     }
 
