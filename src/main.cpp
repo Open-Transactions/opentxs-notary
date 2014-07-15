@@ -480,20 +480,18 @@ int main()
     server->Init(); // Keys, etc are loaded here. Assumes main path is set!
 
     // We're going to listen on the same port that is listed in our server
-    // contract.
-    OTString strHostname; // The hostname of this server, according to its own
-                          // contract.
-    int32_t nPort = 0; // The port of this server according to its own contract
+    // contract. The hostname of this server, according to its own contract.
+    OTString hostname;
+    // The port of this server according to its own contract
+    int port = 0;
 
-    bool bConnectInfo = server->GetConnectInfo(strHostname, nPort);
+    bool connectInfo = server->GetConnectInfo(hostname, port);
 
-    OT_ASSERT_MSG(bConnectInfo, "server main: Unable to find my own connect "
-                                "info (which SHOULD be in my server contract, "
-                                "BTW.) Perhaps you failed trying to open that "
-                                "contract? Have you tried the test password? "
-                                "(\"test\")\n");
-
-    int32_t nServerPort = nPort;
+    OT_ASSERT_MSG(connectInfo, "server main: Unable to find my own connect "
+                               "info (which SHOULD be in my server contract, "
+                               "BTW.) Perhaps you failed trying to open that "
+                               "contract? Have you tried the test password? "
+                               "(\"test\")\n");
 
     // OT CRON
     //
@@ -520,25 +518,21 @@ int main()
     // triggered -- whereas the way OT is now, at least we know it WILL fire
     // every X seconds.
 
-    // NETWORK
-    //
-    // Prepare our context and listening socket...
-
-    OTSocket_ZMQ_4 socket;
-
     if (!OTDataFolder::IsInitialized()) {
         OT_FAIL;
     };
 
+    OTSocket_ZMQ_4 socket;
+
     {
-        OTString strConfigFolderPath = "";
-        if (!OTDataFolder::GetConfigFilePath(strConfigFolderPath)) {
+        OTString configFolderPath = "";
+        if (!OTDataFolder::GetConfigFilePath(configFolderPath)) {
             OT_FAIL;
         };
-        OTSettings* pSettings(new OTSettings(strConfigFolderPath));
+        OTSettings settings(configFolderPath);
 
-        pSettings->Reset();
-        if (!pSettings->Load()) {
+        settings.Reset();
+        if (!settings.Load()) {
             OT_FAIL;
         };
         {
@@ -549,20 +543,15 @@ int main()
                 SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES,
                 SERVER_DEFAULT_LATENCY_DELAY_AFTER, SERVER_DEFAULT_IS_BLOCKING);
 
-            if (!socket.Init(socketDefaults, pSettings)) {
+            if (!socket.Init(socketDefaults, &settings)) {
                 OT_FAIL;
             };
         }
 
-        if (!pSettings->Save()) {
+        if (!settings.Save()) {
             OT_FAIL;
         };
-        pSettings->Reset();
-
-        if (pSettings) {
-            delete pSettings;
-            pSettings = nullptr;
-        }
+        settings.Reset();
     }
 
     if (!socket.NewContext()) {
@@ -570,13 +559,13 @@ int main()
     };
 
     {
-        if (nServerPort == 0) {
+        if (port == 0) {
             OT_FAIL;
         };
-        OTString strBindPath;
-        strBindPath.Format("%s%d", "tcp://*:", nServerPort);
+        OTString bindPath;
+        bindPath.Format("%s%d", "tcp://*:", port);
 
-        if (!socket.Listen(strBindPath)) {
+        if (!socket.Listen(bindPath)) {
             OT_FAIL;
         };
     }
@@ -617,9 +606,7 @@ int main()
         // Theoretically the "number of requests" that we process EACH PULSE.
         // (The timing code here is still pretty new, need to do some load
         // testing.)
-        //
-        for (int32_t i = 0; i < /*10*/ OTServer::GetHeartbeatNoRequests();
-             i++) {
+        for (int32_t i = 0; i < OTServer::GetHeartbeatNoRequests(); i++) {
             OTString messageString;
 
             // With 100ms heartbeat, receive will try 100 ms, then 200 ms, then
@@ -630,7 +617,6 @@ int main()
             // roll over every 15 heartbeats.
             // Therefore I will be using a real Timer for Cron, instead of the
             // damn intervals.
-            //
             bool received = socket.Receive(messageString);
 
             if (received) {
