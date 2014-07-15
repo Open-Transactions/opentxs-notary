@@ -146,7 +146,6 @@
 
 #include <cassert>
 
-#define SERVER_PATH_DEFAULT "server_data"
 #define SERVER_CONFIG_KEY "server"
 
 #define SERVER_DEFAULT_LATENCY_SEND_MS 5000
