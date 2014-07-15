@@ -180,14 +180,12 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
     OTEnvelope theEnvelope;
 
     if (!theEnvelope.SetAsciiArmoredData(ascMessage)) {
-        OTLog::vError("%s: Error retrieving envelope.\n", __FUNCTION__);
+        OTLog::vError("Error retrieving envelope.\n");
         bReturnVal = true; // disconnect the socket!
     }
     else { // Now the base64 is decoded and the envelope is in binary form
              // again.
-        OTLog::vOutput(
-            2, "%s: Successfully retrieved envelope from ZMQ message...\n",
-            __FUNCTION__);
+        OTLog::vOutput(2, "Successfully retrieved envelope from message.\n");
 
         OTString strEnvelopeContents;
 
@@ -197,7 +195,7 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                                                     // contains the decoded
                                                     // message.
         {
-            OTLog::vError("%s: Unable to open envelope.\n", __FUNCTION__);
+            OTLog::vError("Unable to open envelope.\n");
             bReturnVal = true; // disconnect the socket!
         }
         else {
@@ -233,10 +231,9 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                     const OTString s1(theMsg);
 
                     OTLog::vOutput(
-                        0,
-                        "%s: Unable to process user command: %s\n ********** "
-                        "REQUEST:\n\n%s\n\n",
-                        __FUNCTION__, theMsg.m_strCommand.Get(), s1.Get());
+                        0, "Unable to process user command: %s\n ********** "
+                           "REQUEST:\n\n%s\n\n",
+                        theMsg.m_strCommand.Get(), s1.Get());
 
                     // NOTE: normally you would even HAVE a true or false if
                     // we're in this block. ProcessUserCommand()
@@ -269,9 +266,9 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                 }
                 else // At this point the reply is ready to go, and theClient
                        // has the public key of the recipient...
-                    OTLog::vOutput(
-                        1, "%s: Successfully processed user command: %s.\n",
-                        __FUNCTION__, theMsg.m_strCommand.Get());
+                    OTLog::vOutput(1,
+                                   "Successfully processed user command: %s.\n",
+                                   theMsg.m_strCommand.Get());
 
                 // IF ProcessUserCommand returned true, THEN we process the
                 // message for the recipient.
@@ -294,9 +291,8 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                         theReply, theRecipientEnvelope);
 
                     if (!bSealed) {
-                        OTLog::vOutput(0, "%s: Unable to seal envelope. (No "
-                                          "reply will be sent.)\n",
-                                       __FUNCTION__);
+                        OTLog::vOutput(0, "Unable to seal envelope. (No "
+                                          "reply will be sent.)\n");
                         bReturnVal = true; // disconnect the socket!
                     }
                     else {
@@ -317,22 +313,20 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                                     strOutput.GetLength()); // <==============
                                                             // REPLY ENVELOPE...
                             else {
-                                OTLog::vOutput(0, "%s: Unable to "
+                                OTLog::vOutput(0, "Unable to "
                                                   "WriteArmoredString from "
                                                   "OTASCIIArmor object into "
                                                   "OTString object. (No reply "
-                                                  "envelope will be sent.)\n",
-                                               __FUNCTION__);
+                                                  "envelope will be sent.)\n");
                                 bReturnVal = true; // disconnect the socket!
                             }
                         }
                         else {
-                            OTLog::vOutput(0, "%s: Unable to "
+                            OTLog::vOutput(0, "Unable to "
                                               "GetAsciiArmoredData from sealed "
                                               "envelope into "
                                               "OTASCIIArmor object. (No reply "
-                                              "envelope will be sent.)\n",
-                                           __FUNCTION__);
+                                              "envelope will be sent.)\n");
                             bReturnVal = true; // disconnect the socket!
                         }
                     }
@@ -357,28 +351,26 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                                 strOutput.GetLength()); // <============== REPLY
                                                         // MESSAGE...
                         else {
-                            OTLog::vOutput(0, "%s: Unable to "
+                            OTLog::vOutput(0, "Unable to "
                                               "WriteArmoredString from "
                                               "OTASCIIArmor object into "
                                               "OTString object. (No reply "
-                                              "message will be sent.)\n",
-                                           __FUNCTION__);
+                                              "message will be sent.)\n");
                             bReturnVal = true; // disconnect the socket!
                         }
                     }
                     else {
-                        OTLog::vOutput(0, "%s: Failed trying to grab theReply "
+                        OTLog::vOutput(0, "Failed trying to grab theReply "
                                           "in OTString form. "
-                                          "(No reply message will be sent.)\n",
-                                       __FUNCTION__);
+                                          "(No reply message will be sent.)\n");
                         bReturnVal = true; // disconnect the socket!
                     }
                 }
             }
             else {
-                OTLog::vError("%s: Error loading message from envelope "
+                OTLog::vError("Error loading message from envelope "
                               "contents:\n\n%s\n\n",
-                              __FUNCTION__, strEnvelopeContents.Get());
+                              strEnvelopeContents.Get());
                 bReturnVal = true; // disconnect the socket!
             }
         }
@@ -750,8 +742,7 @@ int32_t main(int32_t, char * [])
         //
 
         if (pServer->IsFlaggedForShutdown()) {
-            OTLog::Output(0,
-                          "main: OT Server is shutting down gracefully....\n");
+            OTLog::Output(0, "opentxs server is shutting down gracefully.\n");
             break;
         }
     }
