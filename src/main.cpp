@@ -180,7 +180,7 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
     OTMessage theMsg, theReply;
     OTEnvelope theEnvelope;
 
-    if (false == theEnvelope.SetAsciiArmoredData(ascMessage)) {
+    if (!theEnvelope.SetAsciiArmoredData(ascMessage)) {
         OTLog::vError("%s: Error retrieving envelope.\n", __FUNCTION__);
         bReturnVal = true; // disconnect the socket!
     }
@@ -193,11 +193,10 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
         OTString strEnvelopeContents;
 
         // Decrypt the Envelope.
-        if (false ==
-            theEnvelope.Open(theServer.GetServerNym(),
-                             strEnvelopeContents)) // now strEnvelopeContents
-                                                   // contains the decoded
-                                                   // message.
+        if (!theEnvelope.Open(theServer.GetServerNym(),
+                              strEnvelopeContents)) // now strEnvelopeContents
+                                                    // contains the decoded
+                                                    // message.
         {
             OTLog::vError("%s: Unable to open envelope.\n", __FUNCTION__);
             bReturnVal = true; // disconnect the socket!
@@ -231,7 +230,7 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                 // reply, I'll
                 // have the key and thus I'll be able to encrypt reply to the
                 // recipient.)
-                if (false == bProcessedUserCmd) {
+                if (!bProcessedUserCmd) {
                     const OTString s1(theMsg);
 
                     OTLog::vOutput(
@@ -295,7 +294,7 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                     const bool bSealed = theClient.SealMessageForRecipient(
                         theReply, theRecipientEnvelope);
 
-                    if (false == bSealed) {
+                    if (!bSealed) {
                         OTLog::vOutput(0, "%s: Unable to seal envelope. (No "
                                           "reply will be sent.)\n",
                                        __FUNCTION__);
@@ -487,7 +486,7 @@ int32_t main(int32_t, char * [])
                 0, "\n\n OT version %s, shutting down and cleaning up.\n",
                 OTLog::Version());
 
-            if (NULL != m_pServer) delete m_pServer;
+            if (m_pServer) delete m_pServer;
             m_pServer = NULL;
             OTCachedKey::Cleanup();
             OTCrypto::It()->Cleanup();
@@ -610,7 +609,7 @@ int32_t main(int32_t, char * [])
         };
         pSettings->Reset();
 
-        if (NULL != pSettings) delete pSettings;
+        if (pSettings) delete pSettings;
         pSettings = NULL;
     }
 
@@ -619,7 +618,7 @@ int32_t main(int32_t, char * [])
     };
 
     {
-        if (0 == nServerPort) {
+        if (nServerPort == 0) {
             OT_FAIL;
         };
         OTString strBindPath;
@@ -706,7 +705,7 @@ int32_t main(int32_t, char * [])
                     else {
                         bool bSuccessSending = pSocket->Send(str_Reply.c_str());
 
-                        if (false == bSuccessSending)
+                        if (!bSuccessSending)
                             OTLog::vError("server main: Socket ERROR: failed "
                                           "while trying to send reply "
                                           "back to client! \n\n "
@@ -757,7 +756,7 @@ int32_t main(int32_t, char * [])
             break;
         }
     }
-    if (NULL != pSocket) delete pSocket;
+    if (pSocket) delete pSocket;
 
     return 0;
 }
