@@ -373,7 +373,7 @@ bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
 
 } // namespace
 
-int32_t main(int32_t, char * [])
+int main()
 {
     if (!OTLog::Init(SERVER_CONFIG_KEY, 0)) {
         assert(false);
