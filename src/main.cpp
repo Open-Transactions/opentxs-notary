@@ -160,6 +160,65 @@ using namespace opentxs;
 namespace
 {
 
+class __ot_server_
+{
+    OTServer* m_pServer;
+
+public:
+    OTServer* GetServer()
+    {
+        return m_pServer;
+    }
+    __ot_server_() : m_pServer(NULL)
+    {
+// This is optional! (I, of course, am using it in this test app...)
+#if defined(OT_SIGNAL_HANDLING)
+        OTLog::SetupSignalHandler();
+#endif
+        // I instantiate this here (instead of globally) so that I am
+        // assured that any globals and other
+        // setup is already done before we instantiate the server object
+        // itself.
+        OT_ASSERT_MSG(NULL == m_pServer,
+                      "server main(): ASSERT: NULL == m_pServer.");
+        m_pServer = new OTServer;
+
+        OT_ASSERT_MSG(
+            NULL != m_pServer,
+            "server main(): ASSERT: Unable to instantiate OT server.\n");
+
+        {
+            bool bSetupPathsSuccess = false;
+            if (!OTDataFolder::Init(SERVER_CONFIG_KEY)) {
+                OT_FAIL;
+            }
+            else {
+                bSetupPathsSuccess = true;
+            }
+            OT_ASSERT_MSG(bSetupPathsSuccess,
+                          "main(): Assert failed: Failed to set OT Path");
+        }
+        OTCrypto::It()->Init();
+    }
+
+    ~__ot_server_()
+    {
+        OTLog::vOutput(0,
+                       "\n\n OT version %s, shutting down and cleaning up.\n",
+                       OTLog::Version());
+
+        if (m_pServer) {
+            delete m_pServer;
+            m_pServer = NULL;
+        }
+        OTCachedKey::Cleanup();
+        OTCrypto::It()->Cleanup();
+#ifdef _WIN32
+        WSACleanup();
+#endif
+    }
+};
+
 bool ProcessMessage(OTServer& theServer, const std::string& str_Message,
                     std::string& str_Reply)
 {
@@ -419,65 +478,6 @@ int main()
     OTLog::vOutput(0, "The Winsock 2.2 dll was found okay\n");
 #endif
 #endif
-
-    class __ot_server_
-    {
-        OTServer* m_pServer;
-
-    public:
-        OTServer* GetServer()
-        {
-            return m_pServer;
-        }
-        __ot_server_() : m_pServer(NULL)
-        {
-// This is optional! (I, of course, am using it in this test app...)
-#if defined(OT_SIGNAL_HANDLING)
-            OTLog::SetupSignalHandler();
-#endif
-            // I instantiate this here (instead of globally) so that I am
-            // assured that any globals and other
-            // setup is already done before we instantiate the server object
-            // itself.
-            OT_ASSERT_MSG(NULL == m_pServer,
-                          "server main(): ASSERT: NULL == m_pServer.");
-            m_pServer = new OTServer;
-
-            OT_ASSERT_MSG(
-                NULL != m_pServer,
-                "server main(): ASSERT: Unable to instantiate OT server.\n");
-
-            {
-                bool bSetupPathsSuccess = false;
-                if (!OTDataFolder::Init(SERVER_CONFIG_KEY)) {
-                    OT_FAIL;
-                }
-                else {
-                    bSetupPathsSuccess = true;
-                }
-                OT_ASSERT_MSG(bSetupPathsSuccess,
-                              "main(): Assert failed: Failed to set OT Path");
-            }
-            OTCrypto::It()->Init();
-        }
-
-        ~__ot_server_()
-        {
-            OTLog::vOutput(
-                0, "\n\n OT version %s, shutting down and cleaning up.\n",
-                OTLog::Version());
-
-            if (m_pServer) {
-                delete m_pServer;
-                m_pServer = NULL;
-            }
-            OTCachedKey::Cleanup();
-            OTCrypto::It()->Cleanup();
-#ifdef _WIN32
-            WSACleanup();
-#endif
-        }
-    };
 
     __ot_server_ the_server_obj;
     OTServer* pServer = the_server_obj.GetServer();
