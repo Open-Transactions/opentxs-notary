@@ -136,11 +136,35 @@
 
 #include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
+#include <opentxs/core/OTString.hpp>
 #include <opentxs/core/OTLog.hpp>
 
 #include <cassert>
 
 using namespace opentxs;
+
+namespace
+{
+
+int getPort(OTServer* server)
+{
+    // We're going to listen on the same port that is listed in our server
+    // contract. The hostname of this server, according to its own contract.
+    OTString hostname;
+    // The port of this server according to its own contract
+    int port = 0;
+
+    bool connectInfo = server->GetConnectInfo(hostname, port);
+
+    OT_ASSERT_MSG(connectInfo, "server main: Unable to find my own connect "
+                               "info (which SHOULD be in my server contract, "
+                               "BTW.) Perhaps you failed trying to open that "
+                               "contract? Have you tried the test password? "
+                               "(\"test\")\n");
+    return port;
+}
+
+} // namespace
 
 int main()
 {
@@ -222,20 +246,6 @@ int main()
 
     server->Init(); // Keys, etc are loaded here. Assumes main path is set!
 
-    // We're going to listen on the same port that is listed in our server
-    // contract. The hostname of this server, according to its own contract.
-    OTString hostname;
-    // The port of this server according to its own contract
-    int port = 0;
-
-    bool connectInfo = server->GetConnectInfo(hostname, port);
-
-    OT_ASSERT_MSG(connectInfo, "server main: Unable to find my own connect "
-                               "info (which SHOULD be in my server contract, "
-                               "BTW.) Perhaps you failed trying to open that "
-                               "contract? Have you tried the test password? "
-                               "(\"test\")\n");
-
     // OT CRON
     //
     // A heartbeat for recurring transactions, such as markets, payment plans,
@@ -264,6 +274,8 @@ int main()
     if (!OTDataFolder::IsInitialized()) {
         OT_FAIL;
     };
+
+    int port = getPort(server);
 
     MessageProcessor processor(server, port);
     processor.run();
