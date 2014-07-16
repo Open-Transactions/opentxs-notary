@@ -73,7 +73,7 @@ if (MSVC)
   option(BUILD_SHARED_LIBS "Build shared libraries (DLLs)." ON)
   add_definitions(-D_UNICODE)
 else()
-  set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic")
+  set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic -Wno-missing-braces")
 endif(MSVC)
 
 message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
