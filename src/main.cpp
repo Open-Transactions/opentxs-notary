@@ -135,36 +135,11 @@
 #include "OTServer.hpp"
 
 #include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTDataFolder.hpp>
-#include <opentxs/core/OTString.hpp>
 #include <opentxs/core/OTLog.hpp>
 
 #include <cassert>
 
 using namespace opentxs;
-
-namespace
-{
-
-int getPort(OTServer* server)
-{
-    // We're going to listen on the same port that is listed in our server
-    // contract. The hostname of this server, according to its own contract.
-    OTString hostname;
-    // The port of this server according to its own contract
-    int port = 0;
-
-    bool connectInfo = server->GetConnectInfo(hostname, port);
-
-    OT_ASSERT_MSG(connectInfo, "server main: Unable to find my own connect "
-                               "info (which SHOULD be in my server contract, "
-                               "BTW.) Perhaps you failed trying to open that "
-                               "contract? Have you tried the test password? "
-                               "(\"test\")\n");
-    return port;
-}
-
-} // namespace
 
 int main()
 {
@@ -176,42 +151,6 @@ int main()
         0, "\n\nWelcome to Open Transactions... Test Server -- version %s\n"
            "(transport build: OTMessage -> OTEnvelope -> ZMQ )\n\n",
         OTLog::Version());
-
-// WINSOCK WINDOWS
-#ifdef OT_ZMQ_2_MODE
-#ifdef _WIN32
-
-    WSADATA wsaData;
-    WORD wVersionRequested = MAKEWORD(2, 2);
-    int32_t err = WSAStartup(wVersionRequested, &wsaData);
-
-    /* Tell the user that we could not find a usable        */
-    /* Winsock DLL.                                            */
-
-    OT_ASSERT_MSG((err == 0), "WSAStartup failed!\n");
-
-    /*    Confirm that the WinSock DLL supports 2.2.            */
-    /*    Note that if the DLL supports versions greater        */
-    /*    than 2.2 in addition to 2.2, it will still return    */
-    /*    2.2 in wVersion since that is the version we        */
-    /*    requested.                                            */
-
-    bool winsock =
-        (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2);
-
-    /* Tell the user that we could not find a usable */
-    /* WinSock DLL.                                  */
-
-    if (!winsock) WSACleanup(); // do cleanup.
-    OT_ASSERT_MSG((!bWinsock),
-                  "Could not find a usable version of Winsock.dll\n");
-
-    /* The Winsock DLL is acceptable. Proceed to use it. */
-    /* Add network programming using Winsock here */
-    /* then call WSACleanup when done using the Winsock dll */
-    OTLog::vOutput(0, "The Winsock 2.2 dll was found okay\n");
-#endif // _WIN32
-#endif // OT_ZMQ_2_MODE
 
     ServerLoader loader;
     OTServer* server = loader.GetServer();
@@ -271,13 +210,7 @@ int main()
     // triggered -- whereas the way OT is now, at least we know it WILL fire
     // every X seconds.
 
-    if (!OTDataFolder::IsInitialized()) {
-        OT_FAIL;
-    };
-
-    int port = getPort(server);
-
-    MessageProcessor processor(server, port);
+    MessageProcessor processor(server, loader.getPort());
     processor.run();
 
     return 0;
