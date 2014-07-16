@@ -143,14 +143,7 @@ using namespace opentxs;
 
 int main()
 {
-    if (!OTLog::Init(SERVER_CONFIG_KEY, 0)) {
-        assert(false);
-    }
-
-    OTLog::vOutput(
-        0, "\n\nWelcome to Open Transactions... Test Server -- version %s\n"
-           "(transport build: OTMessage -> OTEnvelope -> ZMQ )\n\n",
-        OTLog::Version());
+    assert(OTLog::Init(SERVER_CONFIG_KEY, 0));
 
     ServerLoader loader;
     OTServer* server = loader.GetServer();
