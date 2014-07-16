@@ -26,6 +26,7 @@ else()
 endif(MSVC)
    
 set(cxx-sources
+  MessageProcessor.cpp
   OTClientConnection.cpp
   OTServer.cpp
   main.cpp
