@@ -14,8 +14,6 @@ namespace opentxs
 
 class ServerLoader
 {
-    OTServer* server_;
-
 public:
     ServerLoader() : server_(nullptr)
     {
@@ -149,6 +147,9 @@ public:
                       "(\"test\")\n");
         return port;
     }
+
+private:
+    OTServer* server_;
 };
 
 } // namespace opentxs
