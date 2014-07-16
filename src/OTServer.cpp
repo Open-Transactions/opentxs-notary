@@ -367,9 +367,8 @@ bool OTServer::VerifyBasketAccountID(const OTIdentifier& BASKET_ACCOUNT_ID)
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
-    FOR_EACH(mapOfBaskets, m_mapBaskets)
-    {
-        OTString strBasketAcctID = (*it).second.c_str();
+    for (auto& it : m_mapBaskets) {
+        OTString strBasketAcctID = it.second.c_str();
 
         OTIdentifier id_BASKET_ACCT(strBasketAcctID);
 
@@ -391,10 +390,9 @@ bool OTServer::LookupBasketAccountIDByContractID(
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
-    FOR_EACH(mapOfBaskets, m_mapBasketContracts)
-    {
-        OTString strBasketContractID = (*it).first.c_str();
-        OTString strBasketAcctID = (*it).second.c_str();
+    for (auto& it : m_mapBasketContracts) {
+        OTString strBasketContractID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
 
         OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
             id_BASKET_ACCT(strBasketAcctID);
@@ -419,10 +417,9 @@ bool OTServer::LookupBasketContractIDByAccountID(
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
-    FOR_EACH(mapOfBaskets, m_mapBasketContracts)
-    {
-        OTString strBasketContractID = (*it).first.c_str();
-        OTString strBasketAcctID = (*it).second.c_str();
+    for (auto& it : m_mapBasketContracts) {
+        OTString strBasketContractID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
 
         OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
             id_BASKET_ACCT(strBasketAcctID);
@@ -447,10 +444,9 @@ bool OTServer::LookupBasketAccountID(const OTIdentifier& BASKET_ID,
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
-    FOR_EACH(mapOfBaskets, m_mapBaskets)
-    {
-        OTString strBasketID = (*it).first.c_str();
-        OTString strBasketAcctID = (*it).second.c_str();
+    for (auto& it : m_mapBaskets) {
+        OTString strBasketID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
 
         OTIdentifier id_BASKET(strBasketID), id_BASKET_ACCT(strBasketAcctID);
 
@@ -504,9 +500,8 @@ OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
 {
     OTMint* pMint = NULL;
 
-    FOR_EACH(mapOfMints, m_mapMints)
-    {
-        pMint = (*it).second;
+    for (auto& it : m_mapMints) {
+        pMint = it.second;
         OT_ASSERT_MSG(NULL != pMint,
                       "NULL mint pointer in OTServer::GetMint\n");
 
@@ -787,9 +782,8 @@ bool OTServer::RemoveIssuedNumber(OTPseudonym& theNym,
 /// any asset or server contract.
 OTAssetContract* OTServer::GetAssetContract(const OTIdentifier& ASSET_TYPE_ID)
 {
-    FOR_EACH(mapOfContracts, m_mapContracts)
-    {
-        OTAssetContract* pContract = (*it).second;
+    for (auto& it : m_mapContracts) {
+        OTAssetContract* pContract = it.second;
         OT_ASSERT(NULL != pContract);
 
         OTIdentifier theContractID;
@@ -854,9 +848,8 @@ bool OTServer::SaveMainFileToString(OTString& strMainFile)
     // copies of the asset contracts, then here they are.
     // mapOfMints        m_mapMints;          // Mints for each of those.
 
-    FOR_EACH(mapOfContracts, m_mapContracts)
-    {
-        OTContract* pContract = (*it).second;
+    for (auto& it : m_mapContracts) {
+        OTContract* pContract = it.second;
         OT_ASSERT_MSG(NULL != pContract,
                       "NULL contract pointer in OTServer::SaveMainFile.\n");
 
@@ -866,10 +859,9 @@ bool OTServer::SaveMainFileToString(OTString& strMainFile)
 
     // Save the basket account information
 
-    FOR_EACH(mapOfBaskets, m_mapBaskets)
-    {
-        OTString strBasketID = (*it).first.c_str();
-        OTString strBasketAcctID = (*it).second.c_str();
+    for (auto& it : m_mapBaskets) {
+        OTString strBasketID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
 
         const OTIdentifier BASKET_ACCOUNT_ID(strBasketAcctID);
         OTIdentifier BASKET_CONTRACT_ID;
@@ -893,29 +885,6 @@ bool OTServer::SaveMainFileToString(OTString& strMainFile)
     }
 
     m_VoucherAccts.Serialize(strMainFile);
-
-    /*
-    FOR_EACH(mapOfNyms, m_mapNyms)
-    {
-        OTPseudonym * pNym = (*it).second;
-        OT_ASSERT_MSG(NULL != pNym, "NULL pseudonym pointer in
-    OTWallet::m_mapNyms, OTWallet::SaveWallet");
-
-        pNym->SavePseudonymWallet(fl);
-    }
-
-
-
-    FOR_EACH(mapOfServers, m_mapServers)
-    {
-        OTContract * pServer = (*it).second;
-        OT_ASSERT_MSG(NULL != pServer, "NULL server pointer in
-    OTWallet::m_mapServers, OTWallet::SaveWallet");
-
-        pServer->SaveContractWallet(fl);
-    }
-
-    */
 
     strMainFile.Concatenate("</notaryServer>\n");
 
@@ -2706,9 +2675,8 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym& theNym, OTMessage& MsgIn,
         std::set<int64_t> theList;
         theNumlist.Output(theList);
 
-        FOR_EACH(std::set<int64_t>, theList)
-        {
-            const int64_t lTransNum = *it;
+        for (auto& it : theList) {
+            const int64_t lTransNum = it;
             RemoveTransactionNumber(theNym, lTransNum, false); // bSave=false
             RemoveIssuedNumber(theNym, lTransNum, false); // I'll drop it in his
                                                           // Nymbox -- he can
@@ -12375,9 +12343,8 @@ void OTServer::UserCmdNotarizeTransactions(OTPseudonym& theNym,
         // get too big IMO.
         //
         int32_t nCounter = 0;
-        FOR_EACH(mapOfTransactions, theLedger.GetTransactionMap())
-        {
-            OTTransaction* pTransaction = (*it).second;
+        for (auto& it : theLedger.GetTransactionMap()) {
+            OTTransaction* pTransaction = it.second;
             OT_ASSERT(NULL != pTransaction);
             ++nCounter;
 
@@ -13164,13 +13131,12 @@ void OTServer::UserCmdQueryAssetTypes(OTPseudonym&, OTMessage& MsgIn,
             std::map<std::string, std::string>& theMap = pMap->the_map;
             std::map<std::string, std::string> theNewMap;
 
-            FOR_EACH(mapOfStrings, theMap)
-            {
+            for (auto& it : theMap) {
                 const std::string& str1 =
-                    (*it).first; // Containing the asset type ID.
+                    it.first; // Containing the asset type ID.
                 const std::string& str2 =
-                    (*it).second; // Containing the phrase "exists". (More are
-                                  // possible in the future.)
+                    it.second; // Containing the phrase "exists". (More are
+                               // possible in the future.)
 
                 // todo security: limit on length of this map? (sent through
                 // user message...)
@@ -13191,7 +13157,7 @@ void OTServer::UserCmdQueryAssetTypes(OTPseudonym&, OTMessage& MsgIn,
                     else
                         theNewMap[str1] = "false";
                 }
-            } // FOR_EACH
+            }
 
             // Replace contents of old map with contents of new map.
             //
@@ -14238,9 +14204,8 @@ void OTServer::UserCmdProcessNymbox(OTPseudonym& theNym, OTMessage& MsgIn,
             // client.
             pResponseLedger->AddTransaction(*pTranResponse);
         }
-        FOR_EACH(mapOfTransactions, theLedger.GetTransactionMap())
-        {
-            OTTransaction* pTransaction = (*it).second;
+        for (auto& it : theLedger.GetTransactionMap()) {
+            OTTransaction* pTransaction = it.second;
             OT_ASSERT_MSG(
                 NULL != pTransaction,
                 "NULL transaction pointer in OTServer::UserCmdProcessNymbox\n");
@@ -14498,9 +14463,8 @@ void OTServer::NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
 
         bool bSuccessFindingAllTransactions = true;
 
-        FOR_EACH(listOfItems, tranIn.GetItemList())
-        {
-            pItem = *it;
+        for (auto& it : tranIn.GetItemList()) {
+            pItem = it;
             OT_ASSERT_MSG(NULL != pItem, "Pointer should not have been NULL.");
 
             if (pItem->GetType() == OTItem::acceptTransaction) {
@@ -14542,9 +14506,8 @@ void OTServer::NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
                         // blank transaction.
                         // (There's probably 20 of them.)
                         //
-                        FOR_EACH(std::set<int64_t>, theNumbers)
-                        {
-                            const int64_t lTransactionNumber = *it;
+                        for (auto& it : theNumbers) {
+                            const int64_t lTransactionNumber = it;
                             // (We don't add it if it's already there.)
                             //
                             if (false ==
@@ -14649,9 +14612,8 @@ void OTServer::NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
             // add them
             // to the Nym, and remove them from the Nymbox, as appropriate.
             //
-            FOR_EACH(listOfItems, tranIn.GetItemList())
-            {
-                pItem = *it;
+            for (auto& it : tranIn.GetItemList()) {
+                pItem = it;
                 OT_ASSERT_MSG(NULL != pItem,
                               "Pointer should not have been NULL.");
 
@@ -15546,8 +15508,7 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
         bool bSuccessFindingAllTransactions = true;
         int64_t lTotalBeingAccepted = 0;
 
-        FOR_EACH_IT(listOfItems, tranIn.GetItemList(), it_bigloop)
-        {
+        for (auto& it_bigloop : tranIn.GetItemList()) {
             //          OTLog::Error("OTServer::NotarizeProcessInbox: TOP OF
             // LOOP (of the item list on the incoming transaction) \n");
             //
@@ -15555,7 +15516,7 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
             // ==========> =======> Inbox Receipt Count: %d \n",
             //                        pInbox->GetTransactionCount());
 
-            pItem = *it_bigloop;
+            pItem = it_bigloop;
             OT_ASSERT_MSG(NULL != pItem, "Pointer should not have been NULL.");
             OTTransaction* pServerTransaction = NULL;
 
@@ -15741,9 +15702,8 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                                                        // unique IDs (no
                                                        // repeats.)
 
-                    FOR_EACH(listOfItems, tranIn.GetItemList())
-                    {
-                        OTItem* pItemPointer = *it;
+                    for (auto& it : tranIn.GetItemList()) {
+                        OTItem* pItemPointer = it;
                         OT_ASSERT_MSG(NULL != pItemPointer,
                                       "Pointer should not have been NULL.");
 
@@ -16122,9 +16082,8 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
 
                 // loop through the items that make up the incoming transaction
                 //
-                FOR_EACH_IT(listOfItems, tranIn.GetItemList(), it_bigloop_two)
-                {
-                    pItem = *it_bigloop_two;
+                for (auto& it_bigloop_two : tranIn.GetItemList()) {
+                    pItem = it_bigloop_two;
                     OT_ASSERT_MSG(NULL != pItem,
                                   "Pointer should not have been NULL.");
 
@@ -17469,10 +17428,9 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                                                   "saving public credential "
                                                   "list for Nym: %s\n",
                                                str_nym_id.c_str());
-                                FOR_EACH(mapOfStrings, theMap)
-                                {
-                                    std::string str_cred_id = (*it).first;
-                                    OTString strCredential((*it).second);
+                                for (auto& it : theMap) {
+                                    std::string str_cred_id = it.first;
+                                    OTString strCredential(it.second);
                                     bool bStoredCredential = false;
                                     strOutput.Release();
                                     OTASCIIArmor ascLoopArmor(strCredential);
@@ -17500,8 +17458,8 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                                                           "public credential "
                                                           "ID: %s\n",
                                                        str_cred_id.c_str());
-                                } // FOR_EACH
-                            }     // else (bStoredList)
+                                }
+                            } // else (bStoredList)
                             // Make sure we are encrypting the message we send
                             // back, if possible.
                             //
@@ -18110,9 +18068,8 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLedger theNymbox(pNym->GetConstID(), pNym->GetConstID(), SERVER_ID);
 
         if (theNymbox.LoadNymbox() && theNymbox.VerifySignature(m_nymServer)) {
-            FOR_EACH(std::set<int64_t>, numlist_ack_reply)
-            {
-                const int64_t lRequestNum = *it;
+            for (auto& it : numlist_ack_reply) {
+                const int64_t lRequestNum = it;
                 // If the # already appears on its internal list, then it does
                 // nothing. (It must have already done
                 // whatever it needed to do, since it already has the number
@@ -18166,7 +18123,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                     }
                 } // If server didn't already have a record of this acknowledged
                   // request #.
-            }     // FOR_EACH
+            }
 
             if (bIsDirtyNymbox) {
                 theNymbox.ReleaseSignatures();
@@ -18212,9 +18169,8 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         if (numlist_to_remove.Count() > 0) {
             std::set<int64_t> set_server_ack;
             if (numlist_to_remove.Output(set_server_ack)) {
-                FOR_EACH(std::set<int64_t>, set_server_ack)
-                {
-                    const int64_t lRequestNum = *it;
+                for (auto& it : set_server_ack) {
+                    const int64_t lRequestNum = it;
                     if (pNym->RemoveAcknowledgedNum(m_nymServer, m_strServerID,
                                                     lRequestNum,
                                                     false)) // bSave=false
