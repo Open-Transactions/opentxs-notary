@@ -133,26 +133,27 @@
 #ifndef __OPENTXS_MESSAGEPROCESSOR_HPP__
 #define __OPENTXS_MESSAGEPROCESSOR_HPP__
 
+#include <opentxs/ext/Socket_ZMQ4.hpp>
 #include <string>
 
 namespace opentxs
 {
 
 class OTServer;
-class OTSocket;
 
 class MessageProcessor
 {
 public:
-    MessageProcessor(OTServer* server, OTSocket& socket);
+    MessageProcessor(OTServer* server, int port);
     void run();
 
 private:
+    void init(int port);
     bool processMessage(const std::string& messageString, std::string& reply);
 
 private:
     OTServer* server_;
-    OTSocket& socket_;
+    OTSocket_ZMQ_4 socket_;
 };
 
 } // namespace opentxs

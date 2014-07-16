@@ -143,18 +143,10 @@
 #include <opentxs/core/OTMessage.hpp>
 #include <opentxs/core/OTPaths.hpp>
 #include <opentxs/core/Timer.hpp>
-#include <opentxs/ext/Socket_ZMQ4.hpp>
 
 #include <cassert>
 
 #define SERVER_CONFIG_KEY "server"
-
-#define SERVER_DEFAULT_LATENCY_SEND_MS 5000
-#define SERVER_DEFAULT_LATENCY_SEND_NO_TRIES 2
-#define SERVER_DEFAULT_LATENCY_RECEIVE_MS 5000
-#define SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES 2
-#define SERVER_DEFAULT_LATENCY_DELAY_AFTER 50
-#define SERVER_DEFAULT_IS_BLOCKING false
 
 using namespace opentxs;
 
@@ -219,49 +211,6 @@ public:
 #endif
     }
 };
-
-void init(OTSocket& socket, int port)
-{
-    OTString configFolderPath = "";
-    if (!OTDataFolder::GetConfigFilePath(configFolderPath)) {
-        OT_FAIL;
-    };
-    OTSettings settings(configFolderPath);
-
-    settings.Reset();
-    if (!settings.Load()) {
-        OT_FAIL;
-    };
-
-    OTSocket::Defaults socketDefaults(
-        SERVER_DEFAULT_LATENCY_SEND_MS, SERVER_DEFAULT_LATENCY_SEND_NO_TRIES,
-        SERVER_DEFAULT_LATENCY_RECEIVE_MS,
-        SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES,
-        SERVER_DEFAULT_LATENCY_DELAY_AFTER, SERVER_DEFAULT_IS_BLOCKING);
-
-    if (!socket.Init(socketDefaults, &settings)) {
-        OT_FAIL;
-    };
-
-    if (!settings.Save()) {
-        OT_FAIL;
-    };
-    settings.Reset();
-
-    if (!socket.NewContext()) {
-        OT_FAIL;
-    };
-
-    if (port == 0) {
-        OT_FAIL;
-    };
-    OTString bindPath;
-    bindPath.Format("%s%d", "tcp://*:", port);
-
-    if (!socket.Listen(bindPath)) {
-        OT_FAIL;
-    };
-}
 
 } // namespace
 
@@ -388,10 +337,7 @@ int main()
         OT_FAIL;
     };
 
-    OTSocket_ZMQ_4 socket;
-    init(socket, port);
-
-    MessageProcessor processor(server, socket);
+    MessageProcessor processor(server, port);
     processor.run();
 
     return 0;

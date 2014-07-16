@@ -137,15 +137,69 @@
 #include <opentxs/core/OTMessage.hpp>
 #include <opentxs/core/OTEnvelope.hpp>
 #include <opentxs/core/Timer.hpp>
+#include <opentxs/core/OTString.hpp>
+#include <opentxs/core/OTSettings.hpp>
+#include <opentxs/core/OTDataFolder.hpp>
 #include <opentxs/ext/OTSocket.hpp>
 
 namespace opentxs
 {
 
-MessageProcessor::MessageProcessor(OTServer* server, OTSocket& socket)
+#define SERVER_DEFAULT_LATENCY_SEND_MS 5000
+#define SERVER_DEFAULT_LATENCY_SEND_NO_TRIES 2
+#define SERVER_DEFAULT_LATENCY_RECEIVE_MS 5000
+#define SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES 2
+#define SERVER_DEFAULT_LATENCY_DELAY_AFTER 50
+#define SERVER_DEFAULT_IS_BLOCKING false
+
+MessageProcessor::MessageProcessor(OTServer* server, int port)
     : server_(server)
-    , socket_(socket)
+    , socket_()
 {
+    init(port);
+}
+
+void MessageProcessor::init(int port)
+{
+    OTString configFolderPath = "";
+    if (!OTDataFolder::GetConfigFilePath(configFolderPath)) {
+        OT_FAIL;
+    }
+    OTSettings settings(configFolderPath);
+
+    settings.Reset();
+    if (!settings.Load()) {
+        OT_FAIL;
+    }
+
+    OTSocket::Defaults socketDefaults(
+        SERVER_DEFAULT_LATENCY_SEND_MS, SERVER_DEFAULT_LATENCY_SEND_NO_TRIES,
+        SERVER_DEFAULT_LATENCY_RECEIVE_MS,
+        SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES,
+        SERVER_DEFAULT_LATENCY_DELAY_AFTER, SERVER_DEFAULT_IS_BLOCKING);
+
+    if (!socket_.Init(socketDefaults, &settings)) {
+        OT_FAIL;
+    }
+
+    if (!settings.Save()) {
+        OT_FAIL;
+    }
+    settings.Reset();
+
+    if (!socket_.NewContext()) {
+        OT_FAIL;
+    }
+
+    if (port == 0) {
+        OT_FAIL;
+    }
+    OTString bindPath;
+    bindPath.Format("%s%d", "tcp://*:", port);
+
+    if (!socket_.Listen(bindPath)) {
+        OT_FAIL;
+    }
 }
 
 void MessageProcessor::run()
