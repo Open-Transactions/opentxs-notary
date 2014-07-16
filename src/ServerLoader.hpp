@@ -25,9 +25,8 @@ public:
     ServerLoader() : server_(nullptr)
     {
         OTLog::vOutput(
-            0,
-            "\n\nWelcome to Open Transactions... Test Server -- version %s\n"
-            "(transport build: OTMessage -> OTEnvelope -> ZMQ )\n\n",
+            0, "\n\nWelcome to Open Transactions... Test Server -- version %s\n"
+               "(transport build: OTMessage -> OTEnvelope -> ZMQ )\n\n",
             OTLog::Version());
 // WINSOCK WINDOWS
 #ifdef OT_ZMQ_2_MODE

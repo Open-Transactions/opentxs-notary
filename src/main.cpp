@@ -172,17 +172,13 @@ int main()
     //  is only one server he can connect to, and one key he can use to talk to
     // it.)
     //
-    OTLog::vOutput(0, "\nNow loading the server nym, which will also ask you "
-                      "for a password, to unlock\n"
-                      "its private key.\n");
-
-    server->Init(); // Keys, etc are loaded here. Assumes main path is set!
+    // Keys, etc are loaded here. Assumes main path is set!
+    server->Init();
 
     // OT CRON
     //
     // A heartbeat for recurring transactions, such as markets, payment plans,
     // and smart contracts.
-
     server->ActivateCron();
 
     // NOTE: Currently we trigger OT Cron's processing internally, but there's
