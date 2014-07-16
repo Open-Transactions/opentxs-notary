@@ -132,17 +132,12 @@
 
 #include "MessageProcessor.hpp"
 #include "OTServer.hpp"
-#include "OTClientConnection.hpp"
 
 #include <opentxs/core/OTCachedKey.hpp>
 #include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTCrypto.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
-#include <opentxs/core/OTEnvelope.hpp>
 #include <opentxs/core/OTLog.hpp>
-#include <opentxs/core/OTMessage.hpp>
-#include <opentxs/core/OTPaths.hpp>
-#include <opentxs/core/Timer.hpp>
 
 #include <cassert>
 
