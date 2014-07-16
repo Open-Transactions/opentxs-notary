@@ -17,11 +17,6 @@ class ServerLoader
     OTServer* server_;
 
 public:
-    OTServer* GetServer()
-    {
-        return server_;
-    }
-
     ServerLoader() : server_(nullptr)
     {
         OTLog::vOutput(
@@ -96,6 +91,22 @@ public:
             }
         }
         OTCrypto::It()->Init();
+
+        // OTServer::Init loads up server's nym so it can decrypt messages sent
+        // in envelopes. It also does various other initialization work.
+        //
+        // NOTE: Envelopes prove that ONLY someone who actually had the server
+        // contract, and had loaded it into his wallet, could ever connect to
+        // the server or communicate with it. And if that person is following
+        // the contract, there is only one server he can connect to, and one
+        // key he can use to talk to it.
+        //
+        // Keys, etc are loaded here. Assumes main path is set!
+        server_->Init();
+
+        // A heartbeat for recurring transactions, such as markets, payment
+        // plans, and smart contracts.
+        server_->ActivateCron();
     }
 
     ~ServerLoader()
@@ -113,6 +124,11 @@ public:
 #ifdef _WIN32
         WSACleanup();
 #endif
+    }
+
+    OTServer* getServer()
+    {
+        return server_;
     }
 
     int getPort()

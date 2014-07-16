@@ -130,6 +130,7 @@
  -----END PGP SIGNATURE-----
  **************************************************************/
 
+#include "ServerLoader.hpp"
 #include "MessageProcessor.hpp"
 #include "OTServer.hpp"
 #include "OTClientConnection.hpp"
@@ -152,11 +153,11 @@ namespace opentxs
 #define SERVER_DEFAULT_LATENCY_DELAY_AFTER 50
 #define SERVER_DEFAULT_IS_BLOCKING false
 
-MessageProcessor::MessageProcessor(OTServer* server, int port)
-    : server_(server)
+MessageProcessor::MessageProcessor(ServerLoader& loader)
+    : server_(loader.getServer())
     , socket_()
 {
-    init(port);
+    init(loader.getPort());
 }
 
 void MessageProcessor::init(int port)

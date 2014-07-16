@@ -132,74 +132,17 @@
 
 #include "ServerLoader.hpp"
 #include "MessageProcessor.hpp"
-#include "OTServer.hpp"
-
-#include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTLog.hpp>
-
 #include <cassert>
-
-using namespace opentxs;
 
 int main()
 {
+    using namespace opentxs;
+
     assert(OTLog::Init(SERVER_CONFIG_KEY, 0));
 
     ServerLoader loader;
-    OTServer* server = loader.GetServer();
-
-    //    OTString strCAFile, strDHFile, strKeyFile;  //, strSSLPassword;
-    //    strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
-    // CA_FILE);
-    //    strDHFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
-    // DH_FILE);
-    //    strKeyFile.Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),
-    // KEY_FILE);
-    //
-    // UPDATE: This was moved to OTLog::OT_Init(), which is called above, by the
-    // nested cleanup class.
-    //
-    // Initialize SSL -- This MUST occur before any Private Keys are loaded!
-    //    SSL_library_init();
-    //    SSL_load_error_strings();
-
-    // OTServer::Init loads up server's nym so it can decrypt messages sent in
-    // envelopes. It also does various other initialization work.
-    //
-    // (Envelopes prove that ONLY someone who actually had the server contract,
-    //  and had loaded it into his wallet, could ever connect to the server or
-    //  communicate with it. And if that person is following the contract, there
-    //  is only one server he can connect to, and one key he can use to talk to
-    // it.)
-    //
-    // Keys, etc are loaded here. Assumes main path is set!
-    server->Init();
-
-    // OT CRON
-    //
-    // A heartbeat for recurring transactions, such as markets, payment plans,
-    // and smart contracts.
-    server->ActivateCron();
-
-    // NOTE: Currently we trigger OT Cron's processing internally, but there's
-    // no reason why, in the
-    // future, we can't make an actual cron job that triggers a script, that
-    // fires a message
-    // to OT, causing OT to process its Cron (even if we were single-threaded we
-    // could do this...)
-    //
-    // Have to put some thought into it...
-    //
-    // Wouldn't require much security, since OT can still be smart enough not to
-    // process cron any
-    // more often than X minutes, no matter HOW many times the ProcessCron
-    // script fires.
-    // Thing is, though, that with this setup, we can't really guarantee that
-    // cron will EVER be
-    // triggered -- whereas the way OT is now, at least we know it WILL fire
-    // every X seconds.
-
-    MessageProcessor processor(server, loader.getPort());
+    MessageProcessor processor(loader);
     processor.run();
 
     return 0;

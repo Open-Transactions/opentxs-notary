@@ -139,12 +139,13 @@
 namespace opentxs
 {
 
+class ServerLoader;
 class OTServer;
 
 class MessageProcessor
 {
 public:
-    MessageProcessor(OTServer* server, int port);
+    explicit MessageProcessor(ServerLoader& loader);
     void run();
 
 private:
