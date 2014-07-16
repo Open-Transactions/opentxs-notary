@@ -189,8 +189,8 @@ int main()
 #endif // _WIN32
 #endif // OT_ZMQ_2_MODE
 
-    __ot_server_ the_server_obj;
-    OTServer* server = the_server_obj.GetServer();
+    ServerLoader loader;
+    OTServer* server = loader.GetServer();
 
     //    OTString strCAFile, strDHFile, strKeyFile;  //, strSSLPassword;
     //    strCAFile. Format("%s%s%s", OTLog::Path(), OTLog::PathSeparator(),

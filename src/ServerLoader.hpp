@@ -12,7 +12,7 @@
 namespace opentxs
 {
 
-class __ot_server_
+class ServerLoader
 {
     OTServer* server_;
 
@@ -22,7 +22,7 @@ public:
         return server_;
     }
 
-    __ot_server_() : server_(nullptr)
+    ServerLoader() : server_(nullptr)
     {
 // This is optional! (I, of course, am using it in this test app...)
 #if defined(OT_SIGNAL_HANDLING)
@@ -54,7 +54,7 @@ public:
         OTCrypto::It()->Init();
     }
 
-    ~__ot_server_()
+    ~ServerLoader()
     {
         OTLog::vOutput(0,
                        "\n\n OT version %s, shutting down and cleaning up.\n",
