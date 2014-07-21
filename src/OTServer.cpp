@@ -1300,7 +1300,7 @@ void OTServer::Release_Server()
     //
     while (!m_mapContracts.empty()) {
         mapOfContracts::iterator it = m_mapContracts.begin();
-        OTAssetContract* pContract = (*it).second;
+        OTAssetContract* pContract = it->second;
         OT_ASSERT(NULL != pContract);
         m_mapContracts.erase(it);
         delete pContract;
@@ -1310,7 +1310,7 @@ void OTServer::Release_Server()
     //
     while (!m_mapMints.empty()) {
         mapOfMints::iterator it = m_mapMints.begin();
-        OTMint* pMint = (*it).second;
+        OTMint* pMint = it->second;
         OT_ASSERT(NULL != pMint);
         m_mapMints.erase(it);
         delete pMint;
