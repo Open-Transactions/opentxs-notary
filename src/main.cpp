@@ -139,7 +139,9 @@ int main()
 {
     using namespace opentxs;
 
-    assert(OTLog::Init(SERVER_CONFIG_KEY, 0));
+    if (!OTLog::Init(SERVER_CONFIG_KEY, 0)) {
+        assert(false);
+    }
 
     ServerLoader loader;
     MessageProcessor processor(loader);

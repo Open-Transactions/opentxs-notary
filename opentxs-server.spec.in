@@ -7,7 +7,6 @@ License:        AGPL
 Group:          Productivity/Networking/Other
 Vendor:         @CPACK_PACKAGE_VENDOR@
 Prefix:         @CPACK_PACKAGING_INSTALL_PREFIX@
-Requires:       opentxs
 
 %define _rpmdir @CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM
 %define _rpmfilename @CPACK_PACKAGE_FILE_NAME@.rpm
