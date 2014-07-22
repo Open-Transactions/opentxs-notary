@@ -159,9 +159,13 @@
 #include <opentxs/core/OTSmartContract.hpp>
 #include <opentxs/core/OTToken.hpp>
 #include <opentxs/core/OTTrade.hpp>
+#include <opentxs/core/OTCleanup.hpp>
 
 #include <irrxml/irrXML.hpp>
 
+#include <string>
+#include <map>
+#include <list>
 #include <fstream>
 
 #include <time.h>
@@ -177,6 +181,9 @@
 
 namespace opentxs
 {
+
+typedef std::list<OTAccount*> listOfAccounts;
+typedef std::map<std::string, std::string> mapOfStrings;
 
 typedef std::deque<OTToken*> dequeOfTokenPtrs;
 
@@ -3241,8 +3248,7 @@ void OTServer::UserCmdCheckUser(OTPseudonym&, OTMessage& MsgIn,
                 nym2.GetPublicCredentials(strCredList, &theMap);
                 // Serialize the StringMap to a string...
                 //
-                if (theMap.size() >
-                    0) // Won't bother if there are zero credentials somehow.
+                if (!theMap.empty()) // Won't bother if zero credentials
                 {
                     std::string str_Encoded = OTDB::EncodeObject(*pMap);
                     const bool bSuccessEncoding = (str_Encoded.size() > 0);
