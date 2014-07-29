@@ -7,6 +7,13 @@
 #include <opentxs/core/OTCrypto.hpp>
 #include <opentxs/core/OTLog.hpp>
 
+extern "C" {
+#ifdef _WIN32
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#endif
+}
+
 #define SERVER_CONFIG_KEY "server"
 
 namespace opentxs
