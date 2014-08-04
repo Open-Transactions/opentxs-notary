@@ -1339,11 +1339,10 @@ void OTServer::Release_Server()
         OTString strPIDPath;
         OTPaths::AppendFile(strPIDPath, strDataPath, SERVER_PID_FILENAME);
 
-        uint32_t the_pid = 0;
-
         std::ofstream pid_outfile(strPIDPath.Get());
 
         if (pid_outfile.is_open()) {
+            uint32_t the_pid = 0;
             pid_outfile << the_pid;
             pid_outfile.close();
         }
@@ -3541,9 +3540,7 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
                                              strFilename, MsgIn.m_strAssetID);
 
         OTIdentifier ASSET_USER_ID;
-        bool bSuccessLoadingContract = false;
         bool bSuccessCalculateDigest = false;
-        OTPseudonym* pNym = NULL;
 
         if (NULL == pAssetContract) {
             OTLog::vOutput(0, "%s: Failed trying to instantiate asset "
@@ -3552,7 +3549,7 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
         }
         else // success instantiating contract.
         {
-            bSuccessLoadingContract =
+            bool bSuccessLoadingContract =
                 pAssetContract->LoadContractFromString(strContract);
 
             if (!bSuccessLoadingContract) {
@@ -3570,8 +3567,9 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
             }
             else // success loading contract from string.
             {
-                pNym = (OTPseudonym*)pAssetContract
-                           ->GetContractPublicNym(); // todo fix this cast.
+                // todo fix this cast.
+                OTPseudonym* pNym =
+                    (OTPseudonym*)pAssetContract->GetContractPublicNym();
 
                 if (NULL == pNym) {
                     OTLog::vOutput(0, "%s: Failed trying to retrieve Issuer's "
@@ -4170,8 +4168,6 @@ void OTServer::UserCmdIssueBasket(OTPseudonym& theNym, OTMessage& MsgIn,
 void OTServer::UserCmdCreateAccount(OTPseudonym& theNym, OTMessage& MsgIn,
                                     OTMessage& msgOut)
 {
-    const char* szFunc = "OTServer::UserCmdCreateAccount";
-
     // (1) set up member variables
     msgOut.m_strCommand = "@createAccount"; // reply to createAccount
     msgOut.m_strNymID = MsgIn.m_strNymID;   // UserID
@@ -4191,6 +4187,7 @@ void OTServer::UserCmdCreateAccount(OTPseudonym& theNym, OTMessage& MsgIn,
     // If we successfully create the account, then bundle it in the message XML
     // payload
     if (NULL != pNewAccount) {
+        const char* szFunc = "OTServer::UserCmdCreateAccount";
         OTAssetContract* pContract =
             GetAssetContract(pNewAccount->GetAssetTypeID());
 
@@ -17807,10 +17804,6 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
     bool bIsDirtyNym = false; // if we add any acknowledged replies to the
                               // server-side list, we will want to save (at the
                               // end.)
-    bool bIsDirtyNymbox = false; // if we remove any replyNotices from the
-                                 // Nymbox, then we will want to save the Nymbox
-                                 // (at the end.)
-
     std::set<int64_t> numlist_ack_reply;
     if (theMessage.m_AcknowledgedReplies.Output(
             numlist_ack_reply)) // returns false if the numlist was empty.
@@ -17820,6 +17813,10 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLedger theNymbox(pNym->GetConstID(), pNym->GetConstID(), SERVER_ID);
 
         if (theNymbox.LoadNymbox() && theNymbox.VerifySignature(m_nymServer)) {
+            // if we remove any replyNotices from the Nymbox, then we will want
+            // to save the Nymbox (at the end.)
+            bool bIsDirtyNymbox = false;
+
             for (auto& it : numlist_ack_reply) {
                 const int64_t lRequestNum = it;
                 // If the # already appears on its internal list, then it does
