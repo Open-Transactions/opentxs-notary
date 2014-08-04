@@ -391,16 +391,13 @@ void OTClientConnection::ProcessMessage(u_header& theCMD)
 {
     bool bSuccess = false;
 
-    OTMessage* pMsg = NULL;
-
     if (theCMD.fields.type_id == CMD_TYPE_1) {
         OTLog::Output(2, "Received a Type 1 Command...\n");
 
         if (IsChecksumValid(theCMD.buf, OT_CMD_HEADER_SIZE)) {
             OTLog::Output(2, "Checksum is valid! Processing payload.\n");
 
-            pMsg = new OTMessage;
-
+            OTMessage* pMsg = new OTMessage;
             if (ProcessType1Cmd(theCMD, *pMsg)) {
                 AddToInputList(*pMsg);
                 bSuccess = true;
