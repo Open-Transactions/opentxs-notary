@@ -135,7 +135,6 @@
 
 #include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTAccount.hpp>
-#include <opentxs/core/OTAcctFunctor.hpp>
 #include <opentxs/core/OTAcctList.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/OTCron.hpp>
@@ -625,76 +624,6 @@ public:
     void NotarizePayDividend(OTPseudonym& theNym, OTAccount& theAccount,
                              OTTransaction& tranIn, OTTransaction& tranOut,
                              bool& bOutSuccess);
-};
-
-// Note: from OTAssetContract.h and .cpp.
-// This is a subclass of OTAcctFunctor, which is used whenever OTAssetContract
-// needs to
-// loop through all the accounts for a given asset type (its own.) This subclass
-// needs to
-// call OTServer method to do its job, so it can't be defined in otlib, but must
-// be defined
-// here in otserver (so it can see the methods that it needs...)
-//
-class OTAcctFunctor_PayDividend : public OTAcctFunctor
-{
-    OTIdentifier* m_pUserID;
-    OTIdentifier* m_pPayoutAssetID;
-    OTIdentifier* m_pVoucherAcctID;
-    OTString* m_pstrMemo; // contains the original payDividend item from the
-                          // payDividend transaction request. (Stored in the
-                          // memo field for each voucher.)
-    OTServer* m_pServer;  // no need to cleanup. It's here for convenience only.
-    int64_t m_lPayoutPerShare;
-    int64_t m_lAmountPaidOut;  // as we pay each voucher out, we keep a running
-                               // count.
-    int64_t m_lAmountReturned; // as we pay each voucher out, we keep a running
-                               // count.
-
-public:
-    OTAcctFunctor_PayDividend(const OTIdentifier& theServerID,
-                              const OTIdentifier& theUserID,
-                              const OTIdentifier& thePayoutAssetID,
-                              const OTIdentifier& theVoucherAcctID,
-                              const OTString& strMemo, OTServer& theServer,
-                              int64_t lPayoutPerShare,
-                              mapOfAccounts* pLoadedAccounts = NULL);
-    virtual ~OTAcctFunctor_PayDividend();
-
-    OTIdentifier* GetUserID()
-    {
-        return m_pUserID;
-    }
-    OTIdentifier* GetPayoutAssetID()
-    {
-        return m_pPayoutAssetID;
-    }
-    OTIdentifier* GetVoucherAcctID()
-    {
-        return m_pVoucherAcctID;
-    }
-    OTString* GetMemo()
-    {
-        return m_pstrMemo;
-    }
-    OTServer* GetServer()
-    {
-        return m_pServer;
-    }
-    int64_t GetPayoutPerShare()
-    {
-        return m_lPayoutPerShare;
-    }
-    int64_t GetAmountPaidOut()
-    {
-        return m_lAmountPaidOut;
-    }
-    int64_t GetAmountReturned()
-    {
-        return m_lAmountReturned;
-    }
-
-    virtual bool Trigger(OTAccount& theAccount);
 };
 
 } // namespace opentxs

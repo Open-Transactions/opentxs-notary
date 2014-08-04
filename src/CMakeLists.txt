@@ -26,6 +26,7 @@ else()
 endif(MSVC)
    
 set(cxx-sources
+  AcctFunctor_PayDividend.cpp
   MessageProcessor.cpp
   OTClientConnection.cpp
   OTServer.cpp
