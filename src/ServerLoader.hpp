@@ -154,6 +154,9 @@ public:
     }
 
 private:
+    ServerLoader(const ServerLoader&);
+    ServerLoader& operator=(const ServerLoader&);
+
     OTServer* server_;
 };
 

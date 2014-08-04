@@ -3,7 +3,7 @@
 # The goal is to remove the suppressed checks stepwise and fix the issues
 # in the same commit. Use cppcheck --inline-suppr for false positives.
 sup_perf="--suppress=passedByValue"
-sup_style="--suppress=variableScope --suppress=noCopyConstructor"
+sup_style="--suppress=variableScope"
 suppress="$sup_perf $sup_style"
 enabled="--enable=warning --enable=information --enable=performance \
          --enable=portability --enable=missingInclude --enable=style"
