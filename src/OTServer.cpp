@@ -6150,7 +6150,7 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                                         strVoucherAcctID.Get(),
                                         &theVoucherReserveAcct));
 
-                                OTAcctFunctor_PayDividend actionPayDividend(
+                                AcctFunctor_PayDividend actionPayDividend(
                                     SERVER_ID, USER_ID, PAYOUT_ASSET_ID,
                                     VOUCHER_ACCOUNT_ID,
                                     strInReferenceTo, // Memo for each voucher

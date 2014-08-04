@@ -154,7 +154,7 @@ class OTString;
 // be defined
 // here in otserver (so it can see the methods that it needs...)
 //
-class OTAcctFunctor_PayDividend : public opentxs::OTAcctFunctor
+class AcctFunctor_PayDividend : public opentxs::OTAcctFunctor
 {
     OTIdentifier* m_pUserID;
     OTIdentifier* m_pPayoutAssetID;
@@ -170,14 +170,14 @@ class OTAcctFunctor_PayDividend : public opentxs::OTAcctFunctor
                                // count.
 
 public:
-    OTAcctFunctor_PayDividend(const OTIdentifier& theServerID,
-                              const OTIdentifier& theUserID,
-                              const OTIdentifier& thePayoutAssetID,
-                              const OTIdentifier& theVoucherAcctID,
-                              const OTString& strMemo, OTServer& theServer,
-                              int64_t lPayoutPerShare,
-                              mapOfAccounts* pLoadedAccounts = NULL);
-    virtual ~OTAcctFunctor_PayDividend();
+    AcctFunctor_PayDividend(const OTIdentifier& theServerID,
+                            const OTIdentifier& theUserID,
+                            const OTIdentifier& thePayoutAssetID,
+                            const OTIdentifier& theVoucherAcctID,
+                            const OTString& strMemo, OTServer& theServer,
+                            int64_t lPayoutPerShare,
+                            mapOfAccounts* pLoadedAccounts = NULL);
+    virtual ~AcctFunctor_PayDividend();
 
     OTIdentifier* GetUserID()
     {

@@ -142,7 +142,7 @@
 namespace opentxs
 {
 
-OTAcctFunctor_PayDividend::OTAcctFunctor_PayDividend(
+AcctFunctor_PayDividend::AcctFunctor_PayDividend(
     const OTIdentifier& theServerID, const OTIdentifier& theUserID,
     const OTIdentifier& thePayoutAssetID, const OTIdentifier& theVoucherAcctID,
     const OTString& strMemo, OTServer& theServer, int64_t lPayoutPerShare,
@@ -159,7 +159,7 @@ OTAcctFunctor_PayDividend::OTAcctFunctor_PayDividend(
 {
 }
 
-OTAcctFunctor_PayDividend::~OTAcctFunctor_PayDividend()
+AcctFunctor_PayDividend::~AcctFunctor_PayDividend()
 {
     if (NULL != m_pUserID) delete m_pUserID;
     m_pUserID = NULL;
@@ -178,7 +178,7 @@ OTAcctFunctor_PayDividend::~OTAcctFunctor_PayDividend()
 // For each "simple" account of a specific asset type, this function
 // is called in order to pay a dividend to the Nym who owns that account.
 //
-bool OTAcctFunctor_PayDividend::Trigger(
+bool AcctFunctor_PayDividend::Trigger(
     OTAccount& theSharesAccount) // theSharesAccount is, say, a Pepsi shares
                                  // account.  Here, we'll send a dollars voucher
                                  // to its owner.
@@ -187,7 +187,7 @@ bool OTAcctFunctor_PayDividend::Trigger(
         (theSharesAccount.GetBalance() * this->GetPayoutPerShare());
 
     if (lPayoutAmount <= 0) {
-        OTLog::Output(0, "OTAcctFunctor_PayDividend::Trigger: nothing to pay, "
+        OTLog::Output(0, "AcctFunctor_PayDividend::Trigger: nothing to pay, "
                          "since this account owns no shares. (Returning "
                          "true.)");
         return true; // nothing to pay, since this account owns no shares.
@@ -301,7 +301,7 @@ bool OTAcctFunctor_PayDividend::Trigger(
         else {
             const OTString strPayoutAssetID(thePayoutAssetID),
                 strRecipientUserID(RECIPIENT_ID);
-            OTLog::vError("OTAcctFunctor_PayDividend::Trigger: ERROR failed "
+            OTLog::vError("AcctFunctor_PayDividend::Trigger: ERROR failed "
                           "issuing voucher (to send to dividend payout "
                           "recipient.) "
                           "WAS TRYING TO PAY %ld of asset type %s to Nym %s.\n",
@@ -360,7 +360,7 @@ bool OTAcctFunctor_PayDividend::Trigger(
             else {
                 const OTString strPayoutAssetID(thePayoutAssetID),
                     strSenderUserID(theSenderUserID);
-                OTLog::vError("OTAcctFunctor_PayDividend::Trigger: ERROR "
+                OTLog::vError("AcctFunctor_PayDividend::Trigger: ERROR "
                               "failed issuing voucher (to return back to "
                               "the dividend payout initiator, after a failed "
                               "payment attempt to the originally intended "
@@ -376,7 +376,7 @@ bool OTAcctFunctor_PayDividend::Trigger(
         const OTString strPayoutAssetID(thePayoutAssetID),
             strRecipientUserID(RECIPIENT_ID);
         OTLog::vError(
-            "OTAcctFunctor_PayDividend::Trigger: ERROR!! Failed issuing next "
+            "AcctFunctor_PayDividend::Trigger: ERROR!! Failed issuing next "
             "transaction "
             "number while trying to send a voucher (while paying dividends.) "
             "WAS TRYING TO PAY %ld of asset type %s to Nym %s.\n",
