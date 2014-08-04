@@ -149,9 +149,6 @@ class OTEnvelope;
 
 class OTClientConnection
 {
-    u_header m_CMD;  // We'll load a header and put it here, then wait until the
-                     // bytes received matches the count
-                     // before processing.
     OTData m_Buffer; // As we read data, we buffer it here and chunk it out into
                      // messages.
 
@@ -159,7 +156,6 @@ class OTClientConnection
                         // for the byte count, this is true.
     OTMessageBuffer m_listIn;
     OTMessageBuffer m_listOut;
-    OTServer* m_pServer;
 
     OTAsymmetricKey* m_pPublicKey;
 
@@ -167,22 +163,10 @@ class OTClientConnection
                      // mode, or some such, instead of TCP over SSL streaming.
 
 public:
-    void ProcessBuffer();
-    void ReadBytesIntoBuffer();
-
-    void ProcessMessage(u_header& theCMD);
-    bool ProcessType1Cmd(u_header& theCMD, OTMessage& theMessage);
-
     void ProcessReply(OTMessage& theReply);
 
     OTClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
     ~OTClientConnection();
-
-    void AddToInputList(OTMessage& theMessage);
-    OTMessage* GetNextInputMessage();
-
-    void AddToOutputList(OTMessage& theMessage);
-    OTMessage* GetNextOutputMessage();
 
     void SetPublicKey(const OTString& strPublicKey);
     void SetPublicKey(const OTAsymmetricKey& thePublicKey);
