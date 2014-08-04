@@ -324,7 +324,7 @@ public:
     {
         return __override_nym_id;
     }
-    static void SetOverrideNymID(const std::string the_id)
+    static void SetOverrideNymID(const std::string& the_id)
     {
         __override_nym_id = the_id;
     }
