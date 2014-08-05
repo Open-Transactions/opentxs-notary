@@ -148,7 +148,7 @@ namespace opentxs
 
 class OTAccount;
 class OTAssetContract;
-class OTClientConnection;
+class ClientConnection;
 class OTIdentifier;
 class OTMessage;
 class OTMint;
@@ -424,7 +424,7 @@ public:
     bool SaveMainFile(); // Called in IssueNextTransactionNumber.
     bool SaveMainFileToString(OTString& strMainFile);
     bool ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
-                            OTClientConnection* pConnection = nullptr,
+                            ClientConnection* pConnection = nullptr,
                             OTPseudonym* pNym = nullptr);
 
     bool ValidateServerIDfromUser(OTString& strServerID);

@@ -1,6 +1,6 @@
 /*******************************************************************
  *
- *  OTClientConnection.h
+ *  ClientConnection.h
  *
  */
 
@@ -147,7 +147,7 @@ class OTServer;
 class OTString;
 class OTEnvelope;
 
-class OTClientConnection
+class ClientConnection
 {
     OTData m_Buffer; // As we read data, we buffer it here and chunk it out into
                      // messages.
@@ -163,8 +163,8 @@ class OTClientConnection
                      // mode, or some such, instead of TCP over SSL streaming.
 
 public:
-    OTClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
-    ~OTClientConnection();
+    ClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
+    ~ClientConnection();
 
     void SetPublicKey(const OTString& strPublicKey);
     void SetPublicKey(const OTAsymmetricKey& thePublicKey);

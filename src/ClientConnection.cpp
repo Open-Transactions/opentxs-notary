@@ -158,7 +158,7 @@ namespace opentxs
 // he says he is, he sets the public key onto the connection object for
 // that nym.  That way, if the connection object ever needs to encrypt something
 // being sent to the client, he has access to the public key.
-void OTClientConnection::SetPublicKey(const OTString& strPublicKey)
+void ClientConnection::SetPublicKey(const OTString& strPublicKey)
 {
     OT_ASSERT(nullptr != m_pPublicKey);
 
@@ -170,7 +170,7 @@ void OTClientConnection::SetPublicKey(const OTString& strPublicKey)
     m_pPublicKey->SetPublicKey(strPublicKey, true /*bEscaped*/);
 }
 
-void OTClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
+void ClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
 {
     OT_ASSERT(nullptr != m_pPublicKey);
 
@@ -182,11 +182,11 @@ void OTClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
 
 // This function, you pass in a message and it returns true or false to let
 // you know whether the message was successfully sealed into theEnvelope.
-// (Based on the public key into cached in the OTClientConnection...)
+// (Based on the public key into cached in the ClientConnection...)
 // This is for XmlRpc / HTTP mode.
 //
-bool OTClientConnection::SealMessageForRecipient(OTMessage& theMsg,
-                                                 OTEnvelope& theEnvelope)
+bool ClientConnection::SealMessageForRecipient(OTMessage& theMsg,
+                                               OTEnvelope& theEnvelope)
 {
     OT_ASSERT(nullptr != m_pPublicKey);
 
@@ -200,20 +200,20 @@ bool OTClientConnection::SealMessageForRecipient(OTMessage& theMsg,
     }
     else
         OTLog::Error(
-            "OTClientConnection::SealMessageForRecipient: "
+            "ClientConnection::SealMessageForRecipient: "
             "Unable to seal message, possibly a missing public key. \n");
     return false;
 }
 
 // For XmlRpc / HTTP mode.
-OTClientConnection::OTClientConnection(OTServer&)
+ClientConnection::ClientConnection(OTServer&)
     : m_pPublicKey(OTAsymmetricKey::KeyFactory())
 {
     m_bHaveHeader = false;
     m_bFocused = true; // rpc over http mode
 }
 
-OTClientConnection::~OTClientConnection()
+ClientConnection::~ClientConnection()
 {
     if (nullptr != m_pPublicKey) {
         delete m_pPublicKey;
