@@ -2848,14 +2848,14 @@ void OTServer::UserCmdSendUserInstrument(OTPseudonym& theNym, OTMessage& MsgIn,
 bool OTServer::SendInstrumentToNym(
     const OTIdentifier& SERVER_ID, const OTIdentifier& SENDER_USER_ID,
     const OTIdentifier& RECIPIENT_USER_ID,
-    OTMessage* pMsg /*=NULL*/, // the request msg from payer, which is attached
+    OTMessage* pMsg,           // the request msg from payer, which is attached
                                // WHOLE to the Nymbox receipt. contains payment
                                // already.
-    const OTPayment* pPayment /*=NULL*/, // or pass this instead: we will create
-                                         // our own msg here (with message
-                                         // inside) to be attached to the
-                                         // receipt.
-    const char* szCommand /*=NULL*/)
+    const OTPayment* pPayment, // or pass this instead: we will create
+                               // our own msg here (with message
+                               // inside) to be attached to the
+                               // receipt.
+    const char* szCommand)
 {
     OT_ASSERT_MSG(
         !((NULL == pMsg) && (NULL == pPayment)),
@@ -2891,13 +2891,13 @@ bool OTServer::SendInstrumentToNym(
 bool OTServer::SendMessageToNym(
     const OTIdentifier& SERVER_ID, const OTIdentifier& SENDER_USER_ID,
     const OTIdentifier& RECIPIENT_USER_ID,
-    OTMessage* pMsg /*=NULL*/, // the request msg from payer, which is attached
-                               // WHOLE to the Nymbox receipt. contains message
-                               // already.
-    const OTString* pstrMessage /*=NULL*/) // or pass this instead: we will
-                                           // create our own msg here (with
-                                           // message inside) to be attached to
-                                           // the receipt.
+    OTMessage* pMsg, // the request msg from payer, which is attached
+                     // WHOLE to the Nymbox receipt. contains message
+                     // already.
+    const OTString* pstrMessage) // or pass this instead: we will
+                                 // create our own msg here (with
+                                 // message inside) to be attached to
+                                 // the receipt.
 {
     return this->DropMessageToNymbox(SERVER_ID, SENDER_USER_ID,
                                      RECIPIENT_USER_ID, OTTransaction::message,
@@ -2962,13 +2962,15 @@ bool OTServer::SendMessageToNym(
 // pass it in here and attach it to the new message. Or maybe we just set it as
 // the voucher memo.
 //
-bool OTServer::DropMessageToNymbox(
-    const OTIdentifier& SERVER_ID, const OTIdentifier& SENDER_USER_ID,
-    const OTIdentifier& RECIPIENT_USER_ID,
-    OTTransaction::transactionType theType, OTMessage* pMsg /*=NULL*/,
-    const OTString* pstrMessage /*=NULL*/,
-    const char* szCommand /*=NULL*/) // If you pass something here, it will
-                                     // replace pMsg->m_strCommand below
+bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
+                                   const OTIdentifier& SENDER_USER_ID,
+                                   const OTIdentifier& RECIPIENT_USER_ID,
+                                   OTTransaction::transactionType theType,
+                                   OTMessage* pMsg, const OTString* pstrMessage,
+                                   const char* szCommand) // If you pass
+                                                          // something here, it
+                                                          // will
+// replace pMsg->m_strCommand below
 {
     OT_ASSERT_MSG(
         !((NULL == pMsg) && (NULL == pstrMessage)),
@@ -12263,7 +12265,7 @@ void OTServer::DropReplyNoticeToNymbox(const OTIdentifier& SERVER_ID,
                                        const OTString& strMessage,
                                        const int64_t& lRequestNum,
                                        const bool bReplyTransSuccess,
-                                       OTPseudonym* pActualNym /*=NULL*/)
+                                       OTPseudonym* pActualNym)
 {
     OTLedger theNymbox(USER_ID, USER_ID, SERVER_ID);
 
@@ -16763,11 +16765,11 @@ bool OTServer::ValidateServerIDfromUser(OTString& strServerID)
 }
 
 bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
-                                  OTClientConnection* pConnection /*=NULL*/,
-                                  OTPseudonym* pNym /*=NULL*/) // this function
-                                                               // will create
-                                                               // the Nym if
-                                                               // it's
+                                  OTClientConnection* pConnection,
+                                  OTPseudonym* pNym) // this function
+                                                     // will create
+                                                     // the Nym if
+                                                     // it's
 // not passed in. We pass it in so the caller
 // has the option to query things about the Nym
 // (like if it actually exists.)
