@@ -160,7 +160,7 @@ namespace opentxs
 // being sent to the client, he has access to the public key.
 void OTClientConnection::SetPublicKey(const OTString& strPublicKey)
 {
-    OT_ASSERT(NULL != m_pPublicKey);
+    OT_ASSERT(nullptr != m_pPublicKey);
 
     // SetPublicKey takes the ascii-encoded text, including bookends, and
     // processes
@@ -172,7 +172,7 @@ void OTClientConnection::SetPublicKey(const OTString& strPublicKey)
 
 void OTClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
 {
-    OT_ASSERT(NULL != m_pPublicKey);
+    OT_ASSERT(nullptr != m_pPublicKey);
 
     OTString strNymsPublicKey;
 
@@ -188,7 +188,7 @@ void OTClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
 bool OTClientConnection::SealMessageForRecipient(OTMessage& theMsg,
                                                  OTEnvelope& theEnvelope)
 {
-    OT_ASSERT(NULL != m_pPublicKey);
+    OT_ASSERT(nullptr != m_pPublicKey);
 
     if (!(m_pPublicKey->IsEmpty()) && m_pPublicKey->IsPublic()) {
         // Save the ready-to-go message into a string.
@@ -215,9 +215,9 @@ OTClientConnection::OTClientConnection(OTServer&)
 
 OTClientConnection::~OTClientConnection()
 {
-    if (NULL != m_pPublicKey) {
+    if (nullptr != m_pPublicKey) {
         delete m_pPublicKey;
-        m_pPublicKey = NULL;
+        m_pPublicKey = nullptr;
     }
 }
 

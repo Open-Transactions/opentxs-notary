@@ -161,15 +161,15 @@ AcctFunctor_PayDividend::AcctFunctor_PayDividend(
 
 AcctFunctor_PayDividend::~AcctFunctor_PayDividend()
 {
-    if (NULL != m_pUserID) delete m_pUserID;
-    m_pUserID = NULL;
-    if (NULL != m_pPayoutAssetID) delete m_pPayoutAssetID;
-    m_pPayoutAssetID = NULL;
-    if (NULL != m_pVoucherAcctID) delete m_pVoucherAcctID;
-    m_pVoucherAcctID = NULL;
-    if (NULL != m_pstrMemo) delete m_pstrMemo;
-    m_pstrMemo = NULL;
-    m_pServer = NULL; // don't delete this one (I don't own it.)
+    if (nullptr != m_pUserID) delete m_pUserID;
+    m_pUserID = nullptr;
+    if (nullptr != m_pPayoutAssetID) delete m_pPayoutAssetID;
+    m_pPayoutAssetID = nullptr;
+    if (nullptr != m_pVoucherAcctID) delete m_pVoucherAcctID;
+    m_pVoucherAcctID = nullptr;
+    if (nullptr != m_pstrMemo) delete m_pstrMemo;
+    m_pstrMemo = nullptr;
+    m_pServer = nullptr; // don't delete this one (I don't own it.)
     m_lPayoutPerShare = 0;
     m_lAmountPaidOut = 0;
     m_lAmountReturned = 0;
@@ -196,21 +196,21 @@ bool AcctFunctor_PayDividend::Trigger(
         return true; // nothing to pay, since this account owns no shares.
                      // Success!
     }
-    OT_ASSERT(NULL != GetServerID());
+    OT_ASSERT(nullptr != GetServerID());
     const OTIdentifier& theServerID = *(GetServerID());
-    OT_ASSERT(NULL != GetPayoutAssetID());
+    OT_ASSERT(nullptr != GetPayoutAssetID());
     const OTIdentifier& thePayoutAssetID = *(GetPayoutAssetID());
-    OT_ASSERT(NULL != GetVoucherAcctID());
+    OT_ASSERT(nullptr != GetVoucherAcctID());
     const OTIdentifier& theVoucherAcctID = *(GetVoucherAcctID());
-    OT_ASSERT(NULL != GetServer());
+    OT_ASSERT(nullptr != GetServer());
     OTServer& theServer = *(GetServer());
     OTPseudonym& theServerNym =
         const_cast<OTPseudonym&>(theServer.GetServerNym());
     const OTIdentifier theServerNymID(theServerNym);
     const OTIdentifier& RECIPIENT_ID = theSharesAccount.GetUserID();
-    OT_ASSERT(NULL != GetUserID());
+    OT_ASSERT(nullptr != GetUserID());
     const OTIdentifier& theSenderUserID = *(GetUserID());
-    OT_ASSERT(NULL != GetMemo());
+    OT_ASSERT(nullptr != GetMemo());
     const OTString& strMemo = *(GetMemo());
     // Note: theSenderUserID is the originator of the Dividend Payout.
     // However, all the actual vouchers will be from "the server Nym" and
@@ -290,10 +290,10 @@ bool AcctFunctor_PayDividend::Trigger(
 
             // calls DropMessageToNymbox
             bSent = theServer.SendInstrumentToNym(
-                theServerID, theServerNymID,       // sender nym
-                RECIPIENT_ID,                      // recipient nym
-                NULL, &thePayment, "payDividend"); // todo: hardcoding.
-            bReturnValue = bSent;                  // <======= RETURN VALUE.
+                theServerID, theServerNymID,          // sender nym
+                RECIPIENT_ID,                         // recipient nym
+                nullptr, &thePayment, "payDividend"); // todo: hardcoding.
+            bReturnValue = bSent;                     // <======= RETURN VALUE.
             if (bSent)
                 m_lAmountPaidOut +=
                     lPayoutAmount; // At the end of iterating all accounts, if
@@ -351,7 +351,7 @@ bool AcctFunctor_PayDividend::Trigger(
                 bSent = theServer.SendInstrumentToNym(
                     theServerID, theServerNymID, // sender nym
                     theSenderUserID, // recipient nym (original sender.)
-                    NULL, &theReturnPayment,
+                    nullptr, &theReturnPayment,
                     "payDividend"); // todo: hardcoding.
                 if (bSent)
                     m_lAmountReturned +=
