@@ -21,6 +21,14 @@ if ! command -v cppcheck >/dev/null; then
 	exit 1
 fi
 
+version="$(cat ./scripts/travis/cppcheck_version)"
+if [ "$(cppcheck --version)" != "Cppcheck $version" ]; then
+    echo    "error: cppcheck outdated!"
+    echo -n "please install cppcheck $version in order to be able"
+    echo    " to use this pre-push git-hook"
+    exit 1
+fi
+
 if git remote | grep -q '^upstream$'; then
 	remote="upstream"
 fi
