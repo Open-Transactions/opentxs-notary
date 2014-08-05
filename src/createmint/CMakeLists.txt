@@ -5,7 +5,7 @@ set(name createmint)
 set(cxx-sources
   ../AcctFunctor_PayDividend.cpp
   ../OTServer.cpp
-  ../OTClientConnection.cpp
+  ../ClientConnection.cpp
   main.cpp
 )
 

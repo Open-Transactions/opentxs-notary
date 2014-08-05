@@ -133,7 +133,7 @@
 #include "ServerLoader.hpp"
 #include "MessageProcessor.hpp"
 #include "OTServer.hpp"
-#include "OTClientConnection.hpp"
+#include "ClientConnection.hpp"
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTMessage.hpp>
 #include <opentxs/core/OTEnvelope.hpp>
