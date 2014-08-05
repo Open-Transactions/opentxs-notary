@@ -595,7 +595,7 @@ OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
 ///
 bool OTServer::IssueNextTransactionNumber(OTPseudonym& theNym,
                                           int64_t& lTransactionNumber,
-                                          bool bStoreTheNumber /*=true*/)
+                                          bool bStoreTheNumber)
 {
     OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
 
@@ -699,7 +699,7 @@ bool OTServer::VerifyTransactionNumber(
 /// used/spent.
 bool OTServer::RemoveTransactionNumber(OTPseudonym& theNym,
                                        const int64_t& lTransactionNumber,
-                                       bool bSave /*=false*/)
+                                       bool bSave)
 {
     OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
 
@@ -731,8 +731,7 @@ bool OTServer::RemoveTransactionNumber(OTPseudonym& theNym,
 /// Remove an issued number from the Nym record once that nym accepts the
 /// receipt from his inbox.
 bool OTServer::RemoveIssuedNumber(OTPseudonym& theNym,
-                                  const int64_t& lTransactionNumber,
-                                  bool bSave /*=false*/)
+                                  const int64_t& lTransactionNumber, bool bSave)
 {
     OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
 
@@ -1346,7 +1345,7 @@ void OTServer::Release()
 // Loads the main file,
 // and validates the server ID (for the Nym)
 //
-void OTServer::Init(bool bReadOnly /*=false*/)
+void OTServer::Init(bool bReadOnly)
 {
     if (!OTDataFolder::IsInitialized()) {
         OTLog::vError("%s: Unable to Init data folders", __FUNCTION__);
@@ -1872,7 +1871,7 @@ bool OTServer::CreateMainFile()
 
 */
 
-bool OTServer::LoadMainFile(bool bReadOnly /*=false*/)
+bool OTServer::LoadMainFile(bool bReadOnly)
 {
     //
     if (!OTDB::Exists(".", m_strWalletFilename.Get())) {
