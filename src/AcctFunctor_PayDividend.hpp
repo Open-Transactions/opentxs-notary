@@ -176,7 +176,7 @@ public:
                             const OTIdentifier& theVoucherAcctID,
                             const OTString& strMemo, OTServer& theServer,
                             int64_t lPayoutPerShare,
-                            mapOfAccounts* pLoadedAccounts = NULL);
+                            mapOfAccounts* pLoadedAccounts = nullptr);
     virtual ~AcctFunctor_PayDividend();
 
     OTIdentifier* GetUserID()

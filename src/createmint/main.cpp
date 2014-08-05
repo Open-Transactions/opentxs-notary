@@ -372,7 +372,7 @@ int main(int argc, char* const argv[])
 
     OTMint* pMint =
         OTMint::MintFactory(strServerID, strServerNymID, strAssetTypeID);
-    OT_ASSERT(NULL != pMint);
+    OT_ASSERT(nullptr != pMint);
 
     OTString strSeries;
     strSeries.Format("%s%d", ".", nSeries);

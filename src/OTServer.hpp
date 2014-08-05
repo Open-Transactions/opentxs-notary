@@ -424,8 +424,8 @@ public:
     bool SaveMainFile(); // Called in IssueNextTransactionNumber.
     bool SaveMainFileToString(OTString& strMainFile);
     bool ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
-                            OTClientConnection* pConnection = NULL,
-                            OTPseudonym* pNym = NULL);
+                            OTClientConnection* pConnection = nullptr,
+                            OTPseudonym* pNym = nullptr);
 
     bool ValidateServerIDfromUser(OTString& strServerID);
     // After EVERY / ANY transaction, plus certain messages, we drop a copy of
@@ -439,7 +439,7 @@ public:
                                  const OTString& strMessage,
                                  const int64_t& lRequestNum,
                                  const bool bReplyTransSuccess,
-                                 OTPseudonym* pActualNym = NULL);
+                                 OTPseudonym* pActualNym = nullptr);
 
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
@@ -447,36 +447,37 @@ public:
                              const OTIdentifier& SENDER_USER_ID,
                              const OTIdentifier& RECIPIENT_USER_ID,
                              OTTransaction::transactionType theType,
-                             OTMessage* pMsg = NULL,
-                             const OTString* pstrMessage = NULL,
-                             const char* szCommand = NULL);
+                             OTMessage* pMsg = nullptr,
+                             const OTString* pstrMessage = nullptr,
+                             const char* szCommand = nullptr);
 
     // calls DropMessageToNymbox
     bool SendInstrumentToNym(
         const OTIdentifier& SERVER_ID, const OTIdentifier& SENDER_USER_ID,
         const OTIdentifier& RECIPIENT_USER_ID,
-        OTMessage* pMsg = NULL, // the request msg from payer, which is attached
-                                // WHOLE to the Nymbox receipt. contains payment
-                                // already.
-        const OTPayment* pPayment =
-            NULL, // or pass this instead: we will create our own msg here (with
-                  // payment inside) to be attached to the receipt.
-        const char* szCommand = NULL); // for passing payDividend (as the
-                                       // message command instead of
-                                       // sendUserInstrument, the default.)
+        OTMessage* pMsg =
+            nullptr, // the request msg from payer, which is attached
+                     // WHOLE to the Nymbox receipt. contains payment
+                     // already.
+        const OTPayment* pPayment = nullptr, // or pass this instead: we will
+                                             // create our own msg here (with
+        // payment inside) to be attached to the receipt.
+        const char* szCommand = nullptr); // for passing payDividend (as the
+                                          // message command instead of
+                                          // sendUserInstrument, the default.)
 
     // calls DropMessageToNymbox
-    bool SendMessageToNym(const OTIdentifier& SERVER_ID,
-                          const OTIdentifier& SENDER_USER_ID,
-                          const OTIdentifier& RECIPIENT_USER_ID,
-                          OTMessage* pMsg = NULL, // the request msg from payer,
-                                                  // which is attached WHOLE to
-                                                  // the Nymbox receipt.
-                                                  // contains message already.
-                          const OTString* pstrMessage =
-                              NULL); // or pass this instead: we will create our
-                                     // own msg here (with message inside) to be
-                                     // attached to the receipt.
+    bool SendMessageToNym(
+        const OTIdentifier& SERVER_ID, const OTIdentifier& SENDER_USER_ID,
+        const OTIdentifier& RECIPIENT_USER_ID,
+        OTMessage* pMsg = nullptr, // the request msg from payer,
+                                   // which is attached WHOLE to
+                                   // the Nymbox receipt.
+                                   // contains message already.
+        const OTString* pstrMessage =
+            nullptr); // or pass this instead: we will create our
+                      // own msg here (with message inside) to be
+                      // attached to the receipt.
 
     void UserCmdCheckServerID(OTPseudonym& theNym, OTMessage& MsgIn,
                               OTMessage& msgOut);
