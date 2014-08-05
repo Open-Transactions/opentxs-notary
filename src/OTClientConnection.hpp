@@ -163,8 +163,6 @@ class OTClientConnection
                      // mode, or some such, instead of TCP over SSL streaming.
 
 public:
-    void ProcessReply(OTMessage& theReply);
-
     OTClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
     ~OTClientConnection();
 
