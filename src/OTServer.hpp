@@ -390,7 +390,6 @@ public:
                             const OTIdentifier& BASKET_CONTRACT_ID);
     bool LookupBasketAccountID(const OTIdentifier& BASKET_ID,
                                OTIdentifier& BASKET_ACCOUNT_ID);
-    bool VerifyBasketAccountID(const OTIdentifier& BASKET_ACCOUNT_ID);
 
     bool LookupBasketAccountIDByContractID(
         const OTIdentifier& BASKET_CONTRACT_ID,

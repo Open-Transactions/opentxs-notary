@@ -369,26 +369,6 @@ bool OTServer::AddBasketAccountID(const OTIdentifier& BASKET_ID,
     return true;
 }
 
-/// Looks up a basket account ID and returns true or false.
-/// (So you can confirm whether or not it's on the list.)
-bool OTServer::VerifyBasketAccountID(const OTIdentifier& BASKET_ACCOUNT_ID)
-{
-    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
-    // through that map...
-    for (auto& it : m_mapBaskets) {
-        OTString strBasketAcctID = it.second.c_str();
-
-        OTIdentifier id_BASKET_ACCT(strBasketAcctID);
-
-        if (BASKET_ACCOUNT_ID == id_BASKET_ACCT) // if the basket Acct ID passed
-                                                 // in matches this one...
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 /// Use this to find the basket account ID for this server (which is unique to
 /// this server)
 /// using the contract ID to look it up. (The basket contract ID is unique to
