@@ -1111,7 +1111,7 @@ bool OTServer::LoadConfigFile()
         int64_t lValue;
         p_Config->CheckSet_long("markets", "minimum_scale", GetMinMarketScale(),
                                 lValue, bIsNewKey, szComment);
-        this->SetMinMarketScale(lValue);
+        SetMinMarketScale(lValue);
     }
 
     // SECURITY (beginnings of..)
@@ -1351,7 +1351,7 @@ void OTServer::Init(bool bReadOnly)
         OTLog::vError("%s: Unable to Init data folders", __FUNCTION__);
         OT_FAIL;
     };
-    if (!this->LoadConfigFile()) {
+    if (!LoadConfigFile()) {
         OTLog::vError("%s: Unable to Load Config File!", __FUNCTION__);
         OT_FAIL;
     };
@@ -1963,7 +1963,7 @@ bool OTServer::LoadMainFile(bool bReadOnly)
                         if (!(OTCachedKey::It()->isPaused()))
                             OTCachedKey::It()->Pause();
 
-                        if (!this->LoadServerUserAndContract()) {
+                        if (!LoadServerUserAndContract()) {
                             OTLog::vError("%s: Failed calling "
                                           "LoadServerUserAndContract.\n",
                                           __FUNCTION__);
@@ -2017,7 +2017,7 @@ bool OTServer::LoadMainFile(bool bReadOnly)
                     if (false == m_strVersion.Compare("1.0")) // This is, for
                                                               // example, 2.0
                     {
-                        if (!this->LoadServerUserAndContract()) {
+                        if (!LoadServerUserAndContract()) {
                             OTLog::vError("%s: Failed calling "
                                           "LoadServerUserAndContract.\n",
                                           __FUNCTION__);
@@ -2781,8 +2781,8 @@ void OTServer::UserCmdSendUserMessage(OTPseudonym& theNym, OTMessage& MsgIn,
         RECIPIENT_USER_ID(MsgIn.m_strNymID2), SERVER_ID(m_strServerID);
     msgOut.m_ascInReferenceTo.SetString(strInMessage);
     const bool bSent =
-        this->SendMessageToNym(SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
-                               &MsgIn); // pstrMessage=NULL
+        SendMessageToNym(SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
+                         &MsgIn); // pstrMessage=NULL
 
     if (!bSent) {
         OTLog::vError("OTServer::UserCmdSendUserMessage: Failed while calling "
@@ -2820,8 +2820,8 @@ void OTServer::UserCmdSendUserInstrument(OTPseudonym& theNym, OTMessage& MsgIn,
         RECIPIENT_USER_ID(MsgIn.m_strNymID2), SERVER_ID(m_strServerID);
     msgOut.m_ascInReferenceTo.SetString(strInMessage);
     const bool bSent =
-        this->SendInstrumentToNym(SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
-                                  &MsgIn); // pPayment=NULL, szCommand=NULL
+        SendInstrumentToNym(SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
+                            &MsgIn); // pPayment=NULL, szCommand=NULL
 
     if (!bSent) {
         OTLog::vError("OTServer::UserCmdSendUserInstrument: Failed while "
@@ -2879,10 +2879,10 @@ bool OTServer::SendInstrumentToNym(
         if (!bGotPaymentContents)
             OTLog::vError("%s: Error GetPaymentContents Failed", __FUNCTION__);
     }
-    const bool bDropped = this->DropMessageToNymbox(
-        SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
-        OTTransaction::instrumentNotice, pMsg,
-        (NULL != pMsg) ? NULL : &strPayment, szCommand);
+    const bool bDropped =
+        DropMessageToNymbox(SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
+                            OTTransaction::instrumentNotice, pMsg,
+                            (NULL != pMsg) ? NULL : &strPayment, szCommand);
 
     return bDropped;
 }
@@ -2898,12 +2898,12 @@ bool OTServer::SendMessageToNym(
                                  // message inside) to be attached to
                                  // the receipt.
 {
-    return this->DropMessageToNymbox(SERVER_ID, SENDER_USER_ID,
-                                     RECIPIENT_USER_ID, OTTransaction::message,
-                                     pMsg, pstrMessage); //, szCommand=NULL
+    return DropMessageToNymbox(SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID,
+                               OTTransaction::message, pMsg,
+                               pstrMessage); //, szCommand=NULL
 }
 
-// Can't be static (this->IssueNextTransactionNumber is called...)
+// Can't be static (IssueNextTransactionNumber is called...)
 //
 // About pMsg...
 // (Normally) when you send a cheque to someone, you encrypt it inside an
@@ -2983,7 +2983,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
                                                                     // both.
     const char* szFunc = "OTServer::DropMessageToNymbox";
     int64_t lTransNum = 0;
-    const bool bGotNextTransNum = this->IssueNextTransactionNumber(
+    const bool bGotNextTransNum = IssueNextTransactionNumber(
         m_nymServer, lTransNum, false); // bool bStoreTheNumber = false
 
     if (!bGotNextTransNum) {
@@ -3028,7 +3028,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
                 break; // should never happen.
             }
         }
-        pMsg->m_strServerID = this->m_strServerID;
+        pMsg->m_strServerID = m_strServerID;
         pMsg->m_bSuccess = true;
         SENDER_USER_ID.GetString(pMsg->m_strNymID);
         RECIPIENT_USER_ID.GetString(pMsg->m_strNymID2); // set the recipient ID
@@ -3822,10 +3822,9 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
         const OTString strReplyMessage(msgOut);
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
         // If it fails, it logs already.
-        this->DropReplyNoticeToNymbox(
-            SERVER_ID, USER_ID, strReplyMessage, lReqNum,
-            false, // trans success (not a transaction...)
-            &theNym);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                false, // trans success (not a transaction...)
+                                &theNym);
     }
 }
 
@@ -3904,8 +3903,8 @@ void OTServer::UserCmdIssueBasket(OTPseudonym& theNym, OTMessage& MsgIn,
                 OT_ASSERT(NULL != pItem);
 
                 if (NULL ==
-                    this->GetAssetContract(
-                        pItem->SUB_CONTRACT_ID)) // Sub-currency not found.
+                    GetAssetContract(pItem->SUB_CONTRACT_ID)) // Sub-currency
+                                                              // not found.
                 {
                     const OTString strSubID(pItem->SUB_CONTRACT_ID);
                     OTLog::vError("%s: Failed: Sub-currency for basket is not "
@@ -4310,11 +4309,11 @@ void OTServer::UserCmdCreateAccount(OTPseudonym& theNym, OTMessage& MsgIn,
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        this->DropReplyNoticeToNymbox(
+        DropReplyNoticeToNymbox(
             SERVER_ID, USER_ID, strReplyMessage,
             lReqNum, // No need to update the NymboxHash in this case.
             false);  // trans success (not a transaction)
-                     //      this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
+                     //      DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
                      // strReplyMessage, lReqNum, &theNym);
     }
 }
@@ -6334,7 +6333,7 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                                             OTPayment thePayment(strVoucher);
 
                                             // calls DropMessageToNymbox
-                                            bSent = this->SendInstrumentToNym(
+                                            bSent = SendInstrumentToNym(
                                                 SERVER_ID,
                                                 SERVER_NYM_ID, // sender nym
                                                 USER_ID,       // recipient nym
@@ -11474,11 +11473,11 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
                 OTLog::Output(0, "FAILED verifying offer for Trade in "
                                  "OTServer::NotarizeMarketOffer\n");
             }
-            else if (theOffer.GetScale() < this->GetMinMarketScale()) {
+            else if (theOffer.GetScale() < GetMinMarketScale()) {
                 OTLog::vOutput(0, "OTServer::NotarizeMarketOffer: FAILED "
                                   "verifying Offer, SCALE: %ld. (Minimum is "
                                   "%ld.) \n",
-                               theOffer.GetScale(), this->GetMinMarketScale());
+                               theOffer.GetScale(), GetMinMarketScale());
             }
             else if (static_cast<int64_t>(
                            (theNym.GetSetOpenCronItems().size() / 3)) >=
@@ -12233,11 +12232,11 @@ send_message:
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        //      this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
+        //      DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
         // strReplyMessage, lReqNum, bTransSuccess, &theNym); // We don't want
         // to update the Nym in this case (I don't think.)
-        this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
-                                      lReqNum, bTransSuccess); // trans success
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                bTransSuccess); // trans success
     }
     if (bCancelled) {
         OTLog::vOutput(0, "Success: canceling transaction %ld for nym: %s \n",
@@ -13340,9 +13339,9 @@ void OTServer::UserCmdDeleteUser(OTPseudonym& theNym, OTMessage& MsgIn,
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
-                                      lReqNum, false, // trans success
-                                      &theNym);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                false, // trans success
+                                &theNym);
     }
 }
 
@@ -13718,10 +13717,9 @@ void OTServer::UserCmdDeleteAssetAcct(OTPseudonym& theNym, OTMessage& MsgIn,
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        this->DropReplyNoticeToNymbox(
-            SERVER_ID, USER_ID, strReplyMessage, lReqNum,
-            false, // trans success (not a transaction.)
-            &theNym);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                false, // trans success (not a transaction.)
+                                &theNym);
     }
 }
 
@@ -14072,13 +14070,13 @@ send_message:
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        this->DropReplyNoticeToNymbox(
+        DropReplyNoticeToNymbox(
             SERVER_ID, USER_ID, strReplyMessage,
             lReqNum, // (We don't want to update the NymboxHash on the Nym, here
                      // in processNymbox, at least, not at this current point
                      // AFTER the reply message has already been signed.)
             bTransSuccess);
-        //      this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
+        //      DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
         // strReplyMessage, lReqNum, bTransSuccess, &theNym); // Only pass
         // theNym if you want it to contain the LATEST hash. (Some messages
         // don't.)
@@ -15111,12 +15109,12 @@ send_message:
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
-                                      lReqNum, // We don't want to update the
-                                               // Nym's copy here in
-                                               // processInbox (I don't think.)
-                                      bTransSuccess);
-        //      this->DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
+                                lReqNum, // We don't want to update the
+                                         // Nym's copy here in
+                                         // processInbox (I don't think.)
+                                bTransSuccess);
+        //      DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
         // strReplyMessage, lReqNum, bTransSuccess, &theNym);
     }
 }

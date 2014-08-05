@@ -187,7 +187,7 @@ bool AcctFunctor_PayDividend::Trigger(
                                  // to its owner.
 {
     const int64_t lPayoutAmount =
-        (theSharesAccount.GetBalance() * this->GetPayoutPerShare());
+        (theSharesAccount.GetBalance() * GetPayoutPerShare());
 
     if (lPayoutAmount <= 0) {
         OTLog::Output(0, "AcctFunctor_PayDividend::Trigger: nothing to pay, "
@@ -196,22 +196,22 @@ bool AcctFunctor_PayDividend::Trigger(
         return true; // nothing to pay, since this account owns no shares.
                      // Success!
     }
-    OT_ASSERT(NULL != this->GetServerID());
-    const OTIdentifier& theServerID = *(this->GetServerID());
-    OT_ASSERT(NULL != this->GetPayoutAssetID());
-    const OTIdentifier& thePayoutAssetID = *(this->GetPayoutAssetID());
-    OT_ASSERT(NULL != this->GetVoucherAcctID());
-    const OTIdentifier& theVoucherAcctID = *(this->GetVoucherAcctID());
-    OT_ASSERT(NULL != this->GetServer());
-    OTServer& theServer = *(this->GetServer());
+    OT_ASSERT(NULL != GetServerID());
+    const OTIdentifier& theServerID = *(GetServerID());
+    OT_ASSERT(NULL != GetPayoutAssetID());
+    const OTIdentifier& thePayoutAssetID = *(GetPayoutAssetID());
+    OT_ASSERT(NULL != GetVoucherAcctID());
+    const OTIdentifier& theVoucherAcctID = *(GetVoucherAcctID());
+    OT_ASSERT(NULL != GetServer());
+    OTServer& theServer = *(GetServer());
     OTPseudonym& theServerNym =
         const_cast<OTPseudonym&>(theServer.GetServerNym());
     const OTIdentifier theServerNymID(theServerNym);
     const OTIdentifier& RECIPIENT_ID = theSharesAccount.GetUserID();
-    OT_ASSERT(NULL != this->GetUserID());
-    const OTIdentifier& theSenderUserID = *(this->GetUserID());
-    OT_ASSERT(NULL != this->GetMemo());
-    const OTString& strMemo = *(this->GetMemo());
+    OT_ASSERT(NULL != GetUserID());
+    const OTIdentifier& theSenderUserID = *(GetUserID());
+    OT_ASSERT(NULL != GetMemo());
+    const OTString& strMemo = *(GetMemo());
     // Note: theSenderUserID is the originator of the Dividend Payout.
     // However, all the actual vouchers will be from "the server Nym" and
     // not from theSenderUserID. So then why is it even here? Because anytime
