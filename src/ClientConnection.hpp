@@ -134,7 +134,6 @@
 #define __OT_CLIENT_CONNECTION_HPP__
 
 #include <opentxs/core/OTglobal.h>
-#include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTData.hpp>
 #include <opentxs/core/OTMessageBuffer.hpp>
 
