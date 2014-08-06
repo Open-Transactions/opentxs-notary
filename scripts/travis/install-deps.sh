@@ -7,11 +7,10 @@ install_cppcheck()
     git clone https://github.com/danmar/cppcheck.git
     cd cppcheck
     git checkout $(cat ../scripts/travis/cppcheck_version)
-    make SRCDIR=build CFGDIR=/usr/share/cppcheck HAVE_RULES=no -j2
-    sudo make install
-    # On travis cppcheck ignores CFGDIR. Instead, it looks in $PWD. Compare
-    # strace output.
-    sudo install -m644 ./cfg/* ../
+    make CFGDIR=/usr/share/cppcheck/cfg HAVE_RULES=no -j2
+    sudo make CFGDIR=/usr/share/cppcheck/cfg install
+    cd ..
+    rm -rf ./cppcheck/
 }
 
 if [ $# -ne 1 ]; then
