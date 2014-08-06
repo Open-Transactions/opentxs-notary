@@ -133,7 +133,7 @@
 #include "ServerLoader.hpp"
 #include "MessageProcessor.hpp"
 #include "OTServer.hpp"
-#include "OTClientConnection.hpp"
+#include "ClientConnection.hpp"
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTMessage.hpp>
 #include <opentxs/core/OTEnvelope.hpp>
@@ -358,7 +358,7 @@ bool MessageProcessor::processMessage(const std::string& messageString,
 
     // By constructing this without a socket, I put it in ZMQ mode,
     // instead of tcp/ssl.
-    OTClientConnection client(*server_);
+    ClientConnection client(*server_);
 
     OTPseudonym nym(message.m_strNymID);
 

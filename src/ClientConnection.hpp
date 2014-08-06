@@ -1,6 +1,6 @@
-/************************************************************************************
+/*******************************************************************
  *
- *  OTCLientConnection.cpp
+ *  ClientConnection.h
  *
  */
 
@@ -130,95 +130,50 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include "OTClientConnection.hpp"
-#include "OTServer.hpp"
+#ifndef __OT_CLIENT_CONNECTION_HPP__
+#define __OT_CLIENT_CONNECTION_HPP__
 
-#include <opentxs/core/OTAsymmetricKey.hpp>
-#include <opentxs/core/OTDataCheck.hpp>
-#include <opentxs/core/OTEnvelope.hpp>
-#include <opentxs/core/OTLog.hpp>
-#include <opentxs/core/OTMessage.hpp>
-#include <opentxs/core/OTPayload.hpp>
-
-#include <cstdio>
-
-extern "C" {
-#ifdef _WIN32
-#include <winsock2.h>
-#pragma comment(lib, "ws2_32.lib")
-#else
-#include <netinet/in.h>
-#endif
-}
+#include <opentxs/core/OTglobal.h>
+#include <opentxs/core/OTCommon.hpp>
+#include <opentxs/core/OTData.hpp>
+#include <opentxs/core/OTMessageBuffer.hpp>
 
 namespace opentxs
 {
 
-// At certain times, when the server has verified that a Nym REALLY is who
-// he says he is, he sets the public key onto the connection object for
-// that nym.  That way, if the connection object ever needs to encrypt something
-// being sent to the client, he has access to the public key.
-void OTClientConnection::SetPublicKey(const OTString& strPublicKey)
+class OTAsymmetricKey;
+class OTMessage;
+class OTServer;
+class OTString;
+class OTEnvelope;
+
+class ClientConnection
 {
-    OT_ASSERT(nullptr != m_pPublicKey);
+    OTData m_Buffer; // As we read data, we buffer it here and chunk it out into
+                     // messages.
 
-    // SetPublicKey takes the ascii-encoded text, including bookends, and
-    // processes
-    // it into the OTAssymeticKey object. If successful, the OTAssymetricKey is
-    // now
-    // fully functional for encrypting and verifying.
-    m_pPublicKey->SetPublicKey(strPublicKey, true /*bEscaped*/);
-}
+    bool m_bHaveHeader; // If we've loaded a header already, and we're waiting
+                        // for the byte count, this is true.
+    OTMessageBuffer m_listIn;
+    OTMessageBuffer m_listOut;
 
-void OTClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
-{
-    OT_ASSERT(nullptr != m_pPublicKey);
+    OTAsymmetricKey* m_pPublicKey;
 
-    OTString strNymsPublicKey;
+    bool m_bFocused; // Defaults to false. If true, it means we're in XmlRpc
+                     // mode, or some such, instead of TCP over SSL streaming.
 
-    thePublicKey.GetPublicKey(strNymsPublicKey, true);
-    m_pPublicKey->SetPublicKey(strNymsPublicKey, true /*bEscaped*/);
-}
+public:
+    ClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
+    ~ClientConnection();
 
-// This function, you pass in a message and it returns true or false to let
-// you know whether the message was successfully sealed into theEnvelope.
-// (Based on the public key into cached in the OTClientConnection...)
-// This is for XmlRpc / HTTP mode.
-//
-bool OTClientConnection::SealMessageForRecipient(OTMessage& theMsg,
-                                                 OTEnvelope& theEnvelope)
-{
-    OT_ASSERT(nullptr != m_pPublicKey);
+    void SetPublicKey(const OTString& strPublicKey);
+    void SetPublicKey(const OTAsymmetricKey& thePublicKey);
 
-    if (!(m_pPublicKey->IsEmpty()) && m_pPublicKey->IsPublic()) {
-        // Save the ready-to-go message into a string.
-        OTString strEnvelopeContents(theMsg);
-
-        // Seal the string up into an encrypted Envelope.
-        if (strEnvelopeContents.Exists())
-            return theEnvelope.Seal(*m_pPublicKey, strEnvelopeContents);
-    }
-    else
-        OTLog::Error(
-            "OTClientConnection::SealMessageForRecipient: "
-            "Unable to seal message, possibly a missing public key. \n");
-    return false;
-}
-
-// For XmlRpc / HTTP mode.
-OTClientConnection::OTClientConnection(OTServer&)
-    : m_pPublicKey(OTAsymmetricKey::KeyFactory())
-{
-    m_bHaveHeader = false;
-    m_bFocused = true; // rpc over http mode
-}
-
-OTClientConnection::~OTClientConnection()
-{
-    if (nullptr != m_pPublicKey) {
-        delete m_pPublicKey;
-        m_pPublicKey = nullptr;
-    }
-}
+    // This is for XmlRpc mode (i.e. there is not actually an open connection
+    // being maintained.)
+    bool SealMessageForRecipient(OTMessage& theMsg, OTEnvelope& theEnvelope);
+};
 
 } // namespace opentxs
+
+#endif // __OT_CLIENT_CONNECTION_HPP__

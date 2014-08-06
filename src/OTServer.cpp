@@ -132,7 +132,7 @@
 
 #include "OTServer.hpp"
 #include "AcctFunctor_PayDividend.hpp"
-#include "OTClientConnection.hpp"
+#include "ClientConnection.hpp"
 
 #include <opentxs/core/OTAsymmetricKey.hpp>
 #include <opentxs/core/OTBasket.hpp>
@@ -16797,7 +16797,7 @@ bool OTServer::ValidateServerIDfromUser(OTString& strServerID)
 }
 
 bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
-                                  OTClientConnection* pConnection,
+                                  ClientConnection* pConnection,
                                   OTPseudonym* pNym) // this function
                                                      // will create
                                                      // the Nym if
