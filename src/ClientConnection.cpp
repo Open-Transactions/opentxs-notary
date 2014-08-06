@@ -131,7 +131,6 @@
 **************************************************************/
 
 #include "ClientConnection.hpp"
-#include "OTServer.hpp"
 
 #include <opentxs/core/OTAsymmetricKey.hpp>
 #include <opentxs/core/OTDataCheck.hpp>
@@ -206,7 +205,7 @@ bool ClientConnection::SealMessageForRecipient(OTMessage& theMsg,
 }
 
 // For XmlRpc / HTTP mode.
-ClientConnection::ClientConnection(OTServer&)
+ClientConnection::ClientConnection()
     : m_pPublicKey(OTAsymmetricKey::KeyFactory())
 {
     m_bHaveHeader = false;

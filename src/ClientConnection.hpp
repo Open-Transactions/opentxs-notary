@@ -143,7 +143,6 @@ namespace opentxs
 
 class OTAsymmetricKey;
 class OTMessage;
-class OTServer;
 class OTString;
 class OTEnvelope;
 
@@ -163,7 +162,7 @@ class ClientConnection
                      // mode, or some such, instead of TCP over SSL streaming.
 
 public:
-    ClientConnection(OTServer& theServer); // XmlRpc    / over HTTP mode.
+    ClientConnection(); // XmlRpc    / over HTTP mode.
     ~ClientConnection();
 
     void SetPublicKey(const OTString& strPublicKey);
