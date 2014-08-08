@@ -188,8 +188,19 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 
-############################################################################
-###Packaging
+#-----------------------------------------------------------------------------
+# Uninstal
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/uninstall.cmake)
+
+
+#-----------------------------------------------------------------------------
+# Packaging
 set(CPACK_GENERATOR "TGZ")
 
 set(CPACK_PACKAGE_VERSION ${VERSION})
@@ -207,16 +218,14 @@ You can use it for issuing currencies/stock, paying dividends, creating asset ac
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(OPEN_TRANSACTIONS_WEBSITE "http://opentransactions.org")
 
-#RPM
 if(RPM)
-  set(CPACK_GENERATOR "${CPACK_GENERATOR};RPM")
+  set(CPACK_GENERATOR "RPM")
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-server.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec" @ONLY IMMEDIATE)
   set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec")
 endif(RPM)
 
-#DEB
 if(DEB)
-  set(CPACK_GENERATOR "${CPACK_GENERATOR};DEB")
+  set(CPACK_GENERATOR "DEB")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "opentxs")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
