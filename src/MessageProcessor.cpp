@@ -358,7 +358,7 @@ bool MessageProcessor::processMessage(const std::string& messageString,
 
     // By constructing this without a socket, I put it in ZMQ mode,
     // instead of tcp/ssl.
-    ClientConnection client(*server_);
+    ClientConnection client;
 
     OTPseudonym nym(message.m_strNymID);
 

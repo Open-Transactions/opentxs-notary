@@ -131,7 +131,6 @@
 **************************************************************/
 
 #include "ClientConnection.hpp"
-#include "OTServer.hpp"
 
 #include <opentxs/core/OTAsymmetricKey.hpp>
 #include <opentxs/core/OTDataCheck.hpp>
@@ -141,15 +140,6 @@
 #include <opentxs/core/OTPayload.hpp>
 
 #include <cstdio>
-
-extern "C" {
-#ifdef _WIN32
-#include <winsock2.h>
-#pragma comment(lib, "ws2_32.lib")
-#else
-#include <netinet/in.h>
-#endif
-}
 
 namespace opentxs
 {
@@ -206,7 +196,7 @@ bool ClientConnection::SealMessageForRecipient(OTMessage& theMsg,
 }
 
 // For XmlRpc / HTTP mode.
-ClientConnection::ClientConnection(OTServer&)
+ClientConnection::ClientConnection()
     : m_pPublicKey(OTAsymmetricKey::KeyFactory())
 {
     m_bHaveHeader = false;
