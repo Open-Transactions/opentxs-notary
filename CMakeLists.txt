@@ -89,11 +89,6 @@ if(UNIX AND NOT APPLE)
   list(APPEND OPENTXS_AUDITOR_SYSTEM_LIBRARIES dl)
 endif()
 
-
-## TODO: lclc Remove that when we moved to ZMQ 4 only
-add_definitions(-DOT_ZMQ_4_MODE)
-
-
 #-----------------------------------------------------------------------------
 # Force out-of-source build
 
