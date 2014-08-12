@@ -1,28 +1,28 @@
 os:
-  - linux
-  - osx
+- linux
+- osx
 language: cpp
 compiler:
-  - gcc
-  - clang
+- gcc
+- clang
 install:
-  - ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
-  - ./scripts/travis/install-opentxs.sh "0.93.0" "${CXX}" "${TRAVIS_OS_NAME}"
+- ./scripts/travis/install-deps.sh "${TRAVIS_OS_NAME}"
+- ./scripts/travis/install-opentxs.sh "0.93.0" "${CXX}" "${TRAVIS_OS_NAME}"
 before_script:
-  - ./scripts/travis/cppcheck_wrapper.sh ./src
-  - ./scripts/travis/clang-format-checker.sh
+- ./scripts/travis/cppcheck_wrapper.sh ./src
+- ./scripts/travis/clang-format-checker.sh
 script:
-  - mkdir build
-  - cd build
-  - cmake .. -DCMAKE_PREFIX_PATH=${TRAVIS_BUILD_DIR}/opentxs && make -j 2 && make test
-  - cd ..
+- mkdir build
+- cd build
+- cmake .. -DCMAKE_PREFIX_PATH=${TRAVIS_BUILD_DIR}/opentxs && make -j 2 && make test
+- cd ..
 before_deploy:
 - ./scripts/travis/build_tar.sh "${TRAVIS_OS_NAME}"
 deploy:
   provider: s3
   access_key_id: AKIAIR7XPKSU5OIGJ5IA
   secret_access_key:
-    secure: 1tz0XwZo6AWeD6SMx6oCJ3XjAXueODciduLAeJj0W7OKn9/+A5m/SWpyTuHiuko1ZWX3xyc4Ygswnh8MpLaNbAyau12KOBdJvmABEA+w1vV3OcOB0tH+Gmstxb5/Q3ZkkO0ADQAuyHjcgEJgaJNEIq9Z0wdbm+0yxW+ggwXDsZk=
+    secure: iDrSuBkQOFwOk5ByP6hmidmhT4/jtW0uumHSZAz14OXLm9b5Jar6BgGdJg4Kxj22F3I2jbzjWxzzAk5DxfzaKkkHFz/DXGLbV+rD3h4vKEF6+xS2lgwfkzLwhablECFU9f9faQgZuKWJB+l/YekEP3jQH/+fW2Vg5Q/SBh2WUfU=
   bucket: monetas-builds
   skip_cleanup: true
   local-dir: s3
@@ -31,5 +31,5 @@ deploy:
     branch: ${TRAVIS_BRANCH}
 branches:
   only:
-    - master
-    - develop
+  - master
+  - develop
