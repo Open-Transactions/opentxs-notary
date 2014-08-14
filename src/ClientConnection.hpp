@@ -133,10 +133,6 @@
 #ifndef __OT_CLIENT_CONNECTION_HPP__
 #define __OT_CLIENT_CONNECTION_HPP__
 
-#include <opentxs/core/OTglobal.h>
-#include <opentxs/core/OTData.hpp>
-#include <opentxs/core/OTMessageBuffer.hpp>
-
 namespace opentxs
 {
 
@@ -147,29 +143,17 @@ class OTEnvelope;
 
 class ClientConnection
 {
-    OTData m_Buffer; // As we read data, we buffer it here and chunk it out into
-                     // messages.
-
-    bool m_bHaveHeader; // If we've loaded a header already, and we're waiting
-                        // for the byte count, this is true.
-    OTMessageBuffer m_listIn;
-    OTMessageBuffer m_listOut;
-
-    OTAsymmetricKey* m_pPublicKey;
-
-    bool m_bFocused; // Defaults to false. If true, it means we're in XmlRpc
-                     // mode, or some such, instead of TCP over SSL streaming.
-
 public:
-    ClientConnection(); // XmlRpc    / over HTTP mode.
+    ClientConnection();
     ~ClientConnection();
 
-    void SetPublicKey(const OTString& strPublicKey);
-    void SetPublicKey(const OTAsymmetricKey& thePublicKey);
+    void SetPublicKey(const OTString& publicKey);
+    void SetPublicKey(const OTAsymmetricKey& publicKey);
 
-    // This is for XmlRpc mode (i.e. there is not actually an open connection
-    // being maintained.)
-    bool SealMessageForRecipient(OTMessage& theMsg, OTEnvelope& theEnvelope);
+    bool SealMessageForRecipient(OTMessage& msg, OTEnvelope& envelope);
+
+private:
+    OTAsymmetricKey* publicKey_;
 };
 
 } // namespace opentxs
