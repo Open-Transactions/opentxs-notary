@@ -133,10 +133,6 @@
 #ifndef __OT_CLIENT_CONNECTION_HPP__
 #define __OT_CLIENT_CONNECTION_HPP__
 
-#include <opentxs/core/OTglobal.h>
-#include <opentxs/core/OTData.hpp>
-#include <opentxs/core/OTMessageBuffer.hpp>
-
 namespace opentxs
 {
 
@@ -151,18 +147,13 @@ public:
     ClientConnection();
     ~ClientConnection();
 
-    void SetPublicKey(const OTString& strPublicKey);
-    void SetPublicKey(const OTAsymmetricKey& thePublicKey);
+    void SetPublicKey(const OTString& publicKey);
+    void SetPublicKey(const OTAsymmetricKey& publicKey);
 
-    bool SealMessageForRecipient(OTMessage& theMsg, OTEnvelope& theEnvelope);
+    bool SealMessageForRecipient(OTMessage& msg, OTEnvelope& envelope);
 
 private:
-    OTData m_Buffer;
-    bool m_bHaveHeader;
-    OTMessageBuffer m_listIn;
-    OTMessageBuffer m_listOut;
-    OTAsymmetricKey* m_pPublicKey;
-    bool m_bFocused;
+    OTAsymmetricKey* publicKey_;
 };
 
 } // namespace opentxs

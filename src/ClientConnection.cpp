@@ -150,24 +150,24 @@ namespace opentxs
 // being sent to the client, he has access to the public key.
 void ClientConnection::SetPublicKey(const OTString& strPublicKey)
 {
-    OT_ASSERT(nullptr != m_pPublicKey);
+    OT_ASSERT(nullptr != publicKey_);
 
     // SetPublicKey takes the ascii-encoded text, including bookends, and
     // processes
     // it into the OTAssymeticKey object. If successful, the OTAssymetricKey is
     // now
     // fully functional for encrypting and verifying.
-    m_pPublicKey->SetPublicKey(strPublicKey, true /*bEscaped*/);
+    publicKey_->SetPublicKey(strPublicKey, true /*bEscaped*/);
 }
 
 void ClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
 {
-    OT_ASSERT(nullptr != m_pPublicKey);
+    OT_ASSERT(nullptr != publicKey_);
 
     OTString strNymsPublicKey;
 
     thePublicKey.GetPublicKey(strNymsPublicKey, true);
-    m_pPublicKey->SetPublicKey(strNymsPublicKey, true /*bEscaped*/);
+    publicKey_->SetPublicKey(strNymsPublicKey, true /*bEscaped*/);
 }
 
 // This function, you pass in a message and it returns true or false to let
@@ -178,15 +178,15 @@ void ClientConnection::SetPublicKey(const OTAsymmetricKey& thePublicKey)
 bool ClientConnection::SealMessageForRecipient(OTMessage& theMsg,
                                                OTEnvelope& theEnvelope)
 {
-    OT_ASSERT(nullptr != m_pPublicKey);
+    OT_ASSERT(nullptr != publicKey_);
 
-    if (!(m_pPublicKey->IsEmpty()) && m_pPublicKey->IsPublic()) {
+    if (!(publicKey_->IsEmpty()) && publicKey_->IsPublic()) {
         // Save the ready-to-go message into a string.
         OTString strEnvelopeContents(theMsg);
 
         // Seal the string up into an encrypted Envelope.
         if (strEnvelopeContents.Exists())
-            return theEnvelope.Seal(*m_pPublicKey, strEnvelopeContents);
+            return theEnvelope.Seal(*publicKey_, strEnvelopeContents);
     }
     else
         OTLog::Error(
@@ -196,18 +196,15 @@ bool ClientConnection::SealMessageForRecipient(OTMessage& theMsg,
 }
 
 // For XmlRpc / HTTP mode.
-ClientConnection::ClientConnection()
-    : m_pPublicKey(OTAsymmetricKey::KeyFactory())
+ClientConnection::ClientConnection() : publicKey_(OTAsymmetricKey::KeyFactory())
 {
-    m_bHaveHeader = false;
-    m_bFocused = true; // rpc over http mode
 }
 
 ClientConnection::~ClientConnection()
 {
-    if (nullptr != m_pPublicKey) {
-        delete m_pPublicKey;
-        m_pPublicKey = nullptr;
+    if (nullptr != publicKey_) {
+        delete publicKey_;
+        publicKey_ = nullptr;
     }
 }
 
