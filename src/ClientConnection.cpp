@@ -149,10 +149,8 @@ void ClientConnection::SetPublicKey(const OTString& publicKey)
     OT_ASSERT(nullptr != publicKey_);
 
     // SetPublicKey takes the ascii-encoded text, including bookends, and
-    // processes
-    // it into the OTAssymeticKey object. If successful, the OTAssymetricKey is
-    // now
-    // fully functional for encrypting and verifying.
+    // processes it into the OTAssymeticKey object. If successful, the
+    // OTAssymetricKey is now fully functional for encrypting and verifying.
     publicKey_->SetPublicKey(publicKey, true);
 }
 
@@ -170,7 +168,6 @@ void ClientConnection::SetPublicKey(const OTAsymmetricKey& publicKey)
 // you know whether the message was successfully sealed into envelope.
 // (Based on the public key into cached in the ClientConnection...)
 // This is for XmlRpc / HTTP mode.
-//
 bool ClientConnection::SealMessageForRecipient(OTMessage& msg,
                                                OTEnvelope& envelope)
 {
@@ -191,7 +188,6 @@ bool ClientConnection::SealMessageForRecipient(OTMessage& msg,
     return false;
 }
 
-// For XmlRpc / HTTP mode.
 ClientConnection::ClientConnection() : publicKey_(OTAsymmetricKey::KeyFactory())
 {
 }
