@@ -241,7 +241,7 @@ void MessageProcessor::run()
         // Theoretically the "number of requests" that we process EACH PULSE.
         // (The timing code here is still pretty new, need to do some load
         // testing.)
-        for (int32_t i = 0; i < OTServer::GetHeartbeatNoRequests(); i++) {
+        for (int i = 0; i < OTServer::GetHeartbeatNoRequests(); i++) {
             OTString messageString;
 
             // With 100ms heartbeat, receive will try 100 ms, then 200 ms, then
@@ -255,14 +255,13 @@ void MessageProcessor::run()
             bool received = socket_.Receive(messageString);
 
             if (received) {
-                std::string reply;
-
                 if (messageString.GetLength() <= 0) {
                     OTLog::Error("server main: Received a message, but of 0 "
                                  "length or less. Weird. (Skipping it.)\n");
                 }
                 else {
                     std::string strMsg(messageString.Get());
+                    std::string reply;
                     bool shouldDisconnect = processMessage(strMsg, reply);
 
                     if ((reply.length() <= 0) || shouldDisconnect) {
