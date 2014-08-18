@@ -1,7 +1,5 @@
 # Copyright (c) Monetas AG, 2014
 
-set(name opentxs-server)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
 
 if(MSVC)
@@ -25,21 +23,5 @@ else()
   find_library(ext opentxs-ext)
 endif(MSVC)
    
-set(cxx-sources
-  AcctFunctor_PayDividend.cpp
-  MessageProcessor.cpp
-  ClientConnection.cpp
-  OTServer.cpp
-  main.cpp
-)
-
-add_executable(${name} ${cxx-sources})
-if(MSVC)
-  target_link_libraries(${name} ${core} ${ext} irrxml)
-else()
-  target_link_libraries(${name} ${core} ${ext})
-endif(MSVC)
-
+add_subdirectory(server)
 add_subdirectory(createmint)
-
-install(TARGETS opentxs-server DESTINATION bin)
