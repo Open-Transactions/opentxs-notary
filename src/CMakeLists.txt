@@ -23,5 +23,6 @@ else()
   find_library(ext opentxs-ext)
 endif(MSVC)
    
+add_subdirectory(base)
 add_subdirectory(server)
 add_subdirectory(createmint)
