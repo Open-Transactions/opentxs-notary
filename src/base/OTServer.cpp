@@ -831,9 +831,9 @@ bool OTServer::SaveMainFileToString(OTString& strMainFile)
                 szFunc);
     }
 
-    // mapOfContracts    m_mapContracts;   // If the server needs to store
+    // ContractsMap    m_mapContracts;   // If the server needs to store
     // copies of the asset contracts, then here they are.
-    // mapOfMints        m_mapMints;          // Mints for each of those.
+    // MintsMap        m_mapMints;          // Mints for each of those.
 
     for (auto& it : m_mapContracts) {
         OTContract* pContract = it.second;
@@ -1286,7 +1286,7 @@ void OTServer::Release_Server()
     // (asset contracts, and mints, for example.)
     //
     while (!m_mapContracts.empty()) {
-        mapOfContracts::iterator it = m_mapContracts.begin();
+        auto it = m_mapContracts.begin();
         OTAssetContract* pContract = it->second;
         OT_ASSERT(nullptr != pContract);
         m_mapContracts.erase(it);
@@ -1296,7 +1296,7 @@ void OTServer::Release_Server()
     // Mints...
     //
     while (!m_mapMints.empty()) {
-        mapOfMints::iterator it = m_mapMints.begin();
+        auto it = m_mapMints.begin();
         OTMint* pMint = it->second;
         OT_ASSERT(nullptr != pMint);
         m_mapMints.erase(it);

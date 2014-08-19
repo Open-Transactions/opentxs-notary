@@ -157,10 +157,6 @@ class OTServerContract;
 class OTTrade;
 class OTTransaction;
 
-typedef std::multimap<std::string, OTMint*> mapOfMints;
-typedef std::map<std::string, std::string> mapOfBaskets;
-typedef std::map<std::string, OTAssetContract*> mapOfContracts;
-
 // Why does the map of mints use multimap instead of map?
 // Because there might be multiple valid mints for the same asset type.
 // Perhaps I am redeeming tokens from the previous series, which have not yet
@@ -471,6 +467,11 @@ public:
                              bool& outSuccess);
 
 private:
+    typedef std::multimap<std::string, OTMint*> MintsMap;
+    typedef std::map<std::string, std::string> BasketsMap;
+    typedef std::map<std::string, OTAssetContract*> ContractsMap;
+
+private:
     OTString m_strWalletFilename;
     OTString m_strConfigFilename;
     OTString m_strLogFilename;
@@ -494,17 +495,17 @@ private:
     OTPseudonym m_nymServer;
 
     // The asset types supported by this server.
-    mapOfContracts m_mapContracts;
+    ContractsMap m_mapContracts;
     // The mints for each asset type.
-    mapOfMints m_mapMints;
+    MintsMap m_mapMints;
     // The list of voucher accounts (see GetVoucherAccount below for details)
     OTAcctList m_VoucherAccts;
     // maps basketId with basketAccountId
-    mapOfBaskets m_mapBaskets;
+    BasketsMap m_mapBaskets;
     // basket issuer account ID, which is *different* on each server, using the
     // Basket Currency's ID, which is the *same* on every server.)
     // Need a way to look up a Basket Account ID using its Contract ID
-    mapOfBaskets m_mapBasketContracts;
+    BasketsMap m_mapBasketContracts;
 
     OTCron m_Cron; // This is where re-occurring and expiring tasks go.
 
