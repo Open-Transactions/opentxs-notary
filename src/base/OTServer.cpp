@@ -136,6 +136,8 @@
 #include "ClientConnection.hpp"
 
 #include <opentxs/core/OTAsymmetricKey.hpp>
+#include <opentxs/core/OTAccount.hpp>
+#include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/OTBasket.hpp>
 #include <opentxs/core/OTCachedKey.hpp>
 #include <opentxs/core/OTCheque.hpp>

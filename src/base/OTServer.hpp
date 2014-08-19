@@ -134,9 +134,7 @@
 #define __OT_SERVER_HPP__
 
 #include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTAcctList.hpp>
-#include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/OTCron.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
@@ -156,8 +154,6 @@ class OTMessage;
 class OTMint;
 class OTPayment;
 class OTServerContract;
-class OTTrade;
-class OTTransaction;
 
 // Why does the map of mints use multimap instead of map?
 // Because there might be multiple valid mints for the same asset type.
