@@ -1,6 +1,7 @@
 # Copyright (c) Monetas AG, 2014
 
 set(cxx-sources
+  ServerSettings.cpp
   AcctFunctor_PayDividend.cpp
   ClientConnection.cpp
   MessageProcessor.cpp

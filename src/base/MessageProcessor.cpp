@@ -130,6 +130,7 @@
  -----END PGP SIGNATURE-----
  **************************************************************/
 
+#include "ServerSettings.hpp"
 #include "ServerLoader.hpp"
 #include "MessageProcessor.hpp"
 #include "OTServer.hpp"
@@ -227,7 +228,7 @@ void MessageProcessor::run()
         // Most often it just returns doing nothing (waiting for its timer.)
         // Wait for client http requests (and process replies out to them.)
         // Number of requests to process per heartbeat:
-        // OTServer::GetHeartbeatNoRequests()
+        // ServerSettings::GetHeartbeatNoRequests()
         //
         // Loop: process up to 10 client requests, then sleep for 1/10th second.
         // That's a total of 100 requests per second. Can the computers handle
@@ -248,7 +249,7 @@ void MessageProcessor::run()
         // Theoretically the "number of requests" that we process EACH PULSE.
         // (The timing code here is still pretty new, need to do some load
         // testing.)
-        for (int i = 0; i < OTServer::GetHeartbeatNoRequests(); i++) {
+        for (int i = 0; i < ServerSettings::GetHeartbeatNoRequests(); i++) {
             OTString messageString;
 
             // With 100ms heartbeat, receive will try 100 ms, then 200 ms, then
@@ -304,9 +305,9 @@ void MessageProcessor::run()
         double endTick = t.getElapsedTimeInMilliSec();
         int64_t elapsed = static_cast<int64_t>(endTick - startTick);
 
-        if (elapsed < OTServer::GetHeartbeatMsBetweenBeats()) {
-            int64_t sleepMS = OTServer::GetHeartbeatMsBetweenBeats() - elapsed;
-            OTLog::SleepMilliseconds(sleepMS);
+        if (elapsed < ServerSettings::GetHeartbeatMsBetweenBeats()) {
+            int64_t ms = ServerSettings::GetHeartbeatMsBetweenBeats() - elapsed;
+            OTLog::SleepMilliseconds(ms);
         }
 
         if (server_->IsFlaggedForShutdown()) {
