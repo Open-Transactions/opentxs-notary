@@ -179,10 +179,6 @@ public:
     OTServer();
     ~OTServer();
 
-    // Delete various dynamically allocated things such as the map of Mints,
-    // and the map of asset contracts.
-    void Release();
-
     inline bool IsFlaggedForShutdown() const
     {
         return m_bShutdownFlag;
@@ -198,47 +194,6 @@ public:
     // not needed -- erase this function.
     //    bool AddTradeToMarket(OTTrade & theTrade);
 
-    // Each asset contract has its own series of Mints
-    OTMint* GetMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
-
-    // Whenever the server issues a voucher (like a cashier's cheque), it puts
-    // the funds in one
-    // of these voucher accounts (one for each asset type ID). Then it issues
-    // the cheque from the
-    // same account.
-    // TODO: also should save the cheque itself to a folder, where the folder is
-    // named based on the date
-    // that the cheque will expire.  This way, the server operator can go back
-    // later, or have a script,
-    // to retrieve the cheques from the expired folders, and total them. The
-    // server operator is free to
-    // remove that total from the Voucher Account once the cheque has expired:
-    // it is his money now.
-    // OTAccount * GetVoucherAccount(const OTIdentifier & assetTypeId);
-    std::shared_ptr<OTAccount> GetVoucherAccount(
-        const OTIdentifier& assetTypeId);
-
-    // When a user uploads an asset contract, the server adds it to the list
-    // (and verifies the user's key against the
-    // contract.) This way the server has a directory with all the asset
-    // contracts that it supports, saved by their ID.
-    // As long as the IDs are in the server file, it can look them up.
-    // When a new asset type is added, a new Mint is added as well. It goes into
-    // the mints folder.
-    bool AddAssetContract(OTAssetContract& contract);
-    OTAssetContract* GetAssetContract(const OTIdentifier& assetTypeId);
-
-    bool AddBasketAccountID(const OTIdentifier& basketId,
-                            const OTIdentifier& basketAccountId,
-                            const OTIdentifier& basketContractId);
-    bool LookupBasketAccountID(const OTIdentifier& basketId,
-                               OTIdentifier& basketAccountId);
-
-    bool LookupBasketAccountIDByContractID(const OTIdentifier& basketContractId,
-                                           OTIdentifier& basketAccountId);
-    bool LookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
-                                           OTIdentifier& basketContractId);
-
     const OTPseudonym& GetServerNym() const;
 
     // Loads the config file,
@@ -247,20 +202,52 @@ public:
     // Loads the main file,
     // Validates the server ID (for the Nym)
     void Init(bool readOnly = false);
-    bool LoadConfigFile();
-    void ActivateCron();
 
+    void ActivateCron();
     void ProcessCron();
+
+    bool ProcessUserCommand(OTMessage& msg, OTMessage& msgOut,
+                            ClientConnection* connection = nullptr,
+                            OTPseudonym* nym = nullptr);
+
+    bool IssueNextTransactionNumber(OTPseudonym& nym,
+                                    int64_t& transactionNumber,
+                                    bool storeTheNumber = true);
+
+    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
+    // receipt. contains payment already.
+    // or pass pPayment instead: we will create our own msg here (with payment
+    // inside) to be attached to the receipt.
+    // szCommand for passing payDividend (as the message command instead of
+    // sendUserInstrument, the default.)
+    bool SendInstrumentToNym(const OTIdentifier& serverId,
+                             const OTIdentifier& senderUserId,
+                             const OTIdentifier& recipientUserId,
+                             OTMessage* msg = nullptr,
+                             const OTPayment* payment = nullptr,
+                             const char* command = nullptr);
+
+private:
+    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
+    // receipt. contains payment already.
+    // or pass pPayment instead: we will create our own msg here (with payment
+    // inside) to be attached to the receipt.
+    bool SendMessageToNym(const OTIdentifier& serverId,
+                          const OTIdentifier& senderUserId,
+                          const OTIdentifier& recipientUserId,
+                          OTMessage* msg = nullptr,
+                          const OTString* messageString = nullptr);
+
+    bool LoadConfigFile();
+
     bool CreateMainFile();
     bool LoadMainFile(bool readOnly = false);
     bool LoadServerUserAndContract();
     bool SaveMainFile();
     bool SaveMainFileToString(OTString& filename);
-    bool ProcessUserCommand(OTMessage& msg, OTMessage& msgOut,
-                            ClientConnection* connection = nullptr,
-                            OTPseudonym* nym = nullptr);
 
     bool ValidateServerIDfromUser(OTString& serverID);
+
     // After EVERY / ANY transaction, plus certain messages, we drop a copy of
     // the server's reply into the Nymbox.  This way we are GUARANTEED that the
     // Nym will receive and process it. (And thus never get out of sync.)  This
@@ -282,28 +269,46 @@ public:
                              const OTString* messageString = nullptr,
                              const char* command = nullptr);
 
-    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
-    // receipt. contains payment already.
-    // or pass pPayment instead: we will create our own msg here (with payment
-    // inside) to be attached to the receipt.
-    // szCommand for passing payDividend (as the message command instead of
-    // sendUserInstrument, the default.)
-    bool SendInstrumentToNym(const OTIdentifier& serverId,
-                             const OTIdentifier& senderUserId,
-                             const OTIdentifier& recipientUserId,
-                             OTMessage* msg = nullptr,
-                             const OTPayment* payment = nullptr,
-                             const char* command = nullptr);
+    // Each asset contract has its own series of Mints
+    OTMint* GetMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
 
-    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
-    // receipt. contains payment already.
-    // or pass pPayment instead: we will create our own msg here (with payment
-    // inside) to be attached to the receipt.
-    bool SendMessageToNym(const OTIdentifier& serverId,
-                          const OTIdentifier& senderUserId,
-                          const OTIdentifier& recipientUserId,
-                          OTMessage* msg = nullptr,
-                          const OTString* messageString = nullptr);
+    // Whenever the server issues a voucher (like a cashier's cheque), it puts
+    // the funds in one
+    // of these voucher accounts (one for each asset type ID). Then it issues
+    // the cheque from the
+    // same account.
+    // TODO: also should save the cheque itself to a folder, where the folder is
+    // named based on the date
+    // that the cheque will expire.  This way, the server operator can go back
+    // later, or have a script,
+    // to retrieve the cheques from the expired folders, and total them. The
+    // server operator is free to
+    // remove that total from the Voucher Account once the cheque has expired:
+    // it is his money now.
+    std::shared_ptr<OTAccount> GetVoucherAccount(
+        const OTIdentifier& assetTypeId);
+
+    // When a user uploads an asset contract, the server adds it to the list
+    // (and verifies the user's key against the
+    // contract.) This way the server has a directory with all the asset
+    // contracts that it supports, saved by their ID.
+    // As long as the IDs are in the server file, it can look them up.
+    // When a new asset type is added, a new Mint is added as well. It goes into
+    // the mints folder.
+    bool AddAssetContract(OTAssetContract& contract);
+
+    OTAssetContract* GetAssetContract(const OTIdentifier& assetTypeId);
+
+    bool AddBasketAccountID(const OTIdentifier& basketId,
+                            const OTIdentifier& basketAccountId,
+                            const OTIdentifier& basketContractId);
+    bool LookupBasketAccountID(const OTIdentifier& basketId,
+                               OTIdentifier& basketAccountId);
+
+    bool LookupBasketAccountIDByContractID(const OTIdentifier& basketContractId,
+                                           OTIdentifier& basketAccountId);
+    bool LookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
+                                           OTIdentifier& basketContractId);
 
     void UserCmdCheckServerID(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
@@ -376,9 +381,6 @@ public:
     void UserCmdGetNym_MarketOffers(OTPseudonym& nym, OTMessage& msgIn,
                                     OTMessage& msgOut);
 
-    bool IssueNextTransactionNumber(OTPseudonym& nym,
-                                    int64_t& transactionNumber,
-                                    bool storeTheNumber = true);
     bool VerifyTransactionNumber(OTPseudonym& nym,
                                  const int64_t& transactionNumber);
     bool RemoveTransactionNumber(OTPseudonym& nym,

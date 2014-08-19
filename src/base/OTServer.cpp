@@ -1216,11 +1216,6 @@ OTServer::OTServer()
 
 OTServer::~OTServer()
 {
-    Release();
-}
-
-void OTServer::Release()
-{
     if (nullptr == m_pServerContract) delete m_pServerContract;
     m_pServerContract = nullptr;
     // Erase various dynamically-allocated objects...
