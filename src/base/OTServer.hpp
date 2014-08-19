@@ -157,11 +157,9 @@ class OTServerContract;
 class OTTrade;
 class OTTransaction;
 
-// these correspond--same IDs.
 typedef std::multimap<std::string, OTMint*> mapOfMints;
 typedef std::map<std::string, std::string> mapOfBaskets;
 typedef std::map<std::string, OTAssetContract*> mapOfContracts;
-typedef std::map<std::string, OTAccount*> mapOfAccounts;
 
 // Why does the map of mints use multimap instead of map?
 // Because there might be multiple valid mints for the same asset type.
