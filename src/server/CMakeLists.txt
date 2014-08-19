@@ -1,6 +1,6 @@
 # Copyright (c) Monetas AG, 2014
 
-set(name createmint)
+set(name opentxs-server)
 
 set(cxx-sources
   main.cpp
@@ -13,4 +13,4 @@ else()
   target_link_libraries(${name} opentxs-server-base ${core} ${ext})
 endif(MSVC)
 
-install(TARGETS createmint DESTINATION bin)
+install(TARGETS opentxs-server DESTINATION bin)

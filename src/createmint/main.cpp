@@ -124,7 +124,7 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include "../OTServer.hpp"
+#include "../base/OTServer.hpp"
 
 #include <opentxs/core/OTCrypto.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
