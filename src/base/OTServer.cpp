@@ -2827,6 +2827,10 @@ bool OTServer::SendInstrumentToNym(
     return bDropped;
 }
 
+// msg, the request msg from payer, which is attached WHOLE to the Nymbox
+// receipt. contains payment already.
+// or pass pPayment instead: we will create our own msg here (with payment
+// inside) to be attached to the receipt.
 bool OTServer::SendMessageToNym(
     const OTIdentifier& SERVER_ID, const OTIdentifier& SENDER_USER_ID,
     const OTIdentifier& RECIPIENT_USER_ID,
