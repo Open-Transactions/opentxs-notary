@@ -192,8 +192,6 @@ private:
                           OTMessage* msg = nullptr,
                           const OTString* messageString = nullptr);
 
-    bool LoadConfigFile();
-
     bool CreateMainFile();
     bool LoadMainFile(bool readOnly = false);
     bool LoadServerUserAndContract();
