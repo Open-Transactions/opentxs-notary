@@ -1275,10 +1275,10 @@ OTServer::OTServer()
 
 OTServer::~OTServer()
 {
-    Release_Server();
+    Release();
 }
 
-void OTServer::Release_Server()
+void OTServer::Release()
 {
     if (nullptr == m_pServerContract) delete m_pServerContract;
     m_pServerContract = nullptr;
@@ -1330,13 +1330,6 @@ void OTServer::Release_Server()
                           "PID back to 0): %s\n",
                           strPIDPath.Get());
     }
-}
-
-void OTServer::Release()
-{
-    Release_Server();
-
-    // ot_super::Release() call would normally go here, if we had a super class.
 }
 
 // Loads the config file,
