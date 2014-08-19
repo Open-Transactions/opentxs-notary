@@ -283,6 +283,11 @@ const OTPseudonym& OTServer::GetServerNym() const
     return m_nymServer;
 }
 
+bool OTServer::IsFlaggedForShutdown() const
+{
+    return m_bShutdownFlag;
+}
+
 // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID.
 bool OTServer::AddBasketAccountID(const OTIdentifier& BASKET_ID,
                                   const OTIdentifier& BASKET_ACCOUNT_ID,

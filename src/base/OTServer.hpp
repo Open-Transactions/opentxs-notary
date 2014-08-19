@@ -181,14 +181,9 @@ public:
                              const OTPayment* payment = nullptr,
                              const char* command = nullptr);
 
-    bool IsFlaggedForShutdown() const
-    {
-        return m_bShutdownFlag;
-    }
-
     bool GetConnectInfo(OTString& hostname, int32_t& port);
-
     const OTPseudonym& GetServerNym() const;
+    bool IsFlaggedForShutdown() const;
 
 private:
     bool SendMessageToNym(const OTIdentifier& serverId,
