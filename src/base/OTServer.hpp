@@ -161,28 +161,6 @@ public:
     OTServer();
     ~OTServer();
 
-    inline bool IsFlaggedForShutdown() const
-    {
-        return m_bShutdownFlag;
-    }
-
-    // Obviously this will only work once the server contract has been loaded
-    // from storage.
-    bool GetConnectInfo(OTString& hostname, int32_t& port);
-
-    // Trade is passed in as reference to make sure it exists.
-    // But the trade MUST be heap-allocated, as the market and cron
-    // objects will own it and handle cleaning it up.
-    // not needed -- erase this function.
-    //    bool AddTradeToMarket(OTTrade & theTrade);
-
-    const OTPseudonym& GetServerNym() const;
-
-    // Loads the config file,
-    // Initializes OTDB:: default storage,
-    // Sets up the data folders,
-    // Loads the main file,
-    // Validates the server ID (for the Nym)
     void Init(bool readOnly = false);
 
     void ActivateCron();
@@ -196,18 +174,21 @@ public:
                                     int64_t& transactionNumber,
                                     bool storeTheNumber = true);
 
-    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
-    // receipt. contains payment already.
-    // or pass pPayment instead: we will create our own msg here (with payment
-    // inside) to be attached to the receipt.
-    // szCommand for passing payDividend (as the message command instead of
-    // sendUserInstrument, the default.)
     bool SendInstrumentToNym(const OTIdentifier& serverId,
                              const OTIdentifier& senderUserId,
                              const OTIdentifier& recipientUserId,
                              OTMessage* msg = nullptr,
                              const OTPayment* payment = nullptr,
                              const char* command = nullptr);
+
+    bool IsFlaggedForShutdown() const
+    {
+        return m_bShutdownFlag;
+    }
+
+    bool GetConnectInfo(OTString& hostname, int32_t& port);
+
+    const OTPseudonym& GetServerNym() const;
 
 private:
     // msg, the request msg from payer, which is attached WHOLE to the Nymbox
