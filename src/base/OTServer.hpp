@@ -140,7 +140,9 @@
 #include <opentxs/core/OTCron.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
-
+#include <memory>
+#include <string>
+#include <map>
 #include <cstddef>
 
 namespace opentxs
