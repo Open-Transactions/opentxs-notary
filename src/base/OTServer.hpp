@@ -207,7 +207,7 @@ class OTServer
     mapOfMints m_mapMints;
     // The list of voucher accounts (see GetVoucherAccount below for details)
     OTAcctList m_VoucherAccts;
-    // maps BASKET_ID with BASKET_ACCOUNT_ID
+    // maps basketId with basketAccountId
     mapOfBaskets m_mapBaskets;
     // basket issuer account ID, which is *different* on each server, using the
     // Basket Currency's ID, which is the *same* on every server.)
@@ -273,7 +273,6 @@ class OTServer
     static bool __transact_market_offer;
     static bool __transact_payment_plan;
     static bool __transact_cancel_cron_item;
-
     static bool __transact_smart_contract;
     static bool __cmd_trigger_clause;
 
@@ -283,36 +282,39 @@ public:
         return __min_market_scale;
     }
 
-    static void SetMinMarketScale(int64_t lVal)
+    static void SetMinMarketScale(int64_t value)
     {
-        __min_market_scale = lVal;
+        __min_market_scale = value;
     }
 
     static int32_t GetHeartbeatNoRequests()
     {
         return __heartbeat_no_requests;
     }
-    static void SetHeartbeatNoRequests(int32_t nVal)
+
+    static void SetHeartbeatNoRequests(int32_t value)
     {
-        __heartbeat_no_requests = nVal;
+        __heartbeat_no_requests = value;
     }
 
     static int32_t GetHeartbeatMsBetweenBeats()
     {
         return __heartbeat_ms_between_beats;
     }
-    static void SetHeartbeatMsBetweenBeats(int32_t nVal)
+
+    static void SetHeartbeatMsBetweenBeats(int32_t value)
     {
-        __heartbeat_ms_between_beats = nVal;
+        __heartbeat_ms_between_beats = value;
     }
 
     static const std::string& GetOverrideNymID()
     {
         return __override_nym_id;
     }
-    static void SetOverrideNymID(const std::string& the_id)
+
+    static void SetOverrideNymID(const std::string& id)
     {
-        __override_nym_id = the_id;
+        __override_nym_id = id;
     }
 
     OTServer();
@@ -331,7 +333,7 @@ public:
 
     // Obviously this will only work once the server contract has been loaded
     // from storage.
-    bool GetConnectInfo(OTString& strHostname, int32_t& nPort);
+    bool GetConnectInfo(OTString& hostname, int32_t& port);
 
     // Trade is passed in as reference to make sure it exists.
     // But the trade MUST be heap-allocated, as the market and cron
@@ -340,7 +342,7 @@ public:
     //    bool AddTradeToMarket(OTTrade & theTrade);
 
     // Each asset contract has its own series of Mints
-    OTMint* GetMint(const OTIdentifier& ASSET_TYPE_ID, int32_t nSeries);
+    OTMint* GetMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
 
     // Whenever the server issues a voucher (like a cashier's cheque), it puts
     // the funds in one
@@ -355,9 +357,9 @@ public:
     // server operator is free to
     // remove that total from the Voucher Account once the cheque has expired:
     // it is his money now.
-    // OTAccount * GetVoucherAccount(const OTIdentifier & ASSET_TYPE_ID);
+    // OTAccount * GetVoucherAccount(const OTIdentifier & assetTypeId);
     std::shared_ptr<OTAccount> GetVoucherAccount(
-        const OTIdentifier& ASSET_TYPE_ID);
+        const OTIdentifier& assetTypeId);
 
     // When a user uploads an asset contract, the server adds it to the list
     // (and verifies the user's key against the
@@ -366,21 +368,19 @@ public:
     // As long as the IDs are in the server file, it can look them up.
     // When a new asset type is added, a new Mint is added as well. It goes into
     // the mints folder.
-    bool AddAssetContract(OTAssetContract& theContract);
-    OTAssetContract* GetAssetContract(const OTIdentifier& ASSET_TYPE_ID);
+    bool AddAssetContract(OTAssetContract& contract);
+    OTAssetContract* GetAssetContract(const OTIdentifier& assetTypeId);
 
-    bool AddBasketAccountID(const OTIdentifier& BASKET_ID,
-                            const OTIdentifier& BASKET_ACCOUNT_ID,
-                            const OTIdentifier& BASKET_CONTRACT_ID);
-    bool LookupBasketAccountID(const OTIdentifier& BASKET_ID,
-                               OTIdentifier& BASKET_ACCOUNT_ID);
+    bool AddBasketAccountID(const OTIdentifier& basketId,
+                            const OTIdentifier& basketAccountId,
+                            const OTIdentifier& basketContractId);
+    bool LookupBasketAccountID(const OTIdentifier& basketId,
+                               OTIdentifier& basketAccountId);
 
-    bool LookupBasketAccountIDByContractID(
-        const OTIdentifier& BASKET_CONTRACT_ID,
-        OTIdentifier& BASKET_ACCOUNT_ID);
-    bool LookupBasketContractIDByAccountID(
-        const OTIdentifier& BASKET_ACCOUNT_ID,
-        OTIdentifier& BASKET_CONTRACT_ID);
+    bool LookupBasketAccountIDByContractID(const OTIdentifier& basketContractId,
+                                           OTIdentifier& basketAccountId);
+    bool LookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
+                                           OTIdentifier& basketContractId);
 
     const OTPseudonym& GetServerNym() const;
 
@@ -389,191 +389,185 @@ public:
     // Sets up the data folders,
     // Loads the main file,
     // Validates the server ID (for the Nym)
-    void Init(bool bReadOnly = false);
+    void Init(bool readOnly = false);
     bool LoadConfigFile();
     void ActivateCron();
 
     void ProcessCron();
     bool CreateMainFile();
-    bool LoadMainFile(bool bReadOnly = false);
+    bool LoadMainFile(bool readOnly = false);
     bool LoadServerUserAndContract();
     bool SaveMainFile();
-    bool SaveMainFileToString(OTString& strMainFile);
-    bool ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
-                            ClientConnection* pConnection = nullptr,
-                            OTPseudonym* pNym = nullptr);
+    bool SaveMainFileToString(OTString& filename);
+    bool ProcessUserCommand(OTMessage& msg, OTMessage& msgOut,
+                            ClientConnection* connection = nullptr,
+                            OTPseudonym* nym = nullptr);
 
-    bool ValidateServerIDfromUser(OTString& strServerID);
+    bool ValidateServerIDfromUser(OTString& serverID);
     // After EVERY / ANY transaction, plus certain messages, we drop a copy of
     // the server's reply into the Nymbox.  This way we are GUARANTEED that the
     // Nym will receive and process it. (And thus never get out of sync.)  This
     // is the function used for doing that.
-    void DropReplyNoticeToNymbox(const OTIdentifier& SERVER_ID,
-                                 const OTIdentifier& USER_ID,
-                                 const OTString& strMessage,
-                                 const int64_t& lRequestNum,
-                                 const bool bReplyTransSuccess,
-                                 OTPseudonym* pActualNym = nullptr);
+    void DropReplyNoticeToNymbox(const OTIdentifier& serverId,
+                                 const OTIdentifier& userId,
+                                 const OTString& messageString,
+                                 const int64_t& requestNum,
+                                 const bool replyTransSuccess,
+                                 OTPseudonym* actualNym = nullptr);
 
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
-    bool DropMessageToNymbox(const OTIdentifier& SERVER_ID,
-                             const OTIdentifier& SENDER_USER_ID,
-                             const OTIdentifier& RECIPIENT_USER_ID,
-                             OTTransaction::transactionType theType,
-                             OTMessage* pMsg = nullptr,
-                             const OTString* pstrMessage = nullptr,
-                             const char* szCommand = nullptr);
+    bool DropMessageToNymbox(const OTIdentifier& serverId,
+                             const OTIdentifier& senderUserId,
+                             const OTIdentifier& recipientUserId,
+                             OTTransaction::transactionType transactionType,
+                             OTMessage* msg = nullptr,
+                             const OTString* messageString = nullptr,
+                             const char* command = nullptr);
 
-    // pMsg, the request msg from payer, which is attached WHOLE to the Nymbox
+    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
     // receipt. contains payment already.
     // or pass pPayment instead: we will create our own msg here (with payment
     // inside) to be attached to the receipt.
     // szCommand for passing payDividend (as the message command instead of
     // sendUserInstrument, the default.)
-    bool SendInstrumentToNym(const OTIdentifier& SERVER_ID,
-                             const OTIdentifier& SENDER_USER_ID,
-                             const OTIdentifier& RECIPIENT_USER_ID,
-                             OTMessage* pMsg = nullptr,
-                             const OTPayment* pPayment = nullptr,
-                             const char* szCommand = nullptr);
+    bool SendInstrumentToNym(const OTIdentifier& serverId,
+                             const OTIdentifier& senderUserId,
+                             const OTIdentifier& recipientUserId,
+                             OTMessage* msg = nullptr,
+                             const OTPayment* payment = nullptr,
+                             const char* command = nullptr);
 
-    // pMsg, the request msg from payer, which is attached WHOLE to the Nymbox
+    // msg, the request msg from payer, which is attached WHOLE to the Nymbox
     // receipt. contains payment already.
     // or pass pPayment instead: we will create our own msg here (with payment
     // inside) to be attached to the receipt.
-    bool SendMessageToNym(const OTIdentifier& SERVER_ID,
-                          const OTIdentifier& SENDER_USER_ID,
-                          const OTIdentifier& RECIPIENT_USER_ID,
-                          OTMessage* pMsg = nullptr,
-                          const OTString* pstrMessage = nullptr);
+    bool SendMessageToNym(const OTIdentifier& serverId,
+                          const OTIdentifier& senderUserId,
+                          const OTIdentifier& recipientUserId,
+                          OTMessage* msg = nullptr,
+                          const OTString* messageString = nullptr);
 
-    void UserCmdCheckServerID(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdCheckServerID(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
-    void UserCmdCheckUser(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdCheckUser(OTPseudonym& nym, OTMessage& msgIn,
                           OTMessage& msgOut);
-    void UserCmdSendUserMessage(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdSendUserMessage(OTPseudonym& nym, OTMessage& msgIn,
                                 OTMessage& msgOut);
-    void UserCmdSendUserInstrument(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdSendUserInstrument(OTPseudonym& nym, OTMessage& msgIn,
                                    OTMessage& msgOut);
-    void UserCmdGetRequest(OTPseudonym& theNym, OTMessage& msgIn,
+    void UserCmdGetRequest(OTPseudonym& nym, OTMessage& msgIn,
                            OTMessage& msgOut);
-    void UserCmdGetTransactionNum(OTPseudonym& theNym, OTMessage& msgIn,
+    void UserCmdGetTransactionNum(OTPseudonym& nym, OTMessage& msgIn,
                                   OTMessage& msgOut);
-    void UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdIssueAssetType(OTPseudonym& nym, OTMessage& msgIn,
                                OTMessage& msgOut);
-    void UserCmdIssueBasket(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdIssueBasket(OTPseudonym& nym, OTMessage& msgIn,
                             OTMessage& msgOut);
-    void UserCmdGetBoxReceipt(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetBoxReceipt(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
-    void UserCmdDeleteUser(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdDeleteUser(OTPseudonym& nym, OTMessage& msgIn,
                            OTMessage& msgOut);
-    void UserCmdDeleteAssetAcct(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdDeleteAssetAcct(OTPseudonym& nym, OTMessage& msgIn,
                                 OTMessage& msgOut);
-    void UserCmdCreateAccount(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdCreateAccount(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
-    void UserCmdNotarizeTransactions(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdNotarizeTransactions(OTPseudonym& nym, OTMessage& msgIn,
                                      OTMessage& msgOut);
-    void UserCmdGetNymbox(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetNymbox(OTPseudonym& nym, OTMessage& msgIn,
                           OTMessage& msgOut);
     // Deprecated (replaced by UserCmdGetAccountFiles)
-    void UserCmdGetInbox(OTPseudonym& theNym, OTMessage& MsgIn,
-                         OTMessage& msgOut);
+    void UserCmdGetInbox(OTPseudonym& nym, OTMessage& msgIn, OTMessage& msgOut);
     // Deprecated (replaced by UserCmdGetAccountFiles)
-    void UserCmdGetOutbox(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetOutbox(OTPseudonym& nym, OTMessage& msgIn,
                           OTMessage& msgOut);
     // Deprecated (replaced by UserCmdGetAccountFiles)
-    void UserCmdGetAccount(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetAccount(OTPseudonym& nym, OTMessage& msgIn,
                            OTMessage& msgOut);
     // This combines GetInbox, GetOutbox, and GetAccount.
-    void UserCmdGetAccountFiles(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetAccountFiles(OTPseudonym& nym, OTMessage& msgIn,
                                 OTMessage& msgOut);
-    void UserCmdGetContract(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetContract(OTPseudonym& nym, OTMessage& msgIn,
                             OTMessage& msgOut);
-    void UserCmdGetMint(OTPseudonym& theNym, OTMessage& MsgIn,
-                        OTMessage& msgOut);
-    void UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetMint(OTPseudonym& nym, OTMessage& msgIn, OTMessage& msgOut);
+    void UserCmdProcessInbox(OTPseudonym& nym, OTMessage& msgIn,
                              OTMessage& msgOut);
-    void UserCmdProcessNymbox(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdProcessNymbox(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
 
-    void UserCmdUsageCredits(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdUsageCredits(OTPseudonym& nym, OTMessage& msgIn,
                              OTMessage& msgOut);
-    void UserCmdTriggerClause(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdTriggerClause(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
 
-    void UserCmdQueryAssetTypes(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdQueryAssetTypes(OTPseudonym& nym, OTMessage& msgIn,
                                 OTMessage& msgOut);
 
     // Get the list of markets on this server.
-    void UserCmdGetMarketList(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetMarketList(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
 
     // Get the publicly-available list of offers on a specific market.
-    void UserCmdGetMarketOffers(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetMarketOffers(OTPseudonym& nym, OTMessage& msgIn,
                                 OTMessage& msgOut);
 
     // Get a report of recent trades that have occurred on a specific market.
-    void UserCmdGetMarketRecentTrades(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetMarketRecentTrades(OTPseudonym& nym, OTMessage& msgIn,
                                       OTMessage& msgOut);
 
     // Get the offers that a specific Nym has placed on a specific market.
-    void UserCmdGetNym_MarketOffers(OTPseudonym& theNym, OTMessage& MsgIn,
+    void UserCmdGetNym_MarketOffers(OTPseudonym& nym, OTMessage& msgIn,
                                     OTMessage& msgOut);
 
-    bool IssueNextTransactionNumber(OTPseudonym& theNym,
-                                    int64_t& lTransactionNumber,
-                                    bool bStoreTheNumber = true);
-    bool VerifyTransactionNumber(OTPseudonym& theNym,
-                                 const int64_t& lTransactionNumber);
-    bool RemoveTransactionNumber(OTPseudonym& theNym,
-                                 const int64_t& lTransactionNumber,
-                                 bool bSave = false);
-    bool RemoveIssuedNumber(OTPseudonym& theNym,
-                            const int64_t& lTransactionNumber,
-                            bool bSave = false);
+    bool IssueNextTransactionNumber(OTPseudonym& nym,
+                                    int64_t& transactionNumber,
+                                    bool storeTheNumber = true);
+    bool VerifyTransactionNumber(OTPseudonym& nym,
+                                 const int64_t& transactionNumber);
+    bool RemoveTransactionNumber(OTPseudonym& nym,
+                                 const int64_t& transactionNumber,
+                                 bool save = false);
+    bool RemoveIssuedNumber(OTPseudonym& nym, const int64_t& transactionNumber,
+                            bool save = false);
 
     // If the server receives a notarizeTransactions command, it will be
     // accompanied by a payload containing a ledger to be notarized.
     // UserCmdNotarizeTransactions will loop through that ledger,
     // and for each transaction within, it calls THIS method.
-    void NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
-                             OTTransaction& tranOut, bool& bOutSuccess);
-    void NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
+    void NotarizeTransaction(OTPseudonym& nym, OTTransaction& tranIn,
+                             OTTransaction& tranOut, bool& outSuccess);
+    void NotarizeTransfer(OTPseudonym& nym, OTAccount& fromAccount,
                           OTTransaction& tranIn, OTTransaction& tranOut,
-                          bool& bOutSuccess);
-    void NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
+                          bool& outSuccess);
+    void NotarizeDeposit(OTPseudonym& nym, OTAccount& account,
                          OTTransaction& tranIn, OTTransaction& tranOut,
-                         bool& bOutSuccess);
-    void NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
+                         bool& outSuccess);
+    void NotarizeWithdrawal(OTPseudonym& nym, OTAccount& account,
                             OTTransaction& tranIn, OTTransaction& tranOut,
-                            bool& bOutSuccess);
-    void NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
+                            bool& outSuccess);
+    void NotarizeProcessInbox(OTPseudonym& nym, OTAccount& account,
                               OTTransaction& tranIn, OTTransaction& tranOut,
-                              bool& bOutSuccess);
-    void NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
-                               OTTransaction& tranOut, bool& bOutSuccess);
-    void NotarizeMarketOffer(OTPseudonym& theNym, OTAccount& theAssetAccount,
+                              bool& outSuccess);
+    void NotarizeProcessNymbox(OTPseudonym& nym, OTTransaction& tranIn,
+                               OTTransaction& tranOut, bool& outSuccess);
+    void NotarizeMarketOffer(OTPseudonym& nym, OTAccount& assetAccount,
                              OTTransaction& tranIn, OTTransaction& tranOut,
-                             bool& bOutSuccess);
-    void NotarizePaymentPlan(OTPseudonym& theNym,
-                             OTAccount& theDepositorAccount,
+                             bool& outSuccess);
+    void NotarizePaymentPlan(OTPseudonym& nym, OTAccount& depositorAccount,
                              OTTransaction& tranIn, OTTransaction& tranOut,
-                             bool& bOutSuccess);
-    void NotarizeSmartContract(OTPseudonym& theNym,
-                               OTAccount& theActivatingAccount,
+                             bool& outSuccess);
+    void NotarizeSmartContract(OTPseudonym& nym, OTAccount& activatingAccount,
                                OTTransaction& tranIn, OTTransaction& tranOut,
-                               bool& bOutSuccess);
-    void NotarizeCancelCronItem(OTPseudonym& theNym, OTAccount& theAssetAccount,
+                               bool& outSuccess);
+    void NotarizeCancelCronItem(OTPseudonym& nym, OTAccount& assetAccount,
                                 OTTransaction& tranIn, OTTransaction& tranOut,
-                                bool& bOutSuccess);
-    void NotarizeExchangeBasket(OTPseudonym& theNym,
-                                OTAccount& theSourceAccount,
+                                bool& outSuccess);
+    void NotarizeExchangeBasket(OTPseudonym& nym, OTAccount& sourceAccount,
                                 OTTransaction& tranIn, OTTransaction& tranOut,
-                                bool& bOutSuccess);
-    void NotarizePayDividend(OTPseudonym& theNym, OTAccount& theAccount,
+                                bool& outSuccess);
+    void NotarizePayDividend(OTPseudonym& nym, OTAccount& account,
                              OTTransaction& tranIn, OTTransaction& tranOut,
-                             bool& bOutSuccess);
+                             bool& outSuccess);
 };
 
 } // namespace opentxs
