@@ -131,6 +131,7 @@
 **************************************************************/
 
 #include "OTServer.hpp"
+#include "ServerSettings.hpp"
 #include "AcctFunctor_PayDividend.hpp"
 #include "ClientConnection.hpp"
 
@@ -205,74 +206,6 @@ int32_t OTCron::__cron_max_items_per_nym = 10;     // The maximum number of cron
 // active at the same time.
 #endif
 
-// These are default values. There are configurable in ~/.ot/server.cfg
-// (static)
-
-int64_t OTServer::__min_market_scale = 1;
-
-int32_t OTServer::__heartbeat_no_requests =
-    10; // The number of client requests that will be processed per heartbeat.
-int32_t OTServer::__heartbeat_ms_between_beats =
-    100; // number of ms between each heartbeat.
-
-std::string OTServer::__override_nym_id; // The Nym who's allowed to do certain
-                                         // commands even if they are turned
-                                         // off.
-
-// NOTE: These are all static variables, and these are all just default values.
-//       (The ACTUAL values are configured in ~/.ot/server.cfg)
-//
-bool OTServer::__admin_usage_credits =
-    false; // Are usage credits REQUIRED in order to use this server?
-bool OTServer::__admin_server_locked =
-    false; // Is server currently locked to non-override Nyms?
-bool OTServer::__cmd_usage_credits =
-    false; // Command for setting / viewing usage credits.
-bool OTServer::__cmd_issue_asset = true;
-bool OTServer::__cmd_get_contract = true;
-bool OTServer::__cmd_check_server_id = true;
-bool OTServer::__cmd_create_user_acct = true;
-bool OTServer::__cmd_del_user_acct = true;
-bool OTServer::__cmd_check_user = true;
-bool OTServer::__cmd_get_request = true;
-bool OTServer::__cmd_get_trans_num = true;
-bool OTServer::__cmd_send_message = true;
-bool OTServer::__cmd_get_nymbox = true;
-bool OTServer::__cmd_process_nymbox = true;
-bool OTServer::__cmd_create_asset_acct = true;
-bool OTServer::__cmd_del_asset_acct = true;
-bool OTServer::__cmd_get_acct = true;
-bool OTServer::__cmd_get_inbox = true;
-bool OTServer::__cmd_get_outbox = true;
-bool OTServer::__cmd_process_inbox = true;
-bool OTServer::__cmd_issue_basket = false;
-bool OTServer::__transact_exchange_basket = true;
-bool OTServer::__cmd_notarize_transaction = true;
-bool OTServer::__transact_process_inbox = true;
-bool OTServer::__transact_transfer = true;
-bool OTServer::__transact_withdrawal = true;
-bool OTServer::__transact_deposit = true;
-bool OTServer::__transact_withdraw_voucher = true;
-bool OTServer::__transact_deposit_cheque = true;
-bool OTServer::__transact_pay_dividend = true;
-bool OTServer::__cmd_get_mint = true;
-bool OTServer::__transact_withdraw_cash = true;
-bool OTServer::__transact_deposit_cash = true;
-bool OTServer::__cmd_get_market_list = true;
-bool OTServer::__cmd_get_market_offers = true;
-bool OTServer::__cmd_get_market_recent_trades = true;
-bool OTServer::__cmd_get_nym_market_offers = true;
-bool OTServer::__transact_market_offer = true;
-bool OTServer::__transact_payment_plan = true;
-bool OTServer::__transact_cancel_cron_item = true;
-bool OTServer::__transact_smart_contract = true;
-bool OTServer::__cmd_trigger_clause = true;
-
-// Todo: Might set ALL of these to false (so you're FORCED to set them true
-// in the server.cfg file.) This way you're also assured that the right data
-// folder was found, before you start unlocking the server messages!
-//
-
 // For NYM_IS_ALLOWED() to evaluate to TRUE, either the boolean value itself is
 // set to true
 // (meaning, "YES any Nym is allowed..") OR (it only continues if that part
@@ -280,9 +213,9 @@ bool OTServer::__cmd_trigger_clause = true;
 // override Nym's ID matches to the Nym ID passed in (as a const char *).
 //
 #define NYM_IS_ALLOWED(SZ_NYM_ID, BOOL_VAR_NAME)                               \
-    ((OTServer::BOOL_VAR_NAME) ||                                              \
-     ((OTServer::GetOverrideNymID().size() > 0) &&                             \
-      (0 == OTServer::GetOverrideNymID().compare((SZ_NYM_ID)))))
+    ((ServerSettings::BOOL_VAR_NAME) ||                                        \
+     ((ServerSettings::GetOverrideNymID().size() > 0) &&                       \
+      (0 == ServerSettings::GetOverrideNymID().compare((SZ_NYM_ID)))))
 
 // PERMISSIONS
 #define OT_ENFORCE_PERMISSION_MSG(BOOL_VAR_NAME)                               \
@@ -1054,7 +987,7 @@ bool OTServer::LoadConfigFile()
         int64_t lValue;
         p_Config->CheckSet_long("heartbeat", "no_requests", 10, lValue,
                                 bIsNewKey, szComment);
-        OTServer::SetHeartbeatNoRequests(static_cast<int32_t>(lValue));
+        ServerSettings::SetHeartbeatNoRequests(static_cast<int32_t>(lValue));
     }
 
     {
@@ -1065,7 +998,8 @@ bool OTServer::LoadConfigFile()
         int64_t lValue;
         p_Config->CheckSet_long("heartbeat", "ms_between_beats", 100, lValue,
                                 bIsNewKey, szComment);
-        OTServer::SetHeartbeatMsBetweenBeats(static_cast<int32_t>(lValue));
+        ServerSettings::SetHeartbeatMsBetweenBeats(
+            static_cast<int32_t>(lValue));
     }
 
     // PERMISSIONS
@@ -1085,7 +1019,7 @@ bool OTServer::LoadConfigFile()
         OTString strValue;
         const char* szValue;
 
-        std::string stdstrValue = OTServer::GetOverrideNymID();
+        std::string stdstrValue = ServerSettings::GetOverrideNymID();
         szValue = stdstrValue.c_str();
 
         bool bIsNewKey;
@@ -1097,7 +1031,7 @@ bool OTServer::LoadConfigFile()
             p_Config->CheckSet_str("permissions", "override_nym_id", szValue,
                                    strValue, bIsNewKey);
 
-        OTServer::SetOverrideNymID(strValue.Get());
+        ServerSettings::SetOverrideNymID(strValue.Get());
     }
 
     // MARKETS
@@ -1109,9 +1043,10 @@ bool OTServer::LoadConfigFile()
 
         bool bIsNewKey;
         int64_t lValue;
-        p_Config->CheckSet_long("markets", "minimum_scale", GetMinMarketScale(),
-                                lValue, bIsNewKey, szComment);
-        SetMinMarketScale(lValue);
+        p_Config->CheckSet_long("markets", "minimum_scale",
+                                ServerSettings::GetMinMarketScale(), lValue,
+                                bIsNewKey, szComment);
+        ServerSettings::SetMinMarketScale(lValue);
     }
 
     // SECURITY (beginnings of..)
@@ -1165,83 +1100,89 @@ bool OTServer::LoadConfigFile()
     //
 
     p_Config->SetOption_bool("permissions", "admin_usage_credits",
-                             __admin_usage_credits);
+                             ServerSettings::__admin_usage_credits);
     p_Config->SetOption_bool("permissions", "admin_server_locked",
-                             __admin_server_locked);
+                             ServerSettings::__admin_server_locked);
     p_Config->SetOption_bool("permissions", "cmd_usage_credits",
-                             __cmd_usage_credits);
+                             ServerSettings::__cmd_usage_credits);
     p_Config->SetOption_bool("permissions", "cmd_issue_asset",
-                             __cmd_issue_asset);
+                             ServerSettings::__cmd_issue_asset);
     p_Config->SetOption_bool("permissions", "cmd_get_contract",
-                             __cmd_get_contract);
+                             ServerSettings::__cmd_get_contract);
     p_Config->SetOption_bool("permissions", "cmd_check_server_id",
-                             __cmd_check_server_id);
+                             ServerSettings::__cmd_check_server_id);
     p_Config->SetOption_bool("permissions", "cmd_create_user_acct",
-                             __cmd_create_user_acct);
+                             ServerSettings::__cmd_create_user_acct);
     p_Config->SetOption_bool("permissions", "cmd_del_user_acct",
-                             __cmd_del_user_acct);
-    p_Config->SetOption_bool("permissions", "cmd_check_user", __cmd_check_user);
+                             ServerSettings::__cmd_del_user_acct);
+    p_Config->SetOption_bool("permissions", "cmd_check_user",
+                             ServerSettings::__cmd_check_user);
     p_Config->SetOption_bool("permissions", "cmd_get_request",
-                             __cmd_get_request);
+                             ServerSettings::__cmd_get_request);
     p_Config->SetOption_bool("permissions", "cmd_get_trans_num",
-                             __cmd_get_trans_num);
+                             ServerSettings::__cmd_get_trans_num);
     p_Config->SetOption_bool("permissions", "cmd_send_message",
-                             __cmd_send_message);
-    p_Config->SetOption_bool("permissions", "cmd_get_nymbox", __cmd_get_nymbox);
+                             ServerSettings::__cmd_send_message);
+    p_Config->SetOption_bool("permissions", "cmd_get_nymbox",
+                             ServerSettings::__cmd_get_nymbox);
     p_Config->SetOption_bool("permissions", "cmd_process_nymbox",
-                             __cmd_process_nymbox);
+                             ServerSettings::__cmd_process_nymbox);
     p_Config->SetOption_bool("permissions", "cmd_create_asset_acct",
-                             __cmd_create_asset_acct);
+                             ServerSettings::__cmd_create_asset_acct);
     p_Config->SetOption_bool("permissions", "cmd_del_asset_acct",
-                             __cmd_del_asset_acct);
-    p_Config->SetOption_bool("permissions", "cmd_get_acct", __cmd_get_acct);
-    p_Config->SetOption_bool("permissions", "cmd_get_inbox", __cmd_get_inbox);
-    p_Config->SetOption_bool("permissions", "cmd_get_outbox", __cmd_get_outbox);
+                             ServerSettings::__cmd_del_asset_acct);
+    p_Config->SetOption_bool("permissions", "cmd_get_acct",
+                             ServerSettings::__cmd_get_acct);
+    p_Config->SetOption_bool("permissions", "cmd_get_inbox",
+                             ServerSettings::__cmd_get_inbox);
+    p_Config->SetOption_bool("permissions", "cmd_get_outbox",
+                             ServerSettings::__cmd_get_outbox);
     p_Config->SetOption_bool("permissions", "cmd_process_inbox",
-                             __cmd_process_inbox);
+                             ServerSettings::__cmd_process_inbox);
     p_Config->SetOption_bool("permissions", "cmd_issue_basket",
-                             __cmd_issue_basket);
+                             ServerSettings::__cmd_issue_basket);
     p_Config->SetOption_bool("permissions", "transact_exchange_basket",
-                             __transact_exchange_basket);
+                             ServerSettings::__transact_exchange_basket);
     p_Config->SetOption_bool("permissions", "cmd_notarize_transaction",
-                             __cmd_notarize_transaction);
+                             ServerSettings::__cmd_notarize_transaction);
     p_Config->SetOption_bool("permissions", "transact_process_inbox",
-                             __transact_process_inbox);
+                             ServerSettings::__transact_process_inbox);
     p_Config->SetOption_bool("permissions", "transact_transfer",
-                             __transact_transfer);
+                             ServerSettings::__transact_transfer);
     p_Config->SetOption_bool("permissions", "transact_withdrawal",
-                             __transact_withdrawal);
+                             ServerSettings::__transact_withdrawal);
     p_Config->SetOption_bool("permissions", "transact_deposit",
-                             __transact_deposit);
+                             ServerSettings::__transact_deposit);
     p_Config->SetOption_bool("permissions", "transact_withdraw_voucher",
-                             __transact_withdraw_voucher);
+                             ServerSettings::__transact_withdraw_voucher);
     p_Config->SetOption_bool("permissions", "transact_pay_dividend",
-                             __transact_pay_dividend);
+                             ServerSettings::__transact_pay_dividend);
     p_Config->SetOption_bool("permissions", "transact_deposit_cheque",
-                             __transact_deposit_cheque);
-    p_Config->SetOption_bool("permissions", "cmd_get_mint", __cmd_get_mint);
+                             ServerSettings::__transact_deposit_cheque);
+    p_Config->SetOption_bool("permissions", "cmd_get_mint",
+                             ServerSettings::__cmd_get_mint);
     p_Config->SetOption_bool("permissions", "transact_withdraw_cash",
-                             __transact_withdraw_cash);
+                             ServerSettings::__transact_withdraw_cash);
     p_Config->SetOption_bool("permissions", "transact_deposit_cash",
-                             __transact_deposit_cash);
+                             ServerSettings::__transact_deposit_cash);
     p_Config->SetOption_bool("permissions", "cmd_get_market_list",
-                             __cmd_get_market_list);
+                             ServerSettings::__cmd_get_market_list);
     p_Config->SetOption_bool("permissions", "cmd_get_market_offers",
-                             __cmd_get_market_offers);
+                             ServerSettings::__cmd_get_market_offers);
     p_Config->SetOption_bool("permissions", "cmd_get_market_recent_trades",
-                             __cmd_get_market_recent_trades);
+                             ServerSettings::__cmd_get_market_recent_trades);
     p_Config->SetOption_bool("permissions", "cmd_get_nym_market_offers",
-                             __cmd_get_nym_market_offers);
+                             ServerSettings::__cmd_get_nym_market_offers);
     p_Config->SetOption_bool("permissions", "transact_market_offer",
-                             __transact_market_offer);
+                             ServerSettings::__transact_market_offer);
     p_Config->SetOption_bool("permissions", "transact_payment_plan",
-                             __transact_payment_plan);
+                             ServerSettings::__transact_payment_plan);
     p_Config->SetOption_bool("permissions", "transact_cancel_cron_item",
-                             __transact_cancel_cron_item);
+                             ServerSettings::__transact_cancel_cron_item);
     p_Config->SetOption_bool("permissions", "transact_smart_contract",
-                             __transact_smart_contract);
+                             ServerSettings::__transact_smart_contract);
     p_Config->SetOption_bool("permissions", "cmd_trigger_clause",
-                             __cmd_trigger_clause);
+                             ServerSettings::__cmd_trigger_clause);
 
     // Done Loading... Lets save any changes...
     if (!p_Config->Save()) {
@@ -3294,15 +3235,16 @@ void OTServer::UserCmdUsageCredits(OTPseudonym& theNym, OTMessage& MsgIn,
     //    msgOut.m_strServerID    = m_strServerID;    // This is already set in
     // ProcessUserCommand.
     const bool bIsPrivilegedNym =
-        ((OTServer::GetOverrideNymID().size() >
+        ((ServerSettings::GetOverrideNymID().size() >
           0) && // And if there's an override Nym...
-         (0 == OTServer::GetOverrideNymID().compare(
+         (0 == ServerSettings::GetOverrideNymID().compare(
                    (MsgIn.m_strNymID.Get())))); // And if the acting Nym IS the
                                                 // override Nym...
     // The amount the usage credits are being ADJUSTED by.
     const int64_t lAdjustment =
-        (bIsPrivilegedNym && OTServer::__admin_usage_credits) ? MsgIn.m_lDepth
-                                                              : 0;
+        (bIsPrivilegedNym && ServerSettings::__admin_usage_credits)
+            ? MsgIn.m_lDepth
+            : 0;
 
     msgOut.m_lDepth = 0; // Returns total Usage Credits on Nym at the end.
     OTPseudonym nym2;
@@ -3368,8 +3310,8 @@ void OTServer::UserCmdUsageCredits(OTPseudonym& theNym, OTMessage& MsgIn,
         // ...Then we KNOW, if that's true, that the Nym had BETTER have special
         // powers, or there's an error.
         //
-        if (false == ((OTServer::GetOverrideNymID().size() > 0) &&
-                      (0 == OTServer::GetOverrideNymID().compare(
+        if (false == ((ServerSettings::GetOverrideNymID().size() > 0) &&
+                      (0 == ServerSettings::GetOverrideNymID().compare(
                                 (MsgIn.m_strNymID.Get()))))) // ...And if he's
                                                              // not the special
             // "override Nym"...
@@ -3425,7 +3367,7 @@ void OTServer::UserCmdUsageCredits(OTPseudonym& theNym, OTMessage& MsgIn,
         // How do we know?
         //
         // int64_t lAdjustment  = (bIsPrivilegedNym &&
-        // OTServer::__admin_usage_credits) ? MsgIn.m_lDepth : 0;
+        // ServerSettings::__admin_usage_credits) ? MsgIn.m_lDepth : 0;
         //
         // (Therefore we also know that the server is in usage credits mode, as
         // well.)
@@ -3459,8 +3401,9 @@ void OTServer::UserCmdUsageCredits(OTPseudonym& theNym, OTMessage& MsgIn,
         // Either way (even if adjustment is zero) then lNewCredits contains the
         // value being sent back...
         //
-        if (OTServer::__admin_usage_credits) // If the server has usage credits
-                                             // turned on...
+        if (ServerSettings::__admin_usage_credits) // If the server has usage
+                                                   // credits
+                                                   // turned on...
             msgOut.m_lDepth = lNewCredits; // ...then adjustment or not, we send
                                            // the current usage credits balance
                                            // back in the server reply.
@@ -4358,7 +4301,8 @@ void OTServer::NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
     tranOut.AddItem(*pResponseItem); // the Transaction's destructor will
                                      // cleanup the item. It "owns" it now.
 
-    if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_transfer)) {
+    if (false ==
+        NYM_IS_ALLOWED(strUserID.Get(), ServerSettings::__transact_transfer)) {
         OTLog::vOutput(0, "OTServer::NotarizeTransfer: User %s cannot do this "
                           "transaction (All acct-to-acct transfers are "
                           "disallowed in server.cfg)\n",
@@ -4907,7 +4851,8 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
     // and that pItem points to the good one. Therefore next, let's verify
     // permissions:
     // This permission has to do with ALL withdrawals (cash or voucher)
-    else if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_withdrawal)) {
+    else if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                     ServerSettings::__transact_withdrawal)) {
         OTLog::vOutput(0, "OTServer::NotarizeWithdrawal: User %s cannot do "
                           "this transaction (All withdrawals are disallowed in "
                           "server.cfg)\n",
@@ -4916,7 +4861,8 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
     // This permission has to do with vouchers.
     else if ((nullptr != pItemVoucher) &&
              (false ==
-              NYM_IS_ALLOWED(strUserID.Get(), __transact_withdraw_voucher))) {
+              NYM_IS_ALLOWED(strUserID.Get(),
+                             ServerSettings::__transact_withdraw_voucher))) {
         OTLog::vOutput(0, "OTServer::NotarizeWithdrawal: User %s cannot do "
                           "this transaction (withdrawVoucher is disallowed in "
                           "server.cfg)\n",
@@ -4925,7 +4871,8 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
     // This permission has to do with cash.
     else if ((nullptr != pItemCash) &&
              (false ==
-              NYM_IS_ALLOWED(strUserID.Get(), __transact_withdraw_cash))) {
+              NYM_IS_ALLOWED(strUserID.Get(),
+                             ServerSettings::__transact_withdraw_cash))) {
         OTLog::vOutput(0, "OTServer::NotarizeWithdrawal: User %s cannot do "
                           "this transaction (withdraw cash is disallowed in "
                           "server.cfg)\n",
@@ -5718,7 +5665,8 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
     //
     // This permission has to do with ALL withdrawals from an account
     // (cash / voucher / dividends)
-    else if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_withdrawal)) {
+    else if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                     ServerSettings::__transact_withdrawal)) {
         OTLog::vOutput(
             0, "%s: User %s cannot do this transaction (All withdrawals are "
                "disallowed in server.cfg, even for paying dividends with.)\n",
@@ -5728,7 +5676,8 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
     //
     else if ((nullptr != pItemPayDividend) &&
              (false ==
-              NYM_IS_ALLOWED(strUserID.Get(), __transact_pay_dividend))) {
+              NYM_IS_ALLOWED(strUserID.Get(),
+                             ServerSettings::__transact_pay_dividend))) {
         OTLog::vOutput(0, "%s: User %s cannot do this transaction "
                           "(payDividend is disallowed in server.cfg)\n",
                        szFunc, strUserID.Get());
@@ -6504,7 +6453,8 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
     // permissions:
 
     // This permission has to do with ALL deposits (cash or cheque)
-    else if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_deposit)) {
+    else if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                     ServerSettings::__transact_deposit)) {
         OTLog::vOutput(0, "OTServer::NotarizeDeposit: User %s cannot do this "
                           "transaction (All deposits are disallowed in "
                           "server.cfg)\n",
@@ -6513,7 +6463,8 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
     // This permission has to do with vouchers.
     else if ((nullptr != pItemCheque) &&
              (false ==
-              NYM_IS_ALLOWED(strUserID.Get(), __transact_deposit_cheque))) {
+              NYM_IS_ALLOWED(strUserID.Get(),
+                             ServerSettings::__transact_deposit_cheque))) {
         OTLog::vOutput(0, "OTServer::NotarizeDeposit: User %s cannot do this "
                           "transaction (depositCheque is disallowed in "
                           "server.cfg)\n",
@@ -6522,7 +6473,8 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
     // This permission has to do with cash.
     else if ((nullptr != pItemCash) &&
              (false ==
-              NYM_IS_ALLOWED(strUserID.Get(), __transact_deposit_cash))) {
+              NYM_IS_ALLOWED(strUserID.Get(),
+                             ServerSettings::__transact_deposit_cash))) {
         OTLog::vOutput(0, "OTServer::NotarizeDeposit: User %s cannot do this "
                           "transaction (deposit cash is disallowed in "
                           "server.cfg)\n",
@@ -8326,7 +8278,8 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                             // cleanup the item. It "owns" it
                                             // now.
     if ((nullptr != pItem) &&
-        (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_payment_plan))) {
+        (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                 ServerSettings::__transact_payment_plan))) {
         OTLog::vOutput(0, "%s: User %s cannot do this transaction (All payment "
                           "plans are disallowed in server.cfg)\n",
                        __FUNCTION__, strUserID.Get());
@@ -9075,7 +9028,8 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                                             // cleanup the item. It "owns" it
                                             // now.
     if ((nullptr != pItem) &&
-        (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_smart_contract))) {
+        (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                 ServerSettings::__transact_smart_contract))) {
         OTLog::vOutput(0, "%s: User %s cannot do this transaction (All smart "
                           "contracts are disallowed in server.cfg)\n",
                        __FUNCTION__, strUserID.Get());
@@ -9817,7 +9771,8 @@ void OTServer::NotarizeCancelCronItem(OTPseudonym& theNym,
     tranOut.AddItem(*pResponseBalanceItem); // the Transaction's destructor will
                                             // cleanup the item. It "owns" it
                                             // now.
-    if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_cancel_cron_item)) {
+    if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                ServerSettings::__transact_cancel_cron_item)) {
         OTLog::vOutput(
             0, "%s: User %s cannot do this transaction "
                "(CancelCronItem messages are disallowed in server.cfg)\n",
@@ -10015,7 +9970,8 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                             // now.
     bool bSuccess = false;
 
-    if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_exchange_basket)) {
+    if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                ServerSettings::__transact_exchange_basket)) {
         OTLog::vOutput(0, "OTServer::NotarizeExchangeBasket: User %s cannot do "
                           "this transaction (All basket exchanges are "
                           "disallowed in server.cfg)\n",
@@ -11261,7 +11217,8 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
     tranOut.AddItem(*pResponseBalanceItem); // the Transaction's destructor will
                                             // cleanup the item. It "owns" it
                                             // now.
-    if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_market_offer)) {
+    if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                ServerSettings::__transact_market_offer)) {
         OTLog::vOutput(
             0,
             "OTServer::NotarizeMarketOffer: User %s cannot do this transaction "
@@ -11492,11 +11449,13 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
                 OTLog::Output(0, "FAILED verifying offer for Trade in "
                                  "OTServer::NotarizeMarketOffer\n");
             }
-            else if (theOffer.GetScale() < GetMinMarketScale()) {
+            else if (theOffer.GetScale() <
+                       ServerSettings::GetMinMarketScale()) {
                 OTLog::vOutput(0, "OTServer::NotarizeMarketOffer: FAILED "
                                   "verifying Offer, SCALE: %ld. (Minimum is "
                                   "%ld.) \n",
-                               theOffer.GetScale(), GetMinMarketScale());
+                               theOffer.GetScale(),
+                               ServerSettings::GetMinMarketScale());
             }
             else if (static_cast<int64_t>(
                            (theNym.GetSetOpenCronItems().size() / 3)) >=
@@ -15191,7 +15150,8 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
     tranOut.AddItem(*pResponseBalanceItem); // the Transaction's destructor will
                                             // cleanup the item. It "owns" it
                                             // now.
-    if (false == NYM_IS_ALLOWED(strUserID.Get(), __transact_process_inbox)) {
+    if (false == NYM_IS_ALLOWED(strUserID.Get(),
+                                ServerSettings::__transact_process_inbox)) {
         OTLog::vOutput(
             0, "%s: User %s cannot do this transaction (All \"process inbox\" "
                "transactions are disallowed in server.cfg)\n",
@@ -16804,14 +16764,15 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
 
     /*
     p_Config->SetOption_bool("permissions", "admin_server_locked",
-    __admin_server_locked);
+    ServerSettings::__admin_server_locked);
   */
-    if ((true == OTServer::__admin_server_locked) && // IF (the OT Server is in
-                                                     // "lock down" mode)
-        ((OTServer::GetOverrideNymID().size() <=
+    if ((true ==
+         ServerSettings::__admin_server_locked) && // IF (the OT Server is in
+                                                   // "lock down" mode)
+        ((ServerSettings::GetOverrideNymID().size() <=
           0) || // AND (there's no Override Nym ID listed --OR-- the Override
                 // Nym ID doesn't
-         (0 != OTServer::GetOverrideNymID().compare(
+         (0 != ServerSettings::GetOverrideNymID().compare(
                    (theMessage.m_strNymID.Get()))))) // match the Nym's ID who
                                                      // sent this message)
     {
@@ -16968,7 +16929,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(0,
                        "\n==> Received a checkServerID message. Nym: %s ...\n",
                        strMsgNymID.Get());
-        OT_ENFORCE_PERMISSION_MSG(__cmd_check_server_id);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_check_server_id);
         OTAsymmetricKey* pNymAuthentKey = OTAsymmetricKey::KeyFactory();
         OTAsymmetricKey* pNymEncryptKey = OTAsymmetricKey::KeyFactory();
         OT_ASSERT(nullptr != pNymAuthentKey);
@@ -17045,7 +17006,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(
             0, "\n==> Received a createUserAccount message. Nym: %s ...\n",
             strMsgNymID.Get());
-        OT_ENFORCE_PERMISSION_MSG(__cmd_create_user_acct);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_create_user_acct);
         if (bNymIsServerNym) {
             OTLog::Output(0,
                           "**** Sorry, the server Nym is forbidden from using "
@@ -17638,28 +17599,18 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                         // I figured it's a good spot to do our Usage Credits
                         // code, so we don't have
                         // to save twice.
-                        if ((true ==
-                             OTServer::__admin_usage_credits) && // IF (the OT
-                                                                 // Server is in
-                                                                 // "require
-                                                                 // usage
-                                                                 // credits"
-                                                                 // mode)
-                            (pNym->GetUsageCredits() >=
-                             0) && // AND the User isn't magically FREE from
-                                   // having to use usage credits (-1 is a
-                                   // get-out-of-jail-free-card.)
-                            ((OTServer::GetOverrideNymID().size() <=
-                              0) || // AND (there's no Override Nym ID listed
-                                    // --OR-- the Override Nym ID doesn't
-                             (0 != OTServer::GetOverrideNymID().compare((
-                                       theMessage.m_strNymID.Get()))))) // match
-                                                                        // the
-                            // Nym's ID
-                            // who sent
-                            // this
-                            // message)
-                        {
+                        // IF (the OT Server is in "require usage credits" mode)
+                        // AND the User isn't magically FREE from
+                        // having to use usage credits (-1 is a
+                        // get-out-of-jail-free-card.)
+                        // AND (there's no Override Nym ID listed
+                        // --OR-- the Override Nym ID doesn't
+                        // match the Nym's ID who sent this message
+                        if (ServerSettings::__admin_usage_credits &&
+                            pNym->GetUsageCredits() >= 0 &&
+                            (ServerSettings::GetOverrideNymID().size() <= 0 ||
+                             (0 != ServerSettings::GetOverrideNymID().compare(
+                                       (theMessage.m_strNymID.Get()))))) {
                             const int64_t& lUsageCredits =
                                 pNym->GetUsageCredits();
 
@@ -17983,7 +17934,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(0, "\n==> Received a getRequest message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_request);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_request);
 
         UserCmdGetRequest(*pNym, theMessage, msgOut);
 
@@ -17994,7 +17945,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getTransactionNum message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_trans_num);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_trans_num);
 
         UserCmdGetTransactionNum(*pNym, theMessage, msgOut);
 
@@ -18004,7 +17955,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(0, "\n==> Received a checkUser message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_check_user);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_check_user);
 
         UserCmdCheckUser(*pNym, theMessage, msgOut);
 
@@ -18015,7 +17966,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a sendUserMessage message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_send_message);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_send_message);
 
         UserCmdSendUserMessage(*pNym, theMessage, msgOut);
 
@@ -18026,7 +17977,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a sendUserInstrument message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_send_message);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_send_message);
 
         UserCmdSendUserInstrument(*pNym, theMessage, msgOut);
 
@@ -18037,7 +17988,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a deleteUserAccount message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_del_user_acct);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_del_user_acct);
 
         UserCmdDeleteUser(*pNym, theMessage, msgOut);
 
@@ -18048,7 +17999,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a deleteAssetAccount message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_del_asset_acct);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_del_asset_acct);
 
         UserCmdDeleteAssetAcct(*pNym, theMessage, msgOut);
 
@@ -18059,7 +18010,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                        "\n==> Received a createAccount message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_create_asset_acct);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_create_asset_acct);
 
         UserCmdCreateAccount(*pNym, theMessage, msgOut);
 
@@ -18070,7 +18021,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received an issueAssetType message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_issue_asset);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_issue_asset);
 
         UserCmdIssueAssetType(*pNym, theMessage, msgOut);
 
@@ -18081,7 +18032,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                        "\n==> Received an issueBasket message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_issue_basket);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_issue_basket);
 
         UserCmdIssueBasket(*pNym, theMessage, msgOut);
 
@@ -18092,7 +18043,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                           "Acct: %s Nym: %s  ...\n",
                        theMessage.m_strAcctID.Get(), strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_notarize_transaction);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_notarize_transaction);
 
         UserCmdNotarizeTransactions(*pNym, theMessage, msgOut);
 
@@ -18102,7 +18053,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(0, "\n==> Received a getNymbox message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_nymbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_nymbox);
 
         UserCmdGetNymbox(*pNym, theMessage, msgOut);
 
@@ -18115,11 +18066,11 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
 
         bool bRunIt = true;
         if (0 == theMessage.m_lDepth)
-            OT_ENFORCE_PERMISSION_MSG(__cmd_get_nymbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_nymbox)
         else if (1 == theMessage.m_lDepth)
-            OT_ENFORCE_PERMISSION_MSG(__cmd_get_inbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_inbox)
         else if (2 == theMessage.m_lDepth)
-            OT_ENFORCE_PERMISSION_MSG(__cmd_get_outbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_outbox)
         else
             bRunIt = false;
 
@@ -18132,7 +18083,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getInbox message.  Acct: %s Nym: %s  ...\n",
             theMessage.m_strAcctID.Get(), strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_inbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_inbox);
 
         UserCmdGetInbox(*pNym, theMessage, msgOut);
 
@@ -18143,7 +18094,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getOutbox message.  Acct: %s Nym: %s  ...\n",
             theMessage.m_strAcctID.Get(), strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_outbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_outbox);
 
         UserCmdGetOutbox(*pNym, theMessage, msgOut);
 
@@ -18154,7 +18105,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getAccount message.  Acct: %s Nym: %s  ...\n",
             theMessage.m_strAcctID.Get(), strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_acct);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_acct);
 
         UserCmdGetAccount(*pNym, theMessage, msgOut);
 
@@ -18165,9 +18116,9 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                           "Nym: %s  ...\n",
                        theMessage.m_strAcctID.Get(), strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_inbox);
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_outbox);
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_acct);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_inbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_outbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_acct);
 
         UserCmdGetAccountFiles(*pNym, theMessage, msgOut);
 
@@ -18178,7 +18129,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                        "\n==> Received a processNymbox message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_process_nymbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_process_nymbox);
 
         UserCmdProcessNymbox(*pNym, theMessage, msgOut);
 
@@ -18189,7 +18140,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a processInbox message. Acct: %s Nym: %s  ...\n",
             theMessage.m_strAcctID.Get(), strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_process_inbox);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_process_inbox);
 
         UserCmdProcessInbox(*pNym, theMessage, msgOut);
 
@@ -18200,7 +18151,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a queryAssetTypes message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_contract);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_contract);
 
         UserCmdQueryAssetTypes(*pNym, theMessage, msgOut);
 
@@ -18210,7 +18161,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(0, "\n==> Received a getContract message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_contract);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_contract);
 
         UserCmdGetContract(*pNym, theMessage, msgOut);
 
@@ -18220,7 +18171,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
         OTLog::vOutput(0, "\n==> Received a getMint message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_mint);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_mint);
 
         UserCmdGetMint(*pNym, theMessage, msgOut);
 
@@ -18231,7 +18182,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                        "\n==> Received a getMarketList message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_market_list);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_market_list);
 
         UserCmdGetMarketList(*pNym, theMessage, msgOut);
 
@@ -18242,7 +18193,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getMarketOffers message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_market_offers);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_market_offers);
 
         UserCmdGetMarketOffers(*pNym, theMessage, msgOut);
 
@@ -18253,7 +18204,8 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getMarketRecentTrades message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_market_recent_trades);
+        OT_ENFORCE_PERMISSION_MSG(
+            ServerSettings::__cmd_get_market_recent_trades);
 
         UserCmdGetMarketRecentTrades(*pNym, theMessage, msgOut);
 
@@ -18264,7 +18216,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
             0, "\n==> Received a getNym_MarketOffers message. Nym: %s ...\n",
             strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_get_nym_market_offers);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_get_nym_market_offers);
 
         UserCmdGetNym_MarketOffers(*pNym, theMessage, msgOut);
 
@@ -18275,7 +18227,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                        "\n==> Received a triggerClause message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_trigger_clause);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_trigger_clause);
 
         UserCmdTriggerClause(*pNym, theMessage, msgOut);
 
@@ -18286,7 +18238,7 @@ bool OTServer::ProcessUserCommand(OTMessage& theMessage, OTMessage& msgOut,
                        "\n==> Received a usageCredits message. Nym: %s ...\n",
                        strMsgNymID.Get());
 
-        OT_ENFORCE_PERMISSION_MSG(__cmd_usage_credits);
+        OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_usage_credits);
 
         UserCmdUsageCredits(*pNym, theMessage, msgOut);
 
