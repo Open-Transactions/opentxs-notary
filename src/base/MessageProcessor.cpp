@@ -143,15 +143,22 @@
 #include <opentxs/core/OTDataFolder.hpp>
 #include <opentxs/ext/OTSocket.hpp>
 
-namespace opentxs
+namespace
 {
 
-#define SERVER_DEFAULT_LATENCY_SEND_MS 5000
-#define SERVER_DEFAULT_LATENCY_SEND_NO_TRIES 2
-#define SERVER_DEFAULT_LATENCY_RECEIVE_MS 5000
-#define SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES 2
-#define SERVER_DEFAULT_LATENCY_DELAY_AFTER 50
-#define SERVER_DEFAULT_IS_BLOCKING false
+enum {
+    SERVER_DEFAULT_LATENCY_SEND_MS = 5000,
+    SERVER_DEFAULT_LATENCY_SEND_NO_TRIES = 2,
+    SERVER_DEFAULT_LATENCY_RECEIVE_MS = 5000,
+    SERVER_DEFAULT_LATENCY_RECEIVE_NO_TRIES = 2,
+    SERVER_DEFAULT_LATENCY_DELAY_AFTER = 50,
+    SERVER_DEFAULT_IS_BLOCKING = 0
+};
+
+} // namespace
+
+namespace opentxs
+{
 
 MessageProcessor::MessageProcessor(ServerLoader& loader)
     : server_(loader.getServer())
