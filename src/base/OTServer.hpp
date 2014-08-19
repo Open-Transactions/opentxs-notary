@@ -179,103 +179,6 @@ typedef std::map<std::string, OTAccount*> mapOfAccounts;
 
 class OTServer
 {
-    OTString m_strWalletFilename;
-    OTString m_strConfigFilename;
-    OTString m_strLogFilename;
-    // Used at least for whether or not to write to the PID.
-    bool m_bReadOnly;
-    // If the server wants to be shut down, it can set
-    // this flag so the caller knows to do so.
-    bool m_bShutdownFlag;
-
-    OTString m_strVersion;
-    // A hash of the server contract
-    OTString m_strServerID;
-    // A hash of the public key that signed the server contract
-    OTString m_strServerUserID;
-    // This is the server's own contract, containing its public key and
-    // connect info.
-    OTServerContract* m_pServerContract;
-    // This stores the last VALID AND ISSUED transaction number.
-    int64_t m_lTransactionNumber;
-
-    OTPseudonym m_nymServer;
-
-    // The asset types supported by this server.
-    mapOfContracts m_mapContracts;
-    // The mints for each asset type.
-    mapOfMints m_mapMints;
-    // The list of voucher accounts (see GetVoucherAccount below for details)
-    OTAcctList m_VoucherAccts;
-    // maps basketId with basketAccountId
-    mapOfBaskets m_mapBaskets;
-    // basket issuer account ID, which is *different* on each server, using the
-    // Basket Currency's ID, which is the *same* on every server.)
-    // Need a way to look up a Basket Account ID using its Contract ID
-    mapOfBaskets m_mapBasketContracts;
-
-    OTCron m_Cron; // This is where re-occurring and expiring tasks go.
-
-    static int64_t __min_market_scale;
-
-    static int32_t __heartbeat_no_requests;
-    static int32_t __heartbeat_ms_between_beats;
-
-    // The Nym who's allowed to do certain commands even if they are turned off.
-    static std::string __override_nym_id;
-    // Are usage credits REQUIRED in order to use this server?
-    static bool __admin_usage_credits;
-    // Is server currently locked to non-override Nyms?
-    static bool __admin_server_locked;
-
-    static bool __cmd_usage_credits;
-    static bool __cmd_issue_asset;
-    static bool __cmd_get_contract;
-    static bool __cmd_check_server_id;
-
-    static bool __cmd_create_user_acct;
-    static bool __cmd_del_user_acct;
-    static bool __cmd_check_user;
-    static bool __cmd_get_request;
-    static bool __cmd_get_trans_num;
-    static bool __cmd_send_message;
-    static bool __cmd_get_nymbox;
-    static bool __cmd_process_nymbox;
-
-    static bool __cmd_create_asset_acct;
-    static bool __cmd_del_asset_acct;
-    static bool __cmd_get_acct;
-    static bool __cmd_get_inbox;
-    static bool __cmd_get_outbox;
-    static bool __cmd_process_inbox;
-
-    static bool __cmd_issue_basket;
-    static bool __transact_exchange_basket;
-
-    static bool __cmd_notarize_transaction;
-    static bool __transact_process_inbox;
-    static bool __transact_transfer;
-    static bool __transact_withdrawal;
-    static bool __transact_deposit;
-    static bool __transact_withdraw_voucher;
-    static bool __transact_deposit_cheque;
-    static bool __transact_pay_dividend;
-
-    static bool __cmd_get_mint;
-    static bool __transact_withdraw_cash;
-    static bool __transact_deposit_cash;
-
-    static bool __cmd_get_market_list;
-    static bool __cmd_get_market_offers;
-    static bool __cmd_get_market_recent_trades;
-    static bool __cmd_get_nym_market_offers;
-
-    static bool __transact_market_offer;
-    static bool __transact_payment_plan;
-    static bool __transact_cancel_cron_item;
-    static bool __transact_smart_contract;
-    static bool __cmd_trigger_clause;
-
 public:
     static int64_t GetMinMarketScale()
     {
@@ -568,6 +471,104 @@ public:
     void NotarizePayDividend(OTPseudonym& nym, OTAccount& account,
                              OTTransaction& tranIn, OTTransaction& tranOut,
                              bool& outSuccess);
+
+private:
+    OTString m_strWalletFilename;
+    OTString m_strConfigFilename;
+    OTString m_strLogFilename;
+    // Used at least for whether or not to write to the PID.
+    bool m_bReadOnly;
+    // If the server wants to be shut down, it can set
+    // this flag so the caller knows to do so.
+    bool m_bShutdownFlag;
+
+    OTString m_strVersion;
+    // A hash of the server contract
+    OTString m_strServerID;
+    // A hash of the public key that signed the server contract
+    OTString m_strServerUserID;
+    // This is the server's own contract, containing its public key and
+    // connect info.
+    OTServerContract* m_pServerContract;
+    // This stores the last VALID AND ISSUED transaction number.
+    int64_t m_lTransactionNumber;
+
+    OTPseudonym m_nymServer;
+
+    // The asset types supported by this server.
+    mapOfContracts m_mapContracts;
+    // The mints for each asset type.
+    mapOfMints m_mapMints;
+    // The list of voucher accounts (see GetVoucherAccount below for details)
+    OTAcctList m_VoucherAccts;
+    // maps basketId with basketAccountId
+    mapOfBaskets m_mapBaskets;
+    // basket issuer account ID, which is *different* on each server, using the
+    // Basket Currency's ID, which is the *same* on every server.)
+    // Need a way to look up a Basket Account ID using its Contract ID
+    mapOfBaskets m_mapBasketContracts;
+
+    OTCron m_Cron; // This is where re-occurring and expiring tasks go.
+
+    static int64_t __min_market_scale;
+
+    static int32_t __heartbeat_no_requests;
+    static int32_t __heartbeat_ms_between_beats;
+
+    // The Nym who's allowed to do certain commands even if they are turned off.
+    static std::string __override_nym_id;
+    // Are usage credits REQUIRED in order to use this server?
+    static bool __admin_usage_credits;
+    // Is server currently locked to non-override Nyms?
+    static bool __admin_server_locked;
+
+    static bool __cmd_usage_credits;
+    static bool __cmd_issue_asset;
+    static bool __cmd_get_contract;
+    static bool __cmd_check_server_id;
+
+    static bool __cmd_create_user_acct;
+    static bool __cmd_del_user_acct;
+    static bool __cmd_check_user;
+    static bool __cmd_get_request;
+    static bool __cmd_get_trans_num;
+    static bool __cmd_send_message;
+    static bool __cmd_get_nymbox;
+    static bool __cmd_process_nymbox;
+
+    static bool __cmd_create_asset_acct;
+    static bool __cmd_del_asset_acct;
+    static bool __cmd_get_acct;
+    static bool __cmd_get_inbox;
+    static bool __cmd_get_outbox;
+    static bool __cmd_process_inbox;
+
+    static bool __cmd_issue_basket;
+    static bool __transact_exchange_basket;
+
+    static bool __cmd_notarize_transaction;
+    static bool __transact_process_inbox;
+    static bool __transact_transfer;
+    static bool __transact_withdrawal;
+    static bool __transact_deposit;
+    static bool __transact_withdraw_voucher;
+    static bool __transact_deposit_cheque;
+    static bool __transact_pay_dividend;
+
+    static bool __cmd_get_mint;
+    static bool __transact_withdraw_cash;
+    static bool __transact_deposit_cash;
+
+    static bool __cmd_get_market_list;
+    static bool __cmd_get_market_offers;
+    static bool __cmd_get_market_recent_trades;
+    static bool __cmd_get_nym_market_offers;
+
+    static bool __transact_market_offer;
+    static bool __transact_payment_plan;
+    static bool __transact_cancel_cron_item;
+    static bool __transact_smart_contract;
+    static bool __cmd_trigger_clause;
 };
 
 } // namespace opentxs
