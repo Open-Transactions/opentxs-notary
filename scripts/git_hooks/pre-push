@@ -42,16 +42,7 @@ do
 		# we only do something if it's not a branch deletion
 		continue
 	fi
-	mod_files=$(git diff-tree --no-commit-id --name-only \
-				-r $remote/develop..HEAD | grep '^src/')
-	while read file; do
-		[ -e "$file" ] && exist_files="$exist_files $(printf %q "$file")"
-	done <<< $mod_files
-	if [ -z "$exist_files" ]; then
-		echo "==> cppcheck successfull"
-		exit 0
-	fi
-	output=$(scripts/travis/cppcheck_wrapper.sh $exist_files 2>&1)
+	output=$(scripts/travis/cppcheck_wrapper.sh ./src/ 2>&1)
 	error_code=$?
 	filter_string="(information) Cppcheck cannot find all the include files"
 	filter_string="$filter_string (use --check-config for details)"
