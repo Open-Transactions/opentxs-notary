@@ -254,7 +254,7 @@ void OTServer::ProcessCron()
     // first.
     while (m_Cron.GetTransactionCount() < OTCron::GetCronRefillAmount()) {
         int64_t lTransNum = 0;
-        bool bSuccess = IssueNextTransactionNumber(
+        bool bSuccess = transactor_.issueNextTransactionNumber(
             m_nymServer, lTransNum, false); // bStoreTheNumber = false
 
         if (bSuccess) {
@@ -494,12 +494,6 @@ OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
     pMint = nullptr;
 
     return nullptr;
-}
-
-bool OTServer::IssueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
-                                          bool storeNumber)
-{
-    return transactor_.issueNextTransactionNumber(nym, txNumber, storeNumber);
 }
 
 /// The server supports various different asset types.
@@ -1082,7 +1076,7 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym& theNym, OTMessage& MsgIn,
             // sign for it!
 
             if (false ==
-                IssueNextTransactionNumber(
+                transactor_.issueNextTransactionNumber(
                     theNym, lTransNum, false)) // bool bStoreTheNumber = false
             {
                 lTransNum = 0;
@@ -1429,7 +1423,7 @@ bool OTServer::SendMessageToNym(
                                pstrMessage); //, szCommand=nullptr
 }
 
-// Can't be static (IssueNextTransactionNumber is called...)
+// Can't be static (transactor_.issueNextTransactionNumber is called...)
 //
 // About pMsg...
 // (Normally) when you send a cheque to someone, you encrypt it inside an
@@ -1513,7 +1507,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
     // both.
     const char* szFunc = "OTServer::DropMessageToNymbox";
     int64_t lTransNum = 0;
-    const bool bGotNextTransNum = IssueNextTransactionNumber(
+    const bool bGotNextTransNum = transactor_.issueNextTransactionNumber(
         m_nymServer, lTransNum, false); // bool bStoreTheNumber = false
 
     if (!bGotNextTransNum) {
@@ -3121,8 +3115,9 @@ void OTServer::NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
                 // todo check this generation for failure (can it fail?)
                 int64_t lNewTransactionNumber = 0;
 
-                IssueNextTransactionNumber(m_nymServer, lNewTransactionNumber,
-                                           false); // bStoreTheNumber = false
+                transactor_.issueNextTransactionNumber(
+                    m_nymServer, lNewTransactionNumber,
+                    false); // bStoreTheNumber = false
                 // I create TWO Outbox transactions -- one for the real outbox,
                 // (theFromOutbox)
                 // and one for pOutbox (used for verifying the balance
@@ -3139,7 +3134,7 @@ void OTServer::NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
                                                        OTTransaction::pending,
                                                        lNewTransactionNumber);
 
-                //                IssueNextTransactionNumber(m_nymServer,
+                //                transactor_.issueNextTransactionNumber(m_nymServer,
                 // lNewTransactionNumber, false); // bStoreTheNumber = false
                 OTTransaction* pInboxTransaction =
                     OTTransaction::GenerateTransaction(theToInbox,
@@ -3628,7 +3623,7 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
                 // remitter, instead of the transaction server.
                 //
                 //                int64_t lNewTransactionNumber = 0;
-                //                IssueNextTransactionNumber(m_nymServer,
+                //                transactor_.issueNextTransactionNumber(m_nymServer,
                 // lNewTransactionNumber); // bStoreTheNumber defaults to true.
                 // We save the transaction
                 // number on the server Nym (normally we'd discard it) because
@@ -4790,14 +4785,14 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                                             OT_TIME_SIX_MONTHS_IN_SECONDS)); // This time occurs in 180 days (6 months).  Todo hardcoding.
 
                                     int64_t lNewTransactionNumber = 0;
-                                    const bool
-                                    bGotNextTransNum = IssueNextTransactionNumber(
-                                        m_nymServer,
-                                        lNewTransactionNumber); // bStoreTheNumber
-                                                                // defaults to
-                                                                // true. We save
-                                                                // the
-                                                                // transaction
+                                    const bool bGotNextTransNum =
+                                        transactor_.issueNextTransactionNumber(
+                                            m_nymServer,
+                                            lNewTransactionNumber); // bStoreTheNumber
+                                    // defaults to
+                                    // true. We save
+                                    // the
+                                    // transaction
                                     // number on the server Nym (normally we'd
                                     // discard it) because
                                     // when the cheque is deposited, the server
@@ -5303,7 +5298,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                         // todo check this generation for failure (can it fail?)
                         int64_t lNewTransactionNumber = 0;
 
-                        IssueNextTransactionNumber(
+                        transactor_.issueNextTransactionNumber(
                             m_nymServer, lNewTransactionNumber,
                             false); // bStoreTheNumber = false
 
@@ -6260,7 +6255,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                 // it fail?)
                                 int64_t lNewTransactionNumber = 0;
 
-                                IssueNextTransactionNumber(
+                                transactor_.issueNextTransactionNumber(
                                     m_nymServer, lNewTransactionNumber,
                                     false); // bStoreTheNumber = false
 
@@ -7450,7 +7445,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // may still be waiting.)
                                     //
                                     int64_t lOtherNewTransNumber = 0;
-                                    IssueNextTransactionNumber(
+                                    transactor_.issueNextTransactionNumber(
                                         m_nymServer, lOtherNewTransNumber,
                                         false); // bStoreTheNumber = false
 
@@ -7500,7 +7495,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // #s....
                                     //
                                     int64_t lOtherNewTransNumber = 0;
-                                    IssueNextTransactionNumber(
+                                    transactor_.issueNextTransactionNumber(
                                         m_nymServer, lOtherNewTransNumber,
                                         false); // bStoreTheNumber = false
 
@@ -8174,7 +8169,7 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                     // SO THEY CAN CLAW BACK THEIR TRANSACTION #s....
                     //
                     int64_t lNewTransactionNumber = 0;
-                    IssueNextTransactionNumber(
+                    transactor_.issueNextTransactionNumber(
                         m_nymServer, lNewTransactionNumber,
                         false); // bStoreTheNumber = false
 
@@ -8222,7 +8217,7 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                 //
                 else {
                     int64_t lNewTransactionNumber = 0;
-                    IssueNextTransactionNumber(
+                    transactor_.issueNextTransactionNumber(
                         m_nymServer, lNewTransactionNumber,
                         false); // bStoreTheNumber = false
 
@@ -9005,11 +9000,13 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                             // failure (can it fail?)
                                             int64_t lNewTransactionNumber = 0;
 
-                                            IssueNextTransactionNumber(
-                                                m_nymServer,
-                                                lNewTransactionNumber,
-                                                false); // bStoreTheNumber =
-                                                        // false
+                                            transactor_
+                                                .issueNextTransactionNumber(
+                                                     m_nymServer,
+                                                     lNewTransactionNumber,
+                                                     false); // bStoreTheNumber
+                                                             // =
+                                                             // false
 
                                             OTTransaction* pInboxTransaction =
                                                 OTTransaction::
@@ -9196,7 +9193,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                     // (can it fail?)
                                     int64_t lNewTransactionNumber = 0;
 
-                                    IssueNextTransactionNumber(
+                                    transactor_.issueNextTransactionNumber(
                                         m_nymServer, lNewTransactionNumber,
                                         false); // bStoreTheNumber = false
 
@@ -10654,7 +10651,8 @@ void OTServer::UserCmdNotarizeTransactions(OTPseudonym& theNym,
             // response and add
             // that to the response ledger.
 
-            // I don't call IssueNextTransactionNumber here because I'm not
+            // I don't call transactor_.issueNextTransactionNumber here because
+            // I'm not
             // creating a new transaction
             // in someone's inbox or outbox. Instead, I'm making a transaction
             // response to a transaction
@@ -10852,9 +10850,9 @@ void OTServer::DropReplyNoticeToNymbox(const OTIdentifier& SERVER_ID,
     }
     else {
         int64_t lReplyNoticeTransNum = 0;
-        bool bGotNextTransNum =
-            IssueNextTransactionNumber(m_nymServer, lReplyNoticeTransNum,
-                                       false); // bool bStoreTheNumber = false
+        bool bGotNextTransNum = transactor_.issueNextTransactionNumber(
+            m_nymServer, lReplyNoticeTransNum,
+            false); // bool bStoreTheNumber = false
 
         if (!bGotNextTransNum) {
             lReplyNoticeTransNum = 0;
@@ -13145,9 +13143,10 @@ void OTServer::NotarizeProcessNymbox(OTPseudonym& theNym, OTTransaction& tranIn,
                             // going out of sync.
                             //
                             int64_t lSuccessNoticeTransNum = 0;
-                            bool bGotNextTransNum = IssueNextTransactionNumber(
-                                m_nymServer, lSuccessNoticeTransNum,
-                                false); // bool bStoreTheNumber = false
+                            bool bGotNextTransNum =
+                                transactor_.issueNextTransactionNumber(
+                                    m_nymServer, lSuccessNoticeTransNum,
+                                    false); // bool bStoreTheNumber = false
 
                             if (!bGotNextTransNum) {
                                 lSuccessNoticeTransNum = 0;
@@ -14970,7 +14969,7 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                                         // the sender's inbox (to notice him of
                                         // acceptance.)
                                         int64_t lNewTransactionNumber = 0;
-                                        IssueNextTransactionNumber(
+                                        transactor_.issueNextTransactionNumber(
                                             m_nymServer, lNewTransactionNumber,
                                             false); // bStoreTheNumber = false
 

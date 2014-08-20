@@ -148,7 +148,7 @@ public:
     explicit Transactor(OTServer* server);
 
     bool issueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
-                                    bool storeNumber);
+                                    bool storeNumber = true);
     bool verifyTransactionNumber(OTPseudonym& nym,
                                  const int64_t& transactionNumber);
     bool removeTransactionNumber(OTPseudonym& nym,

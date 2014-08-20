@@ -239,7 +239,7 @@ bool AcctFunctor_PayDividend::Trigger(
 
     int64_t lNewTransactionNumber = 0;
 
-    const bool bGotNextTransNum = theServer.IssueNextTransactionNumber(
+    bool bGotNextTransNum = theServer.transactor_.issueNextTransactionNumber(
         theServerNym, lNewTransactionNumber); // bStoreTheNumber defaults to
                                               // true. We save the transaction
     // number on the server Nym (normally we'd discard it) because
