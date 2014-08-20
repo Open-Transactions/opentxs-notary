@@ -1,7 +1,7 @@
 opentxs-server
 ==============
 
-[![Build Status](https://travis-ci.org/Open-Transactions/opentxs-server.svg?branch=develop)](https://travis-ci.org/Open-Transactions/opentxs-server)
+[![Build Status](https://travis-ci.org/Open-Transactions/opentxs-server.svg?branch=develop)](https://travis-ci.org/Open-Transactions/opentxs-server)[![Stories in Ready](https://badge.waffle.io/open-transactions/opentxs-server.svg?label=ready&title=Ready)](http://waffle.io/open-transactions/opentxs-server)
 
 
 ### Contributing
