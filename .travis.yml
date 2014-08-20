@@ -22,7 +22,7 @@ deploy:
   provider: s3
   access_key_id: AKIAIR7XPKSU5OIGJ5IA
   secret_access_key:
-    secure: iDrSuBkQOFwOk5ByP6hmidmhT4/jtW0uumHSZAz14OXLm9b5Jar6BgGdJg4Kxj22F3I2jbzjWxzzAk5DxfzaKkkHFz/DXGLbV+rD3h4vKEF6+xS2lgwfkzLwhablECFU9f9faQgZuKWJB+l/YekEP3jQH/+fW2Vg5Q/SBh2WUfU=
+    secure: Pzh37F5m6oNPfFdQuL/FntJyEEmbG08jfZ7Iu3SueHaSydI3CU9uuYhQqpepWGBvsJ+1f2PVamEMwiMBczyzXOPYEdzz1P+7QvbKFKQh9Sndz3z9nLiAF0EMVUlxe+7/O66zToWR8JINSC6QBxEmT4nSt4ZrjGzfBSWTaAIhwIU=
   bucket: monetas-builds
   skip_cleanup: true
   local-dir: s3
