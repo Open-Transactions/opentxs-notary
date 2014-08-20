@@ -1,6 +1,6 @@
 /************************************************************
  *
- *  ConfigLoader.hpp
+ *  Transactor.hpp
  *
  */
 
@@ -130,19 +130,50 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#ifndef __OPENTXS_CONFIGLOADER_HPP__
-#define __OPENTXS_CONFIGLOADER_HPP__
+#ifndef __OPENTXS_TRANSACTOR_HPP__
+#define __OPENTXS_TRANSACTOR_HPP__
+
+#include <cstdint>
 
 namespace opentxs
 {
 
-class OTString;
+class OTServer;
+class OTPseudonym;
+class MainFile;
 
-struct ConfigLoader
+class Transactor
 {
-    static bool load(OTString& walletFilename);
+public:
+    explicit Transactor(OTServer* server);
+
+    bool issueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
+                                    bool storeNumber);
+    bool verifyTransactionNumber(OTPseudonym& nym,
+                                 const int64_t& transactionNumber);
+    bool removeTransactionNumber(OTPseudonym& nym,
+                                 const int64_t& transactionNumber,
+                                 bool save = false);
+    bool removeIssuedNumber(OTPseudonym& nym, const int64_t& transactionNumber,
+                            bool save = false);
+
+    int64_t transactionNumber() const
+    {
+        return transactionNumber_;
+    }
+
+    void transactionNumber(int64_t value)
+    {
+        transactionNumber_ = value;
+    }
+
+private:
+    // This stores the last VALID AND ISSUED transaction number.
+    int64_t transactionNumber_;
+
+    OTServer* server_; // TODO: remove later when feasible
 };
 
 } // namespace opentxs
 
-#endif // __OPENTXS_CONFIGLOADER_HPP__
+#endif // __OPENTXS_TRANSACTOR_HPP__

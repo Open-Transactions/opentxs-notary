@@ -135,6 +135,7 @@
 #include "ConfigLoader.hpp"
 #include "ServerSettings.hpp"
 #include "AcctFunctor_PayDividend.hpp"
+#include "Helpers.hpp"
 
 #include <opentxs/core/OTAsymmetricKey.hpp>
 #include <opentxs/core/OTAccount.hpp>
@@ -410,7 +411,7 @@ std::shared_ptr<OTAccount> OTServer::GetVoucherAccount(
                           "voucher account ID: %s Asset Type ID: %s\n",
                        strAcctID.Get(), strAssetTypeID.Get());
 
-        if (false == SaveMainFile()) {
+        if (!mainFile_.SaveMainFile()) {
             OTLog::Error("OTServer::GetVoucherAccount: Error saving main "
                          "server file containing new account ID!!\n");
         }
@@ -495,198 +496,10 @@ OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
     return nullptr;
 }
 
-/// Just as every request must be accompanied by a request number, so
-/// every transaction request must be accompanied by a transaction number.
-/// The request numbers can simply be incremented on both sides (per user.)
-/// But the transaction numbers must be issued by the server and they do
-/// not repeat from user to user. They are unique to transaction.
-///
-/// Users must ask the server to send them transaction numbers so that they
-/// can be used in transaction requests. The server keeps an internal counter
-/// and maintains a data file to store the latest one.
-///
-/// More specifically, the server file itself stores the latest transaction
-/// number
-/// (So it knows what number to issue and increment when the next request comes
-/// in.)
-///
-/// But once it issues the next number, that number needs to be recorded in the
-/// nym file
-/// for the user it was issued to, so that it can be verified later when he
-/// submits it
-/// for a transaction--and so it can be removed once the transaction is complete
-/// (so it
-/// won't work twice.)
-///
-/// The option to bSaveTheNumber defaults to true for this reason. But sometimes
-/// it
-/// will be sent to false, in cases where the number doesn't need to be saved
-/// because
-/// it's never going to be verified. For example, if the server creates a
-/// transaction
-/// number so it can put a transaction into your inbox, it's never going to have
-/// to verify
-/// that it actually put it into the inbox by checking it's own nymfile for that
-/// transaction
-/// number. Instead it would just check its own server signature on the inbox.
-/// But I digress...
-///
-bool OTServer::IssueNextTransactionNumber(OTPseudonym& theNym,
-                                          int64_t& lTransactionNumber,
-                                          bool bStoreTheNumber)
+bool OTServer::IssueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
+                                          bool storeNumber)
 {
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-
-    // m_lTransactionNumber stores the last VALID AND ISSUED transaction number.
-    // So first, we increment that, since we don't want to issue the same number
-    // twice.
-    m_lTransactionNumber++;
-
-    // Next, we save it to file.
-    if (false == SaveMainFile()) {
-        OTLog::Error("Error saving main server file.\n");
-        m_lTransactionNumber--;
-        return false;
-    }
-
-    // Each Nym stores the transaction numbers that have been issued to it.
-    // (On client AND server side.)
-    //
-    // So whenever the server issues a new number, it's to a specific Nym, then
-    // it is recorded in his Nym file before being sent to the client (where it
-    // is also recorded in his Nym file.)  That way the server always knows
-    // which
-    // numbers are valid for each Nym.
-    else if (bStoreTheNumber &&
-             (false == pNym->AddTransactionNum(m_nymServer, m_strServerID,
-                                               m_lTransactionNumber,
-                                               true))) // bSave = true
-    {
-        OTLog::Error("Error adding transaction number to Nym file.\n");
-        m_lTransactionNumber--;
-        SaveMainFile(); // Save it back how it was, since we're not issuing this
-                        // number after all.
-        return false;
-    }
-
-    // SUCCESS?
-    // Now the server main file has saved the latest transaction number,
-    // and the number has been stored on the relevant nym file.
-    // NOW we set it onto the parameter and return true.
-    else {
-        lTransactionNumber = m_lTransactionNumber;
-        return true;
-    }
-}
-
-/// Transaction numbers are now stored in the nym file (on client and server
-/// side) for whichever nym
-/// they were issued to. This function verifies whether or not the transaction
-/// number is present and valid
-/// for any specific nym (i.e. for the nym passed in.)
-bool OTServer::VerifyTransactionNumber(
-    OTPseudonym& theNym, const int64_t& lTransactionNumber) // passed by
-                                                            // reference for
-                                                            // speed, but not a
-                                                            // return value.
-{
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-    if (pNym->VerifyTransactionNum(m_strServerID, lTransactionNumber))
-        return true;
-    else {
-        const OTString strNymID(NYM_ID);
-        const OTString strIssued(
-            pNym->VerifyIssuedNum(m_strServerID, lTransactionNumber)
-                ? "(However, that number IS issued to that Nym... He must have "
-                  "already used it.)\n"
-                : "(In fact, that number isn't even issued to that Nym, though "
-                  "perhaps it was at some time in the past?)\n");
-
-        OTLog::vError("%s: %ld not available for Nym %s to use. \n%s",
-                      __FUNCTION__,
-                      //                    " Oh, and FYI, tangentially, the
-                      // current Trns# counter is: %ld\n",
-                      lTransactionNumber, strNymID.Get(), strIssued.Get());
-        //                    m_lTransactionNumber);
-    }
-
-    return false;
-}
-
-/// Remove a transaction number from the Nym record once it's officially
-/// used/spent.
-bool OTServer::RemoveTransactionNumber(OTPseudonym& theNym,
-                                       const int64_t& lTransactionNumber,
-                                       bool bSave)
-{
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-
-    bool bRemoved = false;
-
-    if (bSave)
-        bRemoved = pNym->RemoveTransactionNum(
-            m_nymServer, m_strServerID,
-            lTransactionNumber); // the version that passes in a signer nym --
-                                 // saves to local storage.
-    else
-        bRemoved = pNym->RemoveTransactionNum(
-            m_strServerID,
-            lTransactionNumber); // the version that doesn't save.
-
-    return bRemoved;
-}
-
-/// Remove an issued number from the Nym record once that nym accepts the
-/// receipt from his inbox.
-bool OTServer::RemoveIssuedNumber(OTPseudonym& theNym,
-                                  const int64_t& lTransactionNumber, bool bSave)
-{
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-
-    bool bRemoved = pNym->RemoveIssuedNum(m_nymServer, m_strServerID,
-                                          lTransactionNumber, bSave);
-
-    return bRemoved;
+    return transactor_.issueNextTransactionNumber(nym, txNumber, storeNumber);
 }
 
 /// The server supports various different asset types.
@@ -742,130 +555,13 @@ bool OTServer::AddAssetContract(OTAssetContract& theContract)
     return true;
 }
 
-bool OTServer::SaveMainFileToString(OTString& strMainFile)
-{
-    const char* szFunc = "OTServer::SaveMainFileToString";
-
-    strMainFile.Format(
-        "<?xml version=\"1.0\"?>\n"
-        "<notaryServer version=\"%s\"\n"
-        " serverID=\"%s\"\n"
-        " serverUserID=\"%s\"\n"
-        " transactionNum=\"%ld\" >\n\n",
-        OTCachedKey::It()->IsGenerated() ? "2.0" : m_strVersion.Get(),
-        m_strServerID.Get(), m_strServerUserID.Get(), m_lTransactionNumber);
-
-    if (OTCachedKey::It()->IsGenerated()) // If it exists, then serialize it.
-    {
-        OTASCIIArmor ascMasterContents;
-
-        if (OTCachedKey::It()->SerializeTo(ascMasterContents)) {
-            strMainFile.Concatenate("<cachedKey>\n%s</cachedKey>\n\n",
-                                    ascMasterContents.Get());
-        }
-        else
-            OTLog::vError(
-                "%s: Failed trying to write master key to notary file.\n",
-                szFunc);
-    }
-
-    // ContractsMap    m_mapContracts;   // If the server needs to store
-    // copies of the asset contracts, then here they are.
-    // MintsMap        m_mapMints;          // Mints for each of those.
-
-    for (auto& it : m_mapContracts) {
-        OTContract* pContract = it.second;
-        OT_ASSERT_MSG(nullptr != pContract,
-                      "nullptr contract pointer in OTServer::SaveMainFile.\n");
-
-        // This is like the Server's wallet.
-        pContract->SaveContractWallet(strMainFile);
-    }
-
-    // Save the basket account information
-
-    for (auto& it : m_mapBaskets) {
-        OTString strBasketID = it.first.c_str();
-        OTString strBasketAcctID = it.second.c_str();
-
-        const OTIdentifier BASKET_ACCOUNT_ID(strBasketAcctID);
-        OTIdentifier BASKET_CONTRACT_ID;
-
-        bool bContractID = LookupBasketContractIDByAccountID(
-            BASKET_ACCOUNT_ID, BASKET_CONTRACT_ID);
-
-        if (!bContractID) {
-            OTLog::vError("%s: Error: Missing Contract ID for basket ID %s\n",
-                          szFunc, strBasketID.Get());
-            break;
-        }
-
-        OTString strBasketContractID(BASKET_CONTRACT_ID);
-
-        strMainFile.Concatenate("<basketInfo basketID=\"%s\"\n"
-                                " basketAcctID=\"%s\"\n"
-                                " basketContractID=\"%s\" />\n\n",
-                                strBasketID.Get(), strBasketAcctID.Get(),
-                                strBasketContractID.Get());
-    }
-
-    m_VoucherAccts.Serialize(strMainFile);
-
-    strMainFile.Concatenate("</notaryServer>\n");
-
-    return true;
-}
-
-// Setup the default location for the Sever Main File...
-// maybe this should be set differently...
-// should be set in the servers configuration.
-//
-bool OTServer::SaveMainFile()
-{
-    // Get the loaded (or new) version of the Server's Main File.
-    //
-    OTString strMainFile;
-
-    if (false == SaveMainFileToString(strMainFile)) {
-        OTLog::vError(
-            "%s: Error saving to string. (Giving up on save attempt.)\n",
-            __FUNCTION__);
-        return false;
-    }
-    // Try to save the notary server's main datafile to local storage...
-    //
-    OTString strFinal;
-    OTASCIIArmor ascTemp(strMainFile);
-
-    if (false ==
-        ascTemp.WriteArmoredString(strFinal, "NOTARY")) // todo hardcoding.
-    {
-
-        OTLog::vError(
-            "%s: Error saving notary (failed writing armored string)\n",
-            __FUNCTION__);
-        return false;
-    }
-    // Save the Main File to the Harddrive... (or DB, if other storage module is
-    // being used).
-    //
-    const bool bSaved =
-        OTDB::StorePlainString(strFinal.Get(), ".", m_strWalletFilename.Get());
-
-    if (!bSaved) // Check if successfull.
-        OTLog::vError("%s: Error saving main file: %s\n", __FUNCTION__,
-                      m_strWalletFilename.Get());
-
-    return bSaved;
-}
-
 OTServer::OTServer()
-    : m_bReadOnly(false)
+    : mainFile_(this)
+    , transactor_(this)
+    , m_bReadOnly(false)
     , m_bShutdownFlag(false)
     , m_pServerContract(nullptr)
-    , m_lTransactionNumber(0)
 {
-    //    m_lTransactionNumber = 0;    // This will be set when the server main
     // xml file is loaded. For now, initialize to 0.
     //
     //    m_bShutdownFlag = false;    // If I ever set this to true, then the
@@ -1050,10 +746,10 @@ void OTServer::Init(bool bReadOnly)
             OT_FAIL; // end execution here.
         }
         else
-            bMainFileExists = CreateMainFile();
+            bMainFileExists = mainFile_.CreateMainFile();
     }
     if (bMainFileExists) {
-        if (!LoadMainFile(bReadOnly)) {
+        if (!mainFile_.LoadMainFile(bReadOnly)) {
             OTLog::vError("\n%s: Error in Loading Main File!\n", __FUNCTION__);
             OT_FAIL; // end execution here.
         }
@@ -1075,780 +771,6 @@ void OTServer::Init(bool bReadOnly)
     // loaded,
     // and all the various other data (contracts, etc) the server is now ready
     // for operation!
-}
-
-bool OTServer::LoadServerUserAndContract()
-{
-    const char* szFunc = "OTServer::LoadServerUserAndContract";
-    bool bSuccess = false;
-    OT_ASSERT(m_strVersion.Exists());
-    OT_ASSERT(m_strServerID.Exists());
-    OT_ASSERT(m_strServerUserID.Exists());
-    //
-    m_nymServer.SetIdentifier(m_strServerUserID);
-
-    if (!m_nymServer.Loadx509CertAndPrivateKey(false)) {
-        OTLog::vOutput(0, "%s: Error loading server certificate and keys.\n",
-                       szFunc);
-    }
-    else if (!m_nymServer.VerifyPseudonym()) {
-        OTLog::vOutput(0, "%s: Error verifying server nym.\n", szFunc);
-    }
-    else {
-        // This file will be saved during the course of operation
-        // Just making sure it is loaded up first.
-        //
-        bool bLoadedSignedNymfile = m_nymServer.LoadSignedNymfile(m_nymServer);
-        OT_ASSERT_MSG(bLoadedSignedNymfile,
-                      "ASSERT: OTServer::LoadServerUserAndContract: "
-                      "m_nymServer.LoadSignedNymfile(m_nymServer)\n");
-        //      m_nymServer.SaveSignedNymfile(m_nymServer); // Uncomment this if
-        // you want to create the file. NORMALLY LEAVE IT OUT!!!! DANGEROUS!!!
-
-        OTLog::vOutput(
-            0,
-            "%s: Loaded server certificate and keys.\nNext, loading Cron...\n",
-            szFunc);
-        // Load Cron (now that we have the server Nym.
-        // (I WAS loading this erroneously in Server.Init(), before
-        // the Nym had actually been loaded from disk. That didn't work.)
-        //
-        const OTIdentifier SERVER_ID(m_strServerID);
-
-        // Make sure the Cron object has a pointer to the server's Nym.
-        // (For signing stuff...)
-        //
-        m_Cron.SetServerID(SERVER_ID);
-        m_Cron.SetServerNym(&m_nymServer);
-
-        if (!m_Cron.LoadCron())
-            OTLog::vError("%s: Failed loading Cron file. (Did you just create "
-                          "this server?)\n",
-                          szFunc);
-        OTLog::vOutput(0, "%s: Loading the server contract...\n", szFunc);
-
-        // We have the serverID, so let's load  up the server Contract!
-        OTString strContractPath(OTFolders::Contract().Get());
-
-        OTServerContract* pContract = new OTServerContract(
-            m_strServerID, strContractPath, m_strServerID, m_strServerID);
-        OT_ASSERT_MSG(nullptr != pContract,
-                      "ASSERT while allocating memory for main Server Contract "
-                      "in OTServer::LoadServerUserAndContract\n");
-
-        if (pContract->LoadContract()) {
-            if (pContract->VerifyContract()) {
-                OTLog::Output(0, "\n** Main Server Contract Verified **\n");
-                m_pServerContract = pContract;
-                bSuccess = true;
-            }
-            else {
-                delete pContract;
-                pContract = nullptr;
-                OTLog::Output(0, "\nMain Server Contract FAILED to verify.\n");
-            }
-        }
-        else {
-            delete pContract;
-            pContract = nullptr;
-            OTLog::vOutput(0,
-                           "\n%s: Failed reading Main Server Contract:\n%s\n",
-                           szFunc, strContractPath.Get());
-        }
-    }
-
-    return bSuccess;
-}
-
-// Reads from cin until Newline.
-std::string OT_CLI_ReadLine()
-{
-    std::string line;
-    if (std::getline(std::cin, line)) {
-        return line;
-    }
-
-    return "";
-}
-
-// Reads from cin until EOF. (Or until the ~ character as the first character on
-// a line.)
-std::string OT_CLI_ReadUntilEOF()
-{
-    // don't skip the whitespace while reading
-    //    std::cin >> std::noskipws;
-
-    //    std::ostringstream oss;
-    //
-    //    oss << std::cin;   // Convert value into a string.
-    //    s = outs.str();
-
-    // use stream iterators to copy the stream to a string
-    //    std::istream_iterator<std::string> it(std::cin);
-    //    std::istream_iterator<std::string> end;
-    //    std::istream_iterator<char> it(std::cin);
-    //    std::istream_iterator<char> end;
-    //    std::string results(it, end);
-
-    //    int32_t onechar;
-
-    std::string result("");
-
-    for (;;) {
-        std::string input_line("");
-
-        //        int32_t n;
-        ////      std::string sn;
-        //        std::stringstream ssn;
-        //
-        //        std::getline(std::cin, input_line);
-        //        ssn << input_line;
-        //        ssn >> n;
-
-        //            std::getline(std::cin, input_line, '\n');
-        if (std::getline(std::cin, input_line, '\n')) {
-            input_line += "\n";
-
-            if (input_line[0] == '~') // This is our special "break" character
-                                      // for multi-line input.
-                break;
-
-            result += input_line;
-        }
-        else {
-            OTLog::Error("OT_CLI_ReadUntilEOF: getline() was unable to read a "
-                         "string from std::cin\n");
-            break;
-        }
-        if (std::cin.eof()) {
-            //          cout << "IT WAS EOF\n";
-            std::cin.clear();
-            break;
-        }
-        if (std::cin.fail()) {
-            //          cout << "IT WAS FAIL\n";
-            std::cin.clear();
-            break;
-        }
-        if (std::cin.bad()) {
-            //          cout << "IT WAS BAD\n";
-            std::cin.clear();
-            break;
-        }
-        //      std::cin.clear();
-        //      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),
-        // '\n');
-
-    } // while
-
-    return result;
-}
-
-bool OTServer::CreateMainFile()
-{
-    const char* szInstructions =
-        "\n\n ==> WARNING: Main file not found. To create it, continue this "
-        "process now...\n\n"
-        "REQUIREMENTS: You must already have a wallet, where you have created "
-        "one Nym.\n"
-        "This will be a temporary wallet only, for the purpose of generating "
-        "the server\n"
-        "nym and the master key for that server nym. You can erase the "
-        "contents of the\n"
-        "~/.ot/client_data folder once we are done with this process, and the "
-        "OT client\n"
-        "will just create a fresh wallet to replace it. In other words, don't "
-        "continue\n"
-        "to use the temporary wallet as a REAL wallet, since it contains the "
-        "master\n"
-        "key and private key for your new server nym. We're using a temporary "
-        "client-side\n"
-        "wallet for the convenience of generating the server nym--we'll copy "
-        "it over to \n"
-        "the server side, and then we'll wipe the temp wallet and start with a "
-        "fresh one\n"
-        "once this process is done.\n"
-        "(FYI, you can decode an armored wallet by using the 'opentxs decode' "
-        "command.)\n"
-        "-- You must also have the new Server Nym's \"NymID\", which should be "
-        "found in the\nwallet.\n"
-        "-- When you have created your server Nym (using your temp wallet) you "
-        "will want to\n"
-        "copy the credentials from the temp wallet to your new server:\n"
-        "    cp -R ~/.ot/client_data/credentials ~/.ot/server_data/ \n"
-        "-- You must already have a signed server contract. (*** To get one, "
-        "copy the\n"
-        "UNSIGNED version of the sample server contract, which is named "
-        "'localhost.xml',\n"
-        "and then change the tags as you see fit. Then use the same Nym, the "
-        "server Nym,\n"
-        "to sign the server contract, via the 'opentxs newserver' "
-        "command.***)\n"
-        "You must also have the server ID for the above contract, which the "
-        "newserver\n"
-        "command will output at the same time it outputs the newly-signed "
-        "server contract.\n"
-        "=> Note that the Nym who signs the server contract MUST be the same "
-        "Nym that you\n"
-        "provide HERE, for this process now...)\n"
-        "-- Finally, you must provide the cached key from the same wallet "
-        "where you brought\n"
-        "the Nym from (In this case, be careful to only copy the "
-        "base64-encoded portion\n"
-        "of the cached key from the wallet, and not the XML tags around it!) "
-        "We\n"
-        "recommend you create a blank wallet entirely for this purpose (of "
-        "generating\n"
-        "that cached key and server Nym, to be used for your new OT server.) "
-        "Then erase it\nonce this process is done.\n"
-        " ==> WARNING: Main file not found. To create it, continue this "
-        "process now...\n";
-
-    OTLog::Output(0, szInstructions);
-    OTLog::Output(0, "Enter the ServerID for your server contract: ");
-    std::string strServerID = OT_CLI_ReadLine();
-    OTLog::Output(0, "Enter the Server User ID (the NymID of the Nym who "
-                     "signed the server contract): ");
-    std::string strNymID = OT_CLI_ReadLine();
-    OTLog::Output(0, "Paste the cached key (ONLY the base64-encoded portion) "
-                     "below, from wallet.xml for that Nym.\n"
-                     "Terminate with '~' on a line by itself.\n\n");
-
-    std::string strCachedKey = OT_CLI_ReadUntilEOF();
-    OTLog::Output(0, "Paste the contents of the server Nym's certfile, "
-                     "including public/PRIVATE, below.\n"
-                     "NOTE: LEAVE THIS BLANK unless you REALLY want to use the "
-                     "OLD system. If you leave this\n"
-                     "blank (preferred), it will instead use the new "
-                     "credentials system. (Just make sure\n"
-                     "you copied over the \"credentials\" folder, as described "
-                     "above, since we're about to\n"
-                     "use it, if you leave this blank.)\n"
-                     "Terminate with '~' on a line by itself.\n\n");
-
-    std::string strCert = OT_CLI_ReadUntilEOF();
-    // signed server contract
-    OTLog::Output(0, "Paste the complete, signed, server contract below. (You "
-                     "must already have it.)\n"
-                     "Terminate with '~' on a line by itself.\n\n");
-
-    std::string strContract = OT_CLI_ReadUntilEOF();
-    if (!OTDB::StorePlainString(strContract, "contracts", strServerID)) {
-        OTLog::Error("Failed trying to store the server contract.\n");
-        return false;
-    }
-    if ((strCert.size()) > 0 &&
-        !OTDB::StorePlainString(strCert, "certs", strNymID)) {
-        OTLog::Error(
-            "Failed trying to store the server Nym's public/private cert.\n");
-        return false;
-    }
-    const char* szBlankFile = // todo hardcoding.
-        "<?xml version=\"1.0\"?>\n"
-        "<notaryServer version=\"2.0\"\n"
-        " serverID=\"%s\"\n"
-        " serverUserID=\"%s\"\n"
-        " transactionNum=\"%ld\" >\n"
-        "\n"
-        "<cachedKey>\n"
-        "%s</cachedKey>\n"
-        "\n"
-        "<accountList type=\"voucher\" count=\"0\" >\n"
-        "\n"
-        "</accountList>\n"
-        "\n"
-        "</notaryServer>\n\n";
-
-    const int64_t lTransNum = 5; // a starting point, for the new server.
-
-    OTString strNotaryFile;
-    strNotaryFile.Format(szBlankFile, strServerID.c_str(), strNymID.c_str(),
-                         lTransNum, strCachedKey.c_str());
-
-    std::string str_Notary(strNotaryFile.Get());
-
-    if (!OTDB::StorePlainString(str_Notary, ".",
-                                "notaryServer.xml")) // todo hardcoding.
-    {
-        OTLog::Error("Failed trying to store the new notaryServer.xml file.\n");
-        return false;
-    }
-    OTASCIIArmor ascCachedKey;
-    ascCachedKey.Set(strCachedKey.c_str());
-    OTCachedKey::It()->SetCachedKey(ascCachedKey);
-
-    if (!OTCachedKey::It()->HasHashCheck()) {
-        OTPassword tempPassword;
-        tempPassword.zeroMemory();
-        std::shared_ptr<OTCachedKey> sharedPtr(OTCachedKey::It());
-        sharedPtr->GetMasterPassword(
-            sharedPtr, tempPassword,
-            "We do not have a check hash yet for this password, "
-            "please enter your password",
-            true);
-        if (!SaveMainFile()) {
-            OT_FAIL;
-        }
-    }
-    // At this point, the contract is saved, the cert is saved, and the
-    // notaryServer.xml file
-    // is saved. All we have left is the Nymfile, which we'll create.
-
-    const OTString strServerUserID(strNymID.c_str());
-
-    m_nymServer.SetIdentifier(strServerUserID);
-
-    if (!m_nymServer.Loadx509CertAndPrivateKey()) {
-        OTLog::vOutput(0, "%s: Error loading server credentials, or "
-                          "certificate and private key.\n",
-                       __FUNCTION__);
-    }
-    else if (!m_nymServer.VerifyPseudonym()) {
-        OTLog::vOutput(0, "%s: Error verifying server nym. Are you sure you "
-                          "have the right ID?\n",
-                       __FUNCTION__);
-    }
-    else if (!m_nymServer.SaveSignedNymfile(m_nymServer)) {
-        OTLog::vOutput(0, "%s: Error saving new nymfile for server nym.\n",
-                       __FUNCTION__);
-    }
-    else {
-        OTLog::vOutput(0, "%s: OKAY, we have apparently created the new "
-                          "server. Remember to erase the contents "
-                          "of your ~/.ot/client_data folder, since we used a "
-                          "temporary wallet to generate the server "
-                          "nym and its master key.\n"
-                          "Let's try to load up your new server contract...\n",
-                       __FUNCTION__);
-        return true;
-    }
-
-    return false;
-}
-
-/*
-
-  {
-  OTASCIIArmor ascMasterContents;
-
-  if (OTCachedKey::It()->SerializeTo(ascMasterContents))
-  {
-  strMainFile.Concatenate("<masterKey>\n%s</masterKey>\n\n",
-  ascMasterContents.Get());
-  }
-  else
-  OTLog::vError("%s: Failed trying to write master key to notary file.\n",
-  __FUNCTION__);
-  }
-
-
-
-  <?xml version="1.0"?>
-  <notaryServer version="2.0"
-  serverID="%s"
-  serverUserID="%s"
-  transactionNum="5" >
-
-  <masterKey>
-  %s</masterKey>
-
-  <accountList type="voucher" count="0" >
-
-  </accountList>
-
-  </notaryServer>
-
-*/
-
-bool OTServer::LoadMainFile(bool bReadOnly)
-{
-    //
-    if (!OTDB::Exists(".", m_strWalletFilename.Get())) {
-        OTLog::vError("%s: Error finding file: %s\n", __FUNCTION__,
-                      m_strWalletFilename.Get());
-        return false;
-    }
-    OTString strFileContents(OTDB::QueryPlainString(
-        ".", m_strWalletFilename.Get())); // <=== LOADING FROM DATA STORE.
-
-    if (!strFileContents.Exists()) {
-        OTLog::vError("%s: Unable to read main file: %s\n", __FUNCTION__,
-                      m_strWalletFilename.Get());
-        return false;
-    }
-    //
-    // If, for example, the server user Nym is in old format (no master key)
-    // then we will set this to true while loading. Then at the BOTTOM of this
-    // function, we'll convert the Nym to the new format and re-save the notary
-    // file.
-    //
-    bool bNeedToConvertUser = false;
-    bool bNeedToSaveAgain = false;
-
-    bool bFailure = false;
-
-    {
-        OTStringXML xmlFileContents(strFileContents);
-
-        if (false ==
-            xmlFileContents.DecodeIfArmored()) // bEscapedIsAllowed=true by
-                                               // default.
-        {
-            OTLog::vError("%s: Notary server file apparently was encoded and "
-                          "then failed decoding. Filename: %s \n"
-                          "Contents: \n%s\n",
-                          __FUNCTION__, m_strWalletFilename.Get(),
-                          strFileContents.Get());
-            return false;
-        }
-        irr::io::IrrXMLReader* xml =
-            irr::io::createIrrXMLReader(xmlFileContents);
-        OTCleanup<irr::io::IrrXMLReader> theXMLGuardian(
-            xml); // So I don't have to clean it up later.
-        // parse the file until end reached
-        while (xml && xml->read()) {
-            // strings for storing the data that we want to read out of the file
-
-            OTString AssetName;
-            OTString AssetContract;
-            OTString AssetID;
-
-            const OTString strNodeName(xml->getNodeName());
-
-            switch (xml->getNodeType()) {
-            case irr::io::EXN_TEXT:
-                // in this xml file, the only text which occurs is the
-                // messageText
-                // messageText = xml->getNodeData();
-                break;
-            case irr::io::EXN_ELEMENT: {
-                if (strNodeName.Compare("notaryServer")) {
-                    m_strVersion = xml->getAttributeValue("version");
-                    m_strServerID = xml->getAttributeValue("serverID");
-                    m_strServerUserID = xml->getAttributeValue("serverUserID");
-
-                    OTString strTransactionNumber; // The server issues
-                                                   // transaction numbers and
-                                                   // stores the counter here
-                                                   // for the latest one.
-                    strTransactionNumber =
-                        xml->getAttributeValue("transactionNum");
-                    m_lTransactionNumber = atol(strTransactionNumber.Get());
-
-                    OTLog::vOutput(
-                        0,
-                        "\nLoading Open Transactions server. File version: %s\n"
-                        " Last Issued Transaction Number: %ld\n Server ID:     "
-                        " %s\n Server User ID: %s\n",
-                        m_strVersion.Get(), m_lTransactionNumber,
-                        m_strServerID.Get(), m_strServerUserID.Get());
-                    //
-                    if (m_strVersion.Compare("1.0")) // This means this Nym has
-                                                     // not been converted yet
-                                                     // to master password.
-                    {
-                        bNeedToConvertUser = true;
-
-                        if (!(OTCachedKey::It()->isPaused()))
-                            OTCachedKey::It()->Pause();
-
-                        if (!LoadServerUserAndContract()) {
-                            OTLog::vError("%s: Failed calling "
-                                          "LoadServerUserAndContract.\n",
-                                          __FUNCTION__);
-                            bFailure = true;
-                        }
-
-                        if (OTCachedKey::It()->isPaused())
-                            OTCachedKey::It()->Unpause();
-                    }
-                }
-                // todo in the future just remove masterkey. I'm leaving it for
-                // now so people's
-                // data files can get converted over. After a while just remove
-                // it.
-                //
-                else if (strNodeName.Compare("masterKey") ||
-                         strNodeName.Compare("cachedKey")) {
-                    OTASCIIArmor ascCachedKey;
-
-                    if (OTContract::LoadEncodedTextField(xml, ascCachedKey)) {
-                        // We successfully loaded the masterKey from file, so
-                        // let's SET it
-                        // as the master key globally...
-                        //
-                        OTCachedKey::It()->SetCachedKey(ascCachedKey);
-
-                        if (!OTCachedKey::It()->HasHashCheck()) {
-                            OTPassword tempPassword;
-                            tempPassword.zeroMemory();
-                            std::shared_ptr<OTCachedKey> sharedPtr(
-                                OTCachedKey::It());
-                            bNeedToSaveAgain = sharedPtr->GetMasterPassword(
-                                sharedPtr, tempPassword,
-                                "We do not have a check hash yet for this "
-                                "password, "
-                                "please enter your password",
-                                true);
-                        }
-                    }
-
-                    OTLog::vOutput(0, "\nLoading cachedKey:\n%s\n",
-                                   ascCachedKey.Get());
-                    //
-                    // It's only here, AFTER the master key has been loaded,
-                    // that we can
-                    // go ahead and load the server user, the server contract,
-                    // cron, etc.
-                    // (It wasn't that way in version 1, before we had master
-                    // keys.)
-                    //
-                    if (false == m_strVersion.Compare("1.0")) // This is, for
-                                                              // example, 2.0
-                    {
-                        if (!LoadServerUserAndContract()) {
-                            OTLog::vError("%s: Failed calling "
-                                          "LoadServerUserAndContract.\n",
-                                          __FUNCTION__);
-                            bFailure = true;
-                        }
-                    }
-                }
-                else if (strNodeName.Compare("accountList")) // the voucher
-                                                               // reserve
-                                                               // account IDs.
-                {
-                    const OTString strAcctType = xml->getAttributeValue("type");
-                    const OTString strAcctCount =
-                        xml->getAttributeValue("count");
-
-                    if ((-1) == m_VoucherAccts.ReadFromXMLNode(xml, strAcctType,
-                                                               strAcctCount))
-                        OTLog::vError(
-                            "%s: Error loading voucher accountList.\n",
-                            __FUNCTION__);
-                }
-                else if (strNodeName.Compare("basketInfo")) {
-                    OTString strBasketID = xml->getAttributeValue("basketID");
-                    OTString strBasketAcctID =
-                        xml->getAttributeValue("basketAcctID");
-                    OTString strBasketContractID =
-                        xml->getAttributeValue("basketContractID");
-
-                    const OTIdentifier BASKET_ID(strBasketID),
-                        BASKET_ACCT_ID(strBasketAcctID),
-                        BASKET_CONTRACT_ID(strBasketContractID);
-
-                    if (AddBasketAccountID(BASKET_ID, BASKET_ACCT_ID,
-                                           BASKET_CONTRACT_ID))
-                        OTLog::vOutput(0, "Loading basket currency info...\n "
-                                          "Basket ID: %s\n Basket Acct ID: "
-                                          "%s\n Basket Contract ID: %s\n",
-                                       strBasketID.Get(), strBasketAcctID.Get(),
-                                       strBasketContractID.Get());
-                    else
-                        OTLog::vError("Error adding basket currency info...\n "
-                                      "Basket ID: %s\n Basket Acct ID: %s\n",
-                                      strBasketID.Get(), strBasketAcctID.Get());
-                }
-
-                // Create an OTAssetContract and load them from file, (for each
-                // asset type),
-                // and add them to the internal map.
-                else if (strNodeName.Compare("assetType")) {
-                    OTASCIIArmor ascAssetName = xml->getAttributeValue("name");
-
-                    if (ascAssetName.Exists())
-                        ascAssetName.GetString(AssetName,
-                                               false); // linebreaks == false
-
-                    AssetID = xml->getAttributeValue(
-                        "assetTypeID"); // hash of contract itself
-
-                    OTLog::vOutput(0, "\n\n****Asset Contract**** (server "
-                                      "listing)\n Name: %s\n Contract ID: %s\n",
-                                   AssetName.Get(), AssetID.Get());
-
-                    OTString strContractPath;
-                    strContractPath = OTFolders::Contract().Get();
-
-                    OTAssetContract* pContract = new OTAssetContract(
-                        AssetName, strContractPath, AssetID, AssetID);
-
-                    OT_ASSERT_MSG(nullptr != pContract,
-                                  "ASSERT: allocating memory for Asset "
-                                  "Contract in OTServer::LoadMainFile\n");
-
-                    if (pContract->LoadContract()) {
-                        if (pContract->VerifyContract()) {
-                            OTLog::Output(0, "** Asset Contract Verified **\n");
-
-                            pContract->SetName(AssetName);
-
-                            m_mapContracts[AssetID.Get()] = pContract;
-                        }
-                        else {
-                            delete pContract;
-                            pContract = nullptr;
-                            OTLog::Output(0,
-                                          "Asset Contract FAILED to verify.\n");
-                        }
-                    }
-                    else {
-                        delete pContract;
-                        pContract = nullptr;
-                        OTLog::vOutput(
-                            0, "%s: Failed reading file for Asset Contract.\n",
-                            __FUNCTION__);
-                    }
-                }
-
-                // This is where the server finds out his own contract, which he
-                // hashes in order to verify his
-                // serverID (which is either hardcoded or stored in the server
-                // xml file.)
-                //
-                // There should be only one of these per transaction server.
-                //
-                // Commented out because I don't need it right now. TODO. COMING
-                // SOON! So the server can load his
-                // port information out of the contract BEFORE it starts
-                // listening on the port (right now port is
-                // still hardcoded.)
-                // Todo: Server should also then immediately connect to itself
-                // BASED ON THE INFO IN THE CONTRACT
-                // in order to verify that whatever is running at that port IS,
-                // IN FACT, ITSELF!
-                /*
-                  else if (strNodeName.Compare("notaryProvider"))
-                  {
-                  ServerName        = xml->getAttributeValue("name");
-                  ServerID        = xml->getAttributeValue("serverID");    //
-                  hash of contract itself
-
-                  OTLog::vOutput(0, "\n\n****Notary Server (contract)****
-                  (server listing) Name: %s\nContract ID:\n%s\n",
-                  ServerName.Get(), ServerID.Get());
-
-                  OTString strContractPath;
-                  strContractPath.Format("%s%s%s%s%s", OTLog::Path(),
-                  OTLog::PathSeparator(),
-                  OTFolders::Contract().Get(),
-                  OTLog::PathSeparator(), ServerID.Get());
-                  OTServerContract * pContract = new
-                  OTServerContract(ServerName, strContractPath, ServerID);
-
-                  OT_ASSERT_MSG(nullptr != pContract, "Error allocating memory
-                  for
-                  Server Contract in OTServer::LoadMainFile\n");
-
-                  if (pContract->LoadContract())
-                  {
-                  if (pContract->VerifyContract())
-                  {
-                  OTLog::Output(0, "** Server Contract Verified **\n");
-
-                  m_mapContracts[ServerID.Get()] = pContract;
-                  }
-                  else
-                  {
-                  delete pContract; pContract = nullptr;
-                  OTLog::Output(0, "Server Contract FAILED to verify.\n");
-                  }
-                  }
-                  else
-                  {
-                  delete pContract; pContract = nullptr;
-                  OTLog::Output(0, "Failed reading file for Server Contract in
-                  OTServer::LoadMainFile\n");
-                  }
-                  }
-                */
-
-                /*
-                // commented out because, since I already have the serverID,
-                then the server
-                // already knows which certfile to open in order to get at its
-                private key.
-                // So I already have the private key loaded, so I don't need
-                pseudonyms in
-                // the config file right now.
-                //
-                // In the future, I will load the server XML file (here) FIRST,
-                and get the serverID and
-                // contract file from that. THEN I will hash the contract file
-                and verify that it matches
-                // the serverID. THEN I will use that serverID to open the
-                Certfile and get my private key.
-                //
-                // In the meantime I don't need this yet, serverID is setup in
-                the config file (that I'm reading now.)
-                else if (strNodeName.Compare("pseudonym")) // The server has to
-                sign things, too.
-                {
-                NymName = xml->getAttributeValue("name");// user-assigned name
-                for GUI usage
-                NymID = xml->getAttributeValue("nymID"); // message digest from
-                hash of x.509 cert, used to look up certfile.
-
-                OTLog::vOutput(0, "\n\n** Pseudonym ** (server): %s\nID:
-                %s\nfile: %s\n",
-                NymName.Get(), NymID.Get(), NymFile.Get());
-
-                OTPseudonym * pNym = new OTPseudonym(NymName, NymFile, NymID);
-
-                if (pNym && pNym->LoadNymfile((char*)(NymFile.Get())))
-                {
-                if (pNym->Loadx509CertAndPrivateKey())
-                {
-                if (pNym->VerifyPseudonym())
-                {
-                m_mapNyms[NymID.Get()] = pNym;
-                g_pTemporaryNym = pNym; // TODO remove this temporary line used
-                for testing only.
-                }
-                else {
-                OTLog::Error("Error verifying public key from x509 against Nym
-                ID in OTWallet::LoadWallet\n");
-                }
-                }
-                else {
-                OTLog::Error("Error loading x509 file for Pseudonym in
-                OTWallet::LoadWallet\n");
-                }
-                }
-                else {
-                OTLog::Error("Error creating or loading Nym in
-                OTWallet::LoadWallet\n");
-                }
-                }
-                */
-                else {
-                    // unknown element type
-                    OTLog::vError("%s: Unknown element type: %s\n",
-                                  __FUNCTION__, xml->getNodeName());
-                }
-            } break;
-            default:
-                break;
-            } // switch
-        }     // while xml->read
-    }
-    if (!bReadOnly) {
-        {
-            OTString strReason("Converting Server Nym to master key.");
-            if (bNeedToConvertUser &&
-                m_nymServer.Savex509CertAndPrivateKey(true, &strReason))
-                SaveMainFile();
-        }
-        {
-            OTString strReason("Creating a Hash Check for the master key.");
-            if (bNeedToSaveAgain &&
-                m_nymServer.Savex509CertAndPrivateKey(true, &strReason))
-                SaveMainFile();
-        }
-    }
-    return !bFailure;
 }
 
 // Get the list of markets on this server.
@@ -2254,10 +1176,12 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym& theNym, OTMessage& MsgIn,
 
         for (auto& it : theList) {
             const int64_t lTransNum = it;
-            RemoveTransactionNumber(theNym, lTransNum, false); // bSave=false
-            RemoveIssuedNumber(theNym, lTransNum, false); // I'll drop it in his
-                                                          // Nymbox -- he can
-                                                          // SIGN for it.
+            transactor_.removeTransactionNumber(theNym, lTransNum,
+                                                false); // bSave=false
+            transactor_.removeIssuedNumber(theNym, lTransNum,
+                                           false); // I'll drop it in his
+                                                   // Nymbox -- he can
+                                                   // SIGN for it.
             // Then why was it added in the first place? Because we originally
             // sent it back in the reply directly,
             // so IssueNext was designed to work that way originally.
@@ -3157,9 +2081,8 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
             }
             else // success loading contract from string.
             {
-                // todo fix this cast.
-                OTPseudonym* pNym =
-                    (OTPseudonym*)pAssetContract->GetContractPublicNym();
+                OTPseudonym* pNym = const_cast<OTPseudonym*>(
+                    pAssetContract->GetContractPublicNym());
 
                 if (nullptr == pNym) {
                     OTLog::vOutput(0, "%s: Failed trying to retrieve Issuer's "
@@ -3256,8 +2179,9 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
                                                            // up unless failure!
                                                            // Server will clean
                                                            // it up.
-                        SaveMainFile(); // So the main xml file knows to load
-                                        // this asset type next time we run.
+                        mainFile_.SaveMainFile(); // So the main xml file knows
+                                                  // to load
+                        // this asset type next time we run.
 
                         // Make sure the contracts/%s file is created for next
                         // time.
@@ -3726,8 +2650,9 @@ void OTServer::UserCmdIssueBasket(OTPseudonym& theNym, OTMessage& MsgIn,
                         AddBasketAccountID(BASKET_ID, BASKET_ACCOUNT_ID,
                                            BASKET_CONTRACT_ID);
 
-                        SaveMainFile(); // So the main xml file loads this
-                                        // basket info next time we run.
+                        mainFile_.SaveMainFile(); // So the main xml file loads
+                                                  // this
+                        // basket info next time we run.
 
                         delete pBasketAccount;
                         pBasketAccount = nullptr;
@@ -4649,7 +3574,7 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
                               "from string:\n%s\n",
                               __FUNCTION__, strVoucherRequest.Get());
             }
-            else if (!VerifyTransactionNumber(
+            else if (!transactor_.verifyTransactionNumber(
                             theNym, theVoucherRequest.GetTransactionNum())) {
                 OTLog::vError(
                     "OTServer::%s: Failed verifying transaction number on the "
@@ -6319,7 +5244,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                 // Make sure the transaction number on the cheque is still
                 // available and valid for use by theNym.
                 //
-                else if (false == VerifyTransactionNumber(
+                else if (false == transactor_.verifyTransactionNumber(
                                       theNym, theCheque.GetTransactionNum())) {
                     OTLog::vOutput(
                         0, "%s: Failure verifying cheque: Bad transaction "
@@ -6363,7 +5288,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                             // twice. It will remain on his issued list
                             // until he signs for the receipt.
                             //
-                            (false == RemoveTransactionNumber(
+                            (false == transactor_.removeTransactionNumber(
                                           theNym, theCheque.GetTransactionNum(),
                                           true)) // bSave=true
                             ) {
@@ -6880,7 +5805,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                 // Make sure they're not double-spending this cheque.
                 //
                 else if (false ==
-                         VerifyTransactionNumber(
+                         transactor_.verifyTransactionNumber(
                              *(bHasRemitter ? pRemitterNym : pSenderNym),
                              theCheque.GetTransactionNum())) {
                     OTLog::vOutput(0, "OTServer::%s: Failure verifying %s: Bad "
@@ -7197,7 +6122,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                        // list until he signs for the receipt.
                                        //
                                        false ==
-                                       RemoveTransactionNumber(
+                                       transactor_.removeTransactionNumber(
                                            *(bHasRemitter ? pRemitterNym
                                                           : pSenderNym),
                                            theCheque.GetTransactionNum(),
@@ -7312,7 +6237,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                     // probably keeping every voucher number
                                     // open for eternity.
                                     //
-                                    if (!RemoveIssuedNumber(
+                                    if (!transactor_.removeIssuedNumber(
                                              *pRemitterNym,
                                              theCheque.GetTransactionNum(),
                                              true)) // bSave=true
@@ -8109,7 +7034,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                 else if (!bCancelling && // If activating and:
                          ((pPlan->GetCountClosingNumbers() <
                            1) || // ...if there aren't enough closing numbers...
-                          !VerifyTransactionNumber(
+                          !transactor_.verifyTransactionNumber(
                                theNym, lFoundClosingNum))) // ...or the official
                                                            // closing # isn't
                                                            // available for use
@@ -8123,8 +7048,8 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                 }
                 else if (bCancelling && // If cancelling and:
                            ((pPlan->GetRecipientCountClosingNumbers() < 2) ||
-                            !VerifyTransactionNumber(theNym,
-                                                     lFoundClosingNum))) {
+                            !transactor_.verifyTransactionNumber(
+                                 theNym, lFoundClosingNum))) {
                     OTLog::vOutput(0, "%s: ERROR: the Closing number wasn't "
                                       "available for use while cancelling a "
                                       "payment plan.\n",
@@ -8300,7 +7225,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                            __FUNCTION__);
                         }
                         else if (!bCancelling &&
-                                   !VerifyTransactionNumber(
+                                   !transactor_.verifyTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientOpeningNum())) {
                             OTLog::vOutput(0, "%s: ERROR verifying Recipient's "
@@ -8309,7 +7234,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                            __FUNCTION__);
                         }
                         else if (!bCancelling &&
-                                   !VerifyTransactionNumber(
+                                   !transactor_.verifyTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientClosingNum())) {
                             OTLog::vOutput(0, "%s: ERROR verifying Recipient's "
@@ -8474,12 +7399,13 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // then I could come back later and USE THE
                                     // NUMBER AGAIN!
                                     // (Bad!)
-                                    // RemoveTransactionNumber was already
+                                    // transactor_.removeTransactionNumber was
+                                    // already
                                     // called for tranIn->GetTransactionNum()
                                     // (That's the opening number.)
                                     //
                                     // Here's the closing number:
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         theNym, pPlan->GetClosingNum(),
                                         true); // bSave=true
                                     // RemoveIssuedNum will be called for that
@@ -8508,11 +7434,11 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // and it's called for the Recipient's
                                     // closing number when that final receipt is
                                     // closed out.
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientOpeningNum(),
                                         false); // bSave=true
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientClosingNum(),
                                         true); // bSave=true
@@ -8852,7 +7778,7 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                           1) || // the transaction number was verified before we
                                 // entered this function, so only the closing #
                                 // is left...
-                         !VerifyTransactionNumber(
+                         !transactor_.verifyTransactionNumber(
                               theNym, lFoundClosingNum)) // Verify that it can
                                                          // still be USED (not
                                                          // closed... that's
@@ -9743,7 +8669,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                              "account ID according to request basket doesn't "
                              "match theAccount.\n");
             }
-            else if (false == VerifyTransactionNumber(
+            else if (false == transactor_.verifyTransactionNumber(
                                     theNym, theRequestBasket.GetClosingNum())) {
                 OTLog::Error("OTServer::NotarizeExchangeBasket: Closing number "
                              "used for User's main account receipt was not "
@@ -9849,7 +8775,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                     break;
                                 }
                                 else if (false ==
-                                           VerifyTransactionNumber(
+                                           transactor_.verifyTransactionNumber(
                                                theNym,
                                                pRequestItem
                                                    ->lClosingTransactionNo)) {
@@ -10443,12 +9369,12 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                     // I'm still RESPONSIBLE for the number
                                     // until RemoveIssuedNumber() is called.
                                     //
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         theNym,
                                         pRequestItem->lClosingTransactionNo,
                                         false); // bSave=false
                                 }
-                                RemoveTransactionNumber(
+                                transactor_.removeTransactionNumber(
                                     theNym, theRequestBasket.GetClosingNum(),
                                     true); // bSave=true
                                 pResponseItem->SetStatus(
@@ -11036,12 +9962,12 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
             // The transaction number opens the market offer, but there must
             // also be a closing number for closing it.
             else if ((pTrade->GetCountClosingNumbers() < 2) ||
-                     !VerifyTransactionNumber(
+                     !transactor_.verifyTransactionNumber(
                           theNym,
                           pTrade->GetAssetAcctClosingNum()) || // Verify that it
                                                                // can still be
                                                                // USED
-                     !VerifyTransactionNumber(
+                     !transactor_.verifyTransactionNumber(
                           theNym, pTrade->GetCurrencyAcctClosingNum())) {
                 OTLog::Output(0, "ERROR needed 2 valid closing transaction "
                                  "numbers in OTServer::NotarizeMarketOffer\n");
@@ -11201,11 +10127,11 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
                     // is, we already did, before we got here. (Otherwise we
                     // wouldn't have even gotten this far.)
                     //
-                    RemoveTransactionNumber(
+                    transactor_.removeTransactionNumber(
                         theNym, pTrade->GetAssetAcctClosingNum(), false);
-                    RemoveTransactionNumber(theNym,
-                                            pTrade->GetCurrencyAcctClosingNum(),
-                                            false); // (Saved below.)
+                    transactor_.removeTransactionNumber(
+                        theNym, pTrade->GetCurrencyAcctClosingNum(),
+                        false); // (Saved below.)
                     // RemoveIssuedNum will be called for the original
                     // transaction number when the finalReceipt is created.
                     // RemoveIssuedNum will be called for the Closing number
@@ -11309,7 +10235,7 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
     }
     // No need to call VerifyAccount() here since the above calls go above and
     // beyond that method.
-    else if (!VerifyTransactionNumber(theNym, lTransactionNumber)) {
+    else if (!transactor_.verifyTransactionNumber(theNym, lTransactionNumber)) {
         const OTIdentifier idAcct(theFromAccount);
         const OTString strIDAcct(idAcct);
         // The user may not submit a transaction using a number he's already
@@ -11348,8 +10274,8 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
         // user no longer has the number on his AVAILABLE list. Removal from
         // issued list happens separately.)
         //
-        if (false == RemoveTransactionNumber(theNym, lTransactionNumber,
-                                             true)) // bSave=true
+        if (false == transactor_.removeTransactionNumber(
+                         theNym, lTransactionNumber, true)) // bSave=true
         {
             OTLog::Error("Error removing transaction number (as available) "
                          "from user nym in OTServer::NotarizeTransaction\n");
@@ -11552,9 +10478,9 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
                                 if (theSetIT != theIDSet.end()) // Found it.
                                     theIDSet.erase(lTransactionNumber);
                             }
-                            if (false == RemoveIssuedNumber(theNym,
-                                                            lTransactionNumber,
-                                                            true)) // bSave=true
+                            if (!transactor_.removeIssuedNumber(
+                                     theNym, lTransactionNumber,
+                                     true)) // bSave=true
                             {
                                 const OTString strNymID(USER_ID);
                                 OTLog::vError("%s: Error removing issued "
@@ -11576,8 +10502,8 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
             case OTTransaction::deposit:
             case OTTransaction::cancelCronItem:
             case OTTransaction::exchangeBasket:
-                if (false == RemoveIssuedNumber(theNym, lTransactionNumber,
-                                                true)) // bSave=true
+                if (!transactor_.removeIssuedNumber(theNym, lTransactionNumber,
+                                                    true)) // bSave=true
                 {
                     const OTString strNymID(USER_ID);
                     OTLog::vError("%s: Error removing issued number %ld from "
@@ -12922,12 +11848,14 @@ void OTServer::UserCmdDeleteUser(OTPseudonym& theNym, OTMessage& MsgIn,
         //
         while (theNym.GetTransactionNumCount(SERVER_ID) > 0) {
             int64_t lTemp = theNym.GetTransactionNum(SERVER_ID, 0); // index 0
-            RemoveTransactionNumber(theNym, lTemp, false); // bSave = false
+            transactor_.removeTransactionNumber(theNym, lTemp,
+                                                false); // bSave = false
         }
 
         while (theNym.GetIssuedNumCount(SERVER_ID) > 0) {
             int64_t lTemp = theNym.GetIssuedNum(SERVER_ID, 0); // index 0
-            RemoveIssuedNumber(theNym, lTemp, false);          // bSave = false
+            transactor_.removeIssuedNumber(theNym, lTemp,
+                                           false); // bSave = false
         }
         //
         theNym.MarkForDeletion(); // The nym isn't actually deleted yet, just
@@ -14590,7 +13518,8 @@ void OTServer::UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
                 // the client.
                 pResponseLedger->AddTransaction(*pTranResponse);
 
-                if (!VerifyTransactionNumber(theNym, lTransactionNumber)) {
+                if (!transactor_.verifyTransactionNumber(theNym,
+                                                         lTransactionNumber)) {
                     // The user may not submit a transaction using a number he's
                     // already used before.
                     OTLog::vOutput(0, "OTServer::UserCmdProcessInbox: Error "
@@ -14623,9 +13552,9 @@ void OTServer::UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
                     // user no longer has the number on his AVAILABLE list.
                     // Removal from issued list happens separately.)
                     //
-                    if (false == RemoveTransactionNumber(theNym,
-                                                         lTransactionNumber,
-                                                         true)) // bSave=true
+                    if (false ==
+                        transactor_.removeTransactionNumber(
+                            theNym, lTransactionNumber, true)) // bSave=true
                     {
                         OTLog::Error("Error removing transaction number (as "
                                      "available) from user nym in "
@@ -14642,9 +13571,9 @@ void OTServer::UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
                         // (the list of numbers I must sign for in every balance
                         // agreement.)
 
-                        if (false == RemoveIssuedNumber(theNym,
-                                                        lTransactionNumber,
-                                                        true)) // bSave=true
+                        if (!transactor_.removeIssuedNumber(theNym,
+                                                            lTransactionNumber,
+                                                            true)) // bSave=true
                         {
                             OTLog::vError("%s: Error removing issued number "
                                           "from user nym.\n",

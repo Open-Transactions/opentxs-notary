@@ -6,6 +6,8 @@ set(cxx-sources
   AcctFunctor_PayDividend.cpp
   ClientConnection.cpp
   MessageProcessor.cpp
+  MainFile.cpp
+  Transactor.cpp
   OTServer.cpp
 )
 

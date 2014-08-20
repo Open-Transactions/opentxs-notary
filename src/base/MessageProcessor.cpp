@@ -272,7 +272,7 @@ void MessageProcessor::run()
                     std::string reply;
                     bool shouldDisconnect = processMessage(strMsg, reply);
 
-                    if ((reply.length() <= 0) || shouldDisconnect) {
+                    if (reply.length() <= 0 || shouldDisconnect) {
                         OTLog::vOutput(
                             0, "server main: ERROR: Unfortunately, not every "
                                "client request is "
