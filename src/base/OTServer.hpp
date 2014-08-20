@@ -133,6 +133,7 @@
 #ifndef __OT_SERVER_HPP__
 #define __OT_SERVER_HPP__
 
+#include "Transactor.hpp"
 #include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTAcctList.hpp>
 #include <opentxs/core/OTCron.hpp>
@@ -157,6 +158,8 @@ class OTServerContract;
 
 class OTServer
 {
+    friend class Transactor;
+
 public:
     OTServer();
     ~OTServer();
@@ -329,14 +332,6 @@ private:
     void UserCmdGetNym_MarketOffers(OTPseudonym& nym, OTMessage& msgIn,
                                     OTMessage& msgOut);
 
-    bool VerifyTransactionNumber(OTPseudonym& nym,
-                                 const int64_t& transactionNumber);
-    bool RemoveTransactionNumber(OTPseudonym& nym,
-                                 const int64_t& transactionNumber,
-                                 bool save = false);
-    bool RemoveIssuedNumber(OTPseudonym& nym, const int64_t& transactionNumber,
-                            bool save = false);
-
     // If the server receives a notarizeTransactions command, it will be
     // accompanied by a payload containing a ledger to be notarized.
     // UserCmdNotarizeTransactions will loop through that ledger,
@@ -393,6 +388,8 @@ private:
     typedef std::map<std::string, OTAssetContract*> ContractsMap;
 
 private:
+    Transactor transactor_;
+
     OTString m_strWalletFilename;
     OTString m_strConfigFilename;
     OTString m_strLogFilename;
@@ -410,8 +407,6 @@ private:
     // This is the server's own contract, containing its public key and
     // connect info.
     OTServerContract* m_pServerContract;
-    // This stores the last VALID AND ISSUED transaction number.
-    int64_t m_lTransactionNumber;
 
     OTPseudonym m_nymServer;
 

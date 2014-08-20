@@ -495,198 +495,10 @@ OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
     return nullptr;
 }
 
-/// Just as every request must be accompanied by a request number, so
-/// every transaction request must be accompanied by a transaction number.
-/// The request numbers can simply be incremented on both sides (per user.)
-/// But the transaction numbers must be issued by the server and they do
-/// not repeat from user to user. They are unique to transaction.
-///
-/// Users must ask the server to send them transaction numbers so that they
-/// can be used in transaction requests. The server keeps an internal counter
-/// and maintains a data file to store the latest one.
-///
-/// More specifically, the server file itself stores the latest transaction
-/// number
-/// (So it knows what number to issue and increment when the next request comes
-/// in.)
-///
-/// But once it issues the next number, that number needs to be recorded in the
-/// nym file
-/// for the user it was issued to, so that it can be verified later when he
-/// submits it
-/// for a transaction--and so it can be removed once the transaction is complete
-/// (so it
-/// won't work twice.)
-///
-/// The option to bSaveTheNumber defaults to true for this reason. But sometimes
-/// it
-/// will be sent to false, in cases where the number doesn't need to be saved
-/// because
-/// it's never going to be verified. For example, if the server creates a
-/// transaction
-/// number so it can put a transaction into your inbox, it's never going to have
-/// to verify
-/// that it actually put it into the inbox by checking it's own nymfile for that
-/// transaction
-/// number. Instead it would just check its own server signature on the inbox.
-/// But I digress...
-///
-bool OTServer::IssueNextTransactionNumber(OTPseudonym& theNym,
-                                          int64_t& lTransactionNumber,
-                                          bool bStoreTheNumber)
+bool OTServer::IssueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
+                                          bool storeNumber)
 {
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-
-    // m_lTransactionNumber stores the last VALID AND ISSUED transaction number.
-    // So first, we increment that, since we don't want to issue the same number
-    // twice.
-    m_lTransactionNumber++;
-
-    // Next, we save it to file.
-    if (false == SaveMainFile()) {
-        OTLog::Error("Error saving main server file.\n");
-        m_lTransactionNumber--;
-        return false;
-    }
-
-    // Each Nym stores the transaction numbers that have been issued to it.
-    // (On client AND server side.)
-    //
-    // So whenever the server issues a new number, it's to a specific Nym, then
-    // it is recorded in his Nym file before being sent to the client (where it
-    // is also recorded in his Nym file.)  That way the server always knows
-    // which
-    // numbers are valid for each Nym.
-    else if (bStoreTheNumber &&
-             (false == pNym->AddTransactionNum(m_nymServer, m_strServerID,
-                                               m_lTransactionNumber,
-                                               true))) // bSave = true
-    {
-        OTLog::Error("Error adding transaction number to Nym file.\n");
-        m_lTransactionNumber--;
-        SaveMainFile(); // Save it back how it was, since we're not issuing this
-                        // number after all.
-        return false;
-    }
-
-    // SUCCESS?
-    // Now the server main file has saved the latest transaction number,
-    // and the number has been stored on the relevant nym file.
-    // NOW we set it onto the parameter and return true.
-    else {
-        lTransactionNumber = m_lTransactionNumber;
-        return true;
-    }
-}
-
-/// Transaction numbers are now stored in the nym file (on client and server
-/// side) for whichever nym
-/// they were issued to. This function verifies whether or not the transaction
-/// number is present and valid
-/// for any specific nym (i.e. for the nym passed in.)
-bool OTServer::VerifyTransactionNumber(
-    OTPseudonym& theNym, const int64_t& lTransactionNumber) // passed by
-                                                            // reference for
-                                                            // speed, but not a
-                                                            // return value.
-{
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-    if (pNym->VerifyTransactionNum(m_strServerID, lTransactionNumber))
-        return true;
-    else {
-        const OTString strNymID(NYM_ID);
-        const OTString strIssued(
-            pNym->VerifyIssuedNum(m_strServerID, lTransactionNumber)
-                ? "(However, that number IS issued to that Nym... He must have "
-                  "already used it.)\n"
-                : "(In fact, that number isn't even issued to that Nym, though "
-                  "perhaps it was at some time in the past?)\n");
-
-        OTLog::vError("%s: %ld not available for Nym %s to use. \n%s",
-                      __FUNCTION__,
-                      //                    " Oh, and FYI, tangentially, the
-                      // current Trns# counter is: %ld\n",
-                      lTransactionNumber, strNymID.Get(), strIssued.Get());
-        //                    m_lTransactionNumber);
-    }
-
-    return false;
-}
-
-/// Remove a transaction number from the Nym record once it's officially
-/// used/spent.
-bool OTServer::RemoveTransactionNumber(OTPseudonym& theNym,
-                                       const int64_t& lTransactionNumber,
-                                       bool bSave)
-{
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-
-    bool bRemoved = false;
-
-    if (bSave)
-        bRemoved = pNym->RemoveTransactionNum(
-            m_nymServer, m_strServerID,
-            lTransactionNumber); // the version that passes in a signer nym --
-                                 // saves to local storage.
-    else
-        bRemoved = pNym->RemoveTransactionNum(
-            m_strServerID,
-            lTransactionNumber); // the version that doesn't save.
-
-    return bRemoved;
-}
-
-/// Remove an issued number from the Nym record once that nym accepts the
-/// receipt from his inbox.
-bool OTServer::RemoveIssuedNumber(OTPseudonym& theNym,
-                                  const int64_t& lTransactionNumber, bool bSave)
-{
-    OTIdentifier NYM_ID(theNym), SERVER_NYM_ID(m_nymServer);
-
-    // If theNym has the same ID as m_nymServer, then we'll use m_nymServer
-    // instead of theNym.  (Since it's the same nym anyway, we'll stick to the
-    // one we already loaded so any changes don't get overwritten later.)
-    OTPseudonym* pNym = nullptr;
-
-    if (NYM_ID == SERVER_NYM_ID)
-        pNym = &m_nymServer;
-    else
-        pNym = &theNym;
-
-    bool bRemoved = pNym->RemoveIssuedNum(m_nymServer, m_strServerID,
-                                          lTransactionNumber, bSave);
-
-    return bRemoved;
+    return transactor_.issueNextTransactionNumber(nym, txNumber, storeNumber);
 }
 
 /// The server supports various different asset types.
@@ -746,14 +558,15 @@ bool OTServer::SaveMainFileToString(OTString& strMainFile)
 {
     const char* szFunc = "OTServer::SaveMainFileToString";
 
-    strMainFile.Format(
-        "<?xml version=\"1.0\"?>\n"
-        "<notaryServer version=\"%s\"\n"
-        " serverID=\"%s\"\n"
-        " serverUserID=\"%s\"\n"
-        " transactionNum=\"%ld\" >\n\n",
-        OTCachedKey::It()->IsGenerated() ? "2.0" : m_strVersion.Get(),
-        m_strServerID.Get(), m_strServerUserID.Get(), m_lTransactionNumber);
+    strMainFile.Format("<?xml version=\"1.0\"?>\n"
+                       "<notaryServer version=\"%s\"\n"
+                       " serverID=\"%s\"\n"
+                       " serverUserID=\"%s\"\n"
+                       " transactionNum=\"%ld\" >\n\n",
+                       OTCachedKey::It()->IsGenerated() ? "2.0"
+                                                        : m_strVersion.Get(),
+                       m_strServerID.Get(), m_strServerUserID.Get(),
+                       transactor_.transactionNumber());
 
     if (OTCachedKey::It()->IsGenerated()) // If it exists, then serialize it.
     {
@@ -860,12 +673,11 @@ bool OTServer::SaveMainFile()
 }
 
 OTServer::OTServer()
-    : m_bReadOnly(false)
+    : transactor_(this)
+    , m_bReadOnly(false)
     , m_bShutdownFlag(false)
     , m_pServerContract(nullptr)
-    , m_lTransactionNumber(0)
 {
-    //    m_lTransactionNumber = 0;    // This will be set when the server main
     // xml file is loaded. For now, initialize to 0.
     //
     //    m_bShutdownFlag = false;    // If I ever set this to true, then the
@@ -1533,14 +1345,15 @@ bool OTServer::LoadMainFile(bool bReadOnly)
                                                    // for the latest one.
                     strTransactionNumber =
                         xml->getAttributeValue("transactionNum");
-                    m_lTransactionNumber = atol(strTransactionNumber.Get());
+                    transactor_.transactionNumber(
+                        atol(strTransactionNumber.Get()));
 
                     OTLog::vOutput(
                         0,
                         "\nLoading Open Transactions server. File version: %s\n"
                         " Last Issued Transaction Number: %ld\n Server ID:     "
                         " %s\n Server User ID: %s\n",
-                        m_strVersion.Get(), m_lTransactionNumber,
+                        m_strVersion.Get(), transactor_.transactionNumber(),
                         m_strServerID.Get(), m_strServerUserID.Get());
                     //
                     if (m_strVersion.Compare("1.0")) // This means this Nym has
@@ -2254,10 +2067,12 @@ void OTServer::UserCmdGetTransactionNum(OTPseudonym& theNym, OTMessage& MsgIn,
 
         for (auto& it : theList) {
             const int64_t lTransNum = it;
-            RemoveTransactionNumber(theNym, lTransNum, false); // bSave=false
-            RemoveIssuedNumber(theNym, lTransNum, false); // I'll drop it in his
-                                                          // Nymbox -- he can
-                                                          // SIGN for it.
+            transactor_.removeTransactionNumber(theNym, lTransNum,
+                                                false); // bSave=false
+            transactor_.removeIssuedNumber(theNym, lTransNum,
+                                           false); // I'll drop it in his
+                                                   // Nymbox -- he can
+                                                   // SIGN for it.
             // Then why was it added in the first place? Because we originally
             // sent it back in the reply directly,
             // so IssueNext was designed to work that way originally.
@@ -4649,7 +4464,7 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
                               "from string:\n%s\n",
                               __FUNCTION__, strVoucherRequest.Get());
             }
-            else if (!VerifyTransactionNumber(
+            else if (!transactor_.verifyTransactionNumber(
                             theNym, theVoucherRequest.GetTransactionNum())) {
                 OTLog::vError(
                     "OTServer::%s: Failed verifying transaction number on the "
@@ -6319,7 +6134,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                 // Make sure the transaction number on the cheque is still
                 // available and valid for use by theNym.
                 //
-                else if (false == VerifyTransactionNumber(
+                else if (false == transactor_.verifyTransactionNumber(
                                       theNym, theCheque.GetTransactionNum())) {
                     OTLog::vOutput(
                         0, "%s: Failure verifying cheque: Bad transaction "
@@ -6363,7 +6178,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                             // twice. It will remain on his issued list
                             // until he signs for the receipt.
                             //
-                            (false == RemoveTransactionNumber(
+                            (false == transactor_.removeTransactionNumber(
                                           theNym, theCheque.GetTransactionNum(),
                                           true)) // bSave=true
                             ) {
@@ -6880,7 +6695,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                 // Make sure they're not double-spending this cheque.
                 //
                 else if (false ==
-                         VerifyTransactionNumber(
+                         transactor_.verifyTransactionNumber(
                              *(bHasRemitter ? pRemitterNym : pSenderNym),
                              theCheque.GetTransactionNum())) {
                     OTLog::vOutput(0, "OTServer::%s: Failure verifying %s: Bad "
@@ -7197,7 +7012,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                        // list until he signs for the receipt.
                                        //
                                        false ==
-                                       RemoveTransactionNumber(
+                                       transactor_.removeTransactionNumber(
                                            *(bHasRemitter ? pRemitterNym
                                                           : pSenderNym),
                                            theCheque.GetTransactionNum(),
@@ -7312,7 +7127,7 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                     // probably keeping every voucher number
                                     // open for eternity.
                                     //
-                                    if (!RemoveIssuedNumber(
+                                    if (!transactor_.removeIssuedNumber(
                                              *pRemitterNym,
                                              theCheque.GetTransactionNum(),
                                              true)) // bSave=true
@@ -8109,7 +7924,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                 else if (!bCancelling && // If activating and:
                          ((pPlan->GetCountClosingNumbers() <
                            1) || // ...if there aren't enough closing numbers...
-                          !VerifyTransactionNumber(
+                          !transactor_.verifyTransactionNumber(
                                theNym, lFoundClosingNum))) // ...or the official
                                                            // closing # isn't
                                                            // available for use
@@ -8123,8 +7938,8 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                 }
                 else if (bCancelling && // If cancelling and:
                            ((pPlan->GetRecipientCountClosingNumbers() < 2) ||
-                            !VerifyTransactionNumber(theNym,
-                                                     lFoundClosingNum))) {
+                            !transactor_.verifyTransactionNumber(
+                                 theNym, lFoundClosingNum))) {
                     OTLog::vOutput(0, "%s: ERROR: the Closing number wasn't "
                                       "available for use while cancelling a "
                                       "payment plan.\n",
@@ -8300,7 +8115,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                            __FUNCTION__);
                         }
                         else if (!bCancelling &&
-                                   !VerifyTransactionNumber(
+                                   !transactor_.verifyTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientOpeningNum())) {
                             OTLog::vOutput(0, "%s: ERROR verifying Recipient's "
@@ -8309,7 +8124,7 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                            __FUNCTION__);
                         }
                         else if (!bCancelling &&
-                                   !VerifyTransactionNumber(
+                                   !transactor_.verifyTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientClosingNum())) {
                             OTLog::vOutput(0, "%s: ERROR verifying Recipient's "
@@ -8474,12 +8289,13 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // then I could come back later and USE THE
                                     // NUMBER AGAIN!
                                     // (Bad!)
-                                    // RemoveTransactionNumber was already
+                                    // transactor_.removeTransactionNumber was
+                                    // already
                                     // called for tranIn->GetTransactionNum()
                                     // (That's the opening number.)
                                     //
                                     // Here's the closing number:
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         theNym, pPlan->GetClosingNum(),
                                         true); // bSave=true
                                     // RemoveIssuedNum will be called for that
@@ -8508,11 +8324,11 @@ void OTServer::NotarizePaymentPlan(OTPseudonym& theNym,
                                     // and it's called for the Recipient's
                                     // closing number when that final receipt is
                                     // closed out.
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientOpeningNum(),
                                         false); // bSave=true
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         *pRecipientNym,
                                         pPlan->GetRecipientClosingNum(),
                                         true); // bSave=true
@@ -8852,7 +8668,7 @@ void OTServer::NotarizeSmartContract(OTPseudonym& theNym,
                           1) || // the transaction number was verified before we
                                 // entered this function, so only the closing #
                                 // is left...
-                         !VerifyTransactionNumber(
+                         !transactor_.verifyTransactionNumber(
                               theNym, lFoundClosingNum)) // Verify that it can
                                                          // still be USED (not
                                                          // closed... that's
@@ -9743,7 +9559,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                              "account ID according to request basket doesn't "
                              "match theAccount.\n");
             }
-            else if (false == VerifyTransactionNumber(
+            else if (false == transactor_.verifyTransactionNumber(
                                     theNym, theRequestBasket.GetClosingNum())) {
                 OTLog::Error("OTServer::NotarizeExchangeBasket: Closing number "
                              "used for User's main account receipt was not "
@@ -9849,7 +9665,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                     break;
                                 }
                                 else if (false ==
-                                           VerifyTransactionNumber(
+                                           transactor_.verifyTransactionNumber(
                                                theNym,
                                                pRequestItem
                                                    ->lClosingTransactionNo)) {
@@ -10443,12 +10259,12 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                                     // I'm still RESPONSIBLE for the number
                                     // until RemoveIssuedNumber() is called.
                                     //
-                                    RemoveTransactionNumber(
+                                    transactor_.removeTransactionNumber(
                                         theNym,
                                         pRequestItem->lClosingTransactionNo,
                                         false); // bSave=false
                                 }
-                                RemoveTransactionNumber(
+                                transactor_.removeTransactionNumber(
                                     theNym, theRequestBasket.GetClosingNum(),
                                     true); // bSave=true
                                 pResponseItem->SetStatus(
@@ -11036,12 +10852,12 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
             // The transaction number opens the market offer, but there must
             // also be a closing number for closing it.
             else if ((pTrade->GetCountClosingNumbers() < 2) ||
-                     !VerifyTransactionNumber(
+                     !transactor_.verifyTransactionNumber(
                           theNym,
                           pTrade->GetAssetAcctClosingNum()) || // Verify that it
                                                                // can still be
                                                                // USED
-                     !VerifyTransactionNumber(
+                     !transactor_.verifyTransactionNumber(
                           theNym, pTrade->GetCurrencyAcctClosingNum())) {
                 OTLog::Output(0, "ERROR needed 2 valid closing transaction "
                                  "numbers in OTServer::NotarizeMarketOffer\n");
@@ -11201,11 +11017,11 @@ void OTServer::NotarizeMarketOffer(OTPseudonym& theNym,
                     // is, we already did, before we got here. (Otherwise we
                     // wouldn't have even gotten this far.)
                     //
-                    RemoveTransactionNumber(
+                    transactor_.removeTransactionNumber(
                         theNym, pTrade->GetAssetAcctClosingNum(), false);
-                    RemoveTransactionNumber(theNym,
-                                            pTrade->GetCurrencyAcctClosingNum(),
-                                            false); // (Saved below.)
+                    transactor_.removeTransactionNumber(
+                        theNym, pTrade->GetCurrencyAcctClosingNum(),
+                        false); // (Saved below.)
                     // RemoveIssuedNum will be called for the original
                     // transaction number when the finalReceipt is created.
                     // RemoveIssuedNum will be called for the Closing number
@@ -11309,7 +11125,7 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
     }
     // No need to call VerifyAccount() here since the above calls go above and
     // beyond that method.
-    else if (!VerifyTransactionNumber(theNym, lTransactionNumber)) {
+    else if (!transactor_.verifyTransactionNumber(theNym, lTransactionNumber)) {
         const OTIdentifier idAcct(theFromAccount);
         const OTString strIDAcct(idAcct);
         // The user may not submit a transaction using a number he's already
@@ -11348,8 +11164,8 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
         // user no longer has the number on his AVAILABLE list. Removal from
         // issued list happens separately.)
         //
-        if (false == RemoveTransactionNumber(theNym, lTransactionNumber,
-                                             true)) // bSave=true
+        if (false == transactor_.removeTransactionNumber(
+                         theNym, lTransactionNumber, true)) // bSave=true
         {
             OTLog::Error("Error removing transaction number (as available) "
                          "from user nym in OTServer::NotarizeTransaction\n");
@@ -11552,9 +11368,9 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
                                 if (theSetIT != theIDSet.end()) // Found it.
                                     theIDSet.erase(lTransactionNumber);
                             }
-                            if (false == RemoveIssuedNumber(theNym,
-                                                            lTransactionNumber,
-                                                            true)) // bSave=true
+                            if (!transactor_.removeIssuedNumber(
+                                     theNym, lTransactionNumber,
+                                     true)) // bSave=true
                             {
                                 const OTString strNymID(USER_ID);
                                 OTLog::vError("%s: Error removing issued "
@@ -11576,8 +11392,8 @@ void OTServer::NotarizeTransaction(OTPseudonym& theNym, OTTransaction& tranIn,
             case OTTransaction::deposit:
             case OTTransaction::cancelCronItem:
             case OTTransaction::exchangeBasket:
-                if (false == RemoveIssuedNumber(theNym, lTransactionNumber,
-                                                true)) // bSave=true
+                if (!transactor_.removeIssuedNumber(theNym, lTransactionNumber,
+                                                    true)) // bSave=true
                 {
                     const OTString strNymID(USER_ID);
                     OTLog::vError("%s: Error removing issued number %ld from "
@@ -12922,12 +12738,14 @@ void OTServer::UserCmdDeleteUser(OTPseudonym& theNym, OTMessage& MsgIn,
         //
         while (theNym.GetTransactionNumCount(SERVER_ID) > 0) {
             int64_t lTemp = theNym.GetTransactionNum(SERVER_ID, 0); // index 0
-            RemoveTransactionNumber(theNym, lTemp, false); // bSave = false
+            transactor_.removeTransactionNumber(theNym, lTemp,
+                                                false); // bSave = false
         }
 
         while (theNym.GetIssuedNumCount(SERVER_ID) > 0) {
             int64_t lTemp = theNym.GetIssuedNum(SERVER_ID, 0); // index 0
-            RemoveIssuedNumber(theNym, lTemp, false);          // bSave = false
+            transactor_.removeIssuedNumber(theNym, lTemp,
+                                           false); // bSave = false
         }
         //
         theNym.MarkForDeletion(); // The nym isn't actually deleted yet, just
@@ -14590,7 +14408,8 @@ void OTServer::UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
                 // the client.
                 pResponseLedger->AddTransaction(*pTranResponse);
 
-                if (!VerifyTransactionNumber(theNym, lTransactionNumber)) {
+                if (!transactor_.verifyTransactionNumber(theNym,
+                                                         lTransactionNumber)) {
                     // The user may not submit a transaction using a number he's
                     // already used before.
                     OTLog::vOutput(0, "OTServer::UserCmdProcessInbox: Error "
@@ -14623,9 +14442,9 @@ void OTServer::UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
                     // user no longer has the number on his AVAILABLE list.
                     // Removal from issued list happens separately.)
                     //
-                    if (false == RemoveTransactionNumber(theNym,
-                                                         lTransactionNumber,
-                                                         true)) // bSave=true
+                    if (false ==
+                        transactor_.removeTransactionNumber(
+                            theNym, lTransactionNumber, true)) // bSave=true
                     {
                         OTLog::Error("Error removing transaction number (as "
                                      "available) from user nym in "
@@ -14642,9 +14461,9 @@ void OTServer::UserCmdProcessInbox(OTPseudonym& theNym, OTMessage& MsgIn,
                         // (the list of numbers I must sign for in every balance
                         // agreement.)
 
-                        if (false == RemoveIssuedNumber(theNym,
-                                                        lTransactionNumber,
-                                                        true)) // bSave=true
+                        if (!transactor_.removeIssuedNumber(theNym,
+                                                            lTransactionNumber,
+                                                            true)) // bSave=true
                         {
                             OTLog::vError("%s: Error removing issued number "
                                           "from user nym.\n",
