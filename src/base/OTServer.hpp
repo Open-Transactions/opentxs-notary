@@ -161,6 +161,7 @@ class OTServer
 {
     friend class Transactor;
     friend class MainFile;
+    friend class AcctFunctor_PayDividend;
 
 public:
     OTServer();
@@ -174,10 +175,6 @@ public:
     bool ProcessUserCommand(OTMessage& msg, OTMessage& msgOut,
                             ClientConnection* connection = nullptr,
                             OTPseudonym* nym = nullptr);
-
-    bool IssueNextTransactionNumber(OTPseudonym& nym,
-                                    int64_t& transactionNumber,
-                                    bool storeTheNumber = true);
 
     bool SendInstrumentToNym(const OTIdentifier& serverId,
                              const OTIdentifier& senderUserId,
