@@ -1,6 +1,6 @@
 /************************************************************
  *
- *  Transactor.hpp
+ *  Helpers.hpp
  *
  */
 
@@ -130,50 +130,100 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#ifndef __OPENTXS_TRANSACTOR_HPP__
-#define __OPENTXS_TRANSACTOR_HPP__
+#ifndef __OPENTXS_HELPERS_HPP__
+#define __OPENTXS_HELPERS_HPP__
 
-#include <cstdint>
+#include <opentxs/core/OTLog.hpp>
+#include <string>
+#include <iostream>
 
 namespace opentxs
 {
 
-class OTServer;
-class OTPseudonym;
-class MainFile;
-
-class Transactor
+// Reads from cin until Newline.
+inline std::string OT_CLI_ReadLine()
 {
-public:
-    explicit Transactor(OTServer* server);
-
-    bool issueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
-                                    bool storeNumber);
-    bool verifyTransactionNumber(OTPseudonym& nym,
-                                 const int64_t& transactionNumber);
-    bool removeTransactionNumber(OTPseudonym& nym,
-                                 const int64_t& transactionNumber,
-                                 bool save = false);
-    bool removeIssuedNumber(OTPseudonym& nym, const int64_t& transactionNumber,
-                            bool save = false);
-
-    int64_t transactionNumber() const
-    {
-        return transactionNumber_;
+    std::string line;
+    if (std::getline(std::cin, line)) {
+        return line;
     }
 
-    void transactionNumber(int64_t value)
-    {
-        transactionNumber_ = value;
-    }
+    return "";
+}
 
-private:
-    // This stores the last VALID AND ISSUED transaction number.
-    int64_t transactionNumber_;
+// Reads from cin until EOF. (Or until the ~ character as the first character on
+// a line.)
+inline std::string OT_CLI_ReadUntilEOF()
+{
+    // don't skip the whitespace while reading
+    //    std::cin >> std::noskipws;
 
-    OTServer* server_; // TODO: remove later when feasible
-};
+    //    std::ostringstream oss;
+    //
+    //    oss << std::cin;   // Convert value into a string.
+    //    s = outs.str();
+
+    // use stream iterators to copy the stream to a string
+    //    std::istream_iterator<std::string> it(std::cin);
+    //    std::istream_iterator<std::string> end;
+    //    std::istream_iterator<char> it(std::cin);
+    //    std::istream_iterator<char> end;
+    //    std::string results(it, end);
+
+    //    int32_t onechar;
+
+    std::string result("");
+
+    for (;;) {
+        std::string input_line("");
+
+        //        int32_t n;
+        ////      std::string sn;
+        //        std::stringstream ssn;
+        //
+        //        std::getline(std::cin, input_line);
+        //        ssn << input_line;
+        //        ssn >> n;
+
+        //            std::getline(std::cin, input_line, '\n');
+        if (std::getline(std::cin, input_line, '\n')) {
+            input_line += "\n";
+
+            if (input_line[0] == '~') // This is our special "break" character
+                                      // for multi-line input.
+                break;
+
+            result += input_line;
+        }
+        else {
+            OTLog::Error("OT_CLI_ReadUntilEOF: getline() was unable to read a "
+                         "string from std::cin\n");
+            break;
+        }
+        if (std::cin.eof()) {
+            //          cout << "IT WAS EOF\n";
+            std::cin.clear();
+            break;
+        }
+        if (std::cin.fail()) {
+            //          cout << "IT WAS FAIL\n";
+            std::cin.clear();
+            break;
+        }
+        if (std::cin.bad()) {
+            //          cout << "IT WAS BAD\n";
+            std::cin.clear();
+            break;
+        }
+        //      std::cin.clear();
+        //      std::cin.ignore(std::numeric_limits<std::streamsize>::max(),
+        // '\n');
+
+    } // while
+
+    return result;
+}
 
 } // namespace opentxs
 
-#endif // __OPENTXS_TRANSACTOR_HPP__
+#endif // __OPENTXS_HELPERS_HPP__

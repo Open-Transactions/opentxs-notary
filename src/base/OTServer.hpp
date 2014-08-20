@@ -134,6 +134,7 @@
 #define __OT_SERVER_HPP__
 
 #include "Transactor.hpp"
+#include "MainFile.hpp"
 #include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTAcctList.hpp>
 #include <opentxs/core/OTCron.hpp>
@@ -159,6 +160,7 @@ class OTServerContract;
 class OTServer
 {
     friend class Transactor;
+    friend class MainFile;
 
 public:
     OTServer();
@@ -194,12 +196,6 @@ private:
                           const OTIdentifier& recipientUserId,
                           OTMessage* msg = nullptr,
                           const OTString* messageString = nullptr);
-
-    bool CreateMainFile();
-    bool LoadMainFile(bool readOnly = false);
-    bool LoadServerUserAndContract();
-    bool SaveMainFile();
-    bool SaveMainFileToString(OTString& filename);
 
     bool ValidateServerIDfromUser(OTString& serverID);
 
@@ -388,6 +384,7 @@ private:
     typedef std::map<std::string, OTAssetContract*> ContractsMap;
 
 private:
+    MainFile mainFile_;
     Transactor transactor_;
 
     OTString m_strWalletFilename;

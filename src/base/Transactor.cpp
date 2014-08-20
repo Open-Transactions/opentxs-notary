@@ -205,7 +205,7 @@ bool Transactor::issueNextTransactionNumber(OTPseudonym& theNym,
     transactionNumber_++;
 
     // Next, we save it to file.
-    if (!server_->SaveMainFile()) {
+    if (!server_->mainFile_.SaveMainFile()) {
         OTLog::Error("Error saving main server file.\n");
         transactionNumber_--;
         return false;
@@ -226,9 +226,10 @@ bool Transactor::issueNextTransactionNumber(OTPseudonym& theNym,
     {
         OTLog::Error("Error adding transaction number to Nym file.\n");
         transactionNumber_--;
-        server_->SaveMainFile(); // Save it back how it was, since we're not
-                                 // issuing this
-                                 // number after all.
+        server_->mainFile_.SaveMainFile(); // Save it back how it was, since
+                                           // we're not
+                                           // issuing this
+                                           // number after all.
         return false;
     }
 
