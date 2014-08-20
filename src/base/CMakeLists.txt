@@ -2,6 +2,7 @@
 
 set(cxx-sources
   ServerSettings.cpp
+  ConfigLoader.cpp
   AcctFunctor_PayDividend.cpp
   ClientConnection.cpp
   MessageProcessor.cpp
