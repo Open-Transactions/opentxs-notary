@@ -2081,9 +2081,8 @@ void OTServer::UserCmdIssueAssetType(OTPseudonym& theNym, OTMessage& MsgIn,
             }
             else // success loading contract from string.
             {
-                // todo fix this cast.
-                OTPseudonym* pNym =
-                    (OTPseudonym*)pAssetContract->GetContractPublicNym();
+                OTPseudonym* pNym = const_cast<OTPseudonym*>(
+                    pAssetContract->GetContractPublicNym());
 
                 if (nullptr == pNym) {
                     OTLog::vOutput(0, "%s: Failed trying to retrieve Issuer's "
