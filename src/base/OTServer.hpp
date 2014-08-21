@@ -175,10 +175,6 @@ public:
     void ActivateCron();
     void ProcessCron();
 
-    bool ProcessUserCommand(OTMessage& msg, OTMessage& msgOut,
-                            ClientConnection* connection = nullptr,
-                            OTPseudonym* nym = nullptr);
-
     bool SendInstrumentToNym(const OTIdentifier& serverId,
                              const OTIdentifier& senderUserId,
                              const OTIdentifier& recipientUserId,
