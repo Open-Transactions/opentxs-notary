@@ -170,6 +170,12 @@ public:
 
     void Init(bool readOnly = false);
 
+    bool IsFlaggedForShutdown() const;
+
+    bool GetConnectInfo(OTString& hostname, int32_t& port);
+
+    const OTPseudonym& GetServerNym() const;
+
     void ActivateCron();
     void ProcessCron();
 
@@ -179,10 +185,6 @@ public:
                              OTMessage* msg = nullptr,
                              const OTPayment* payment = nullptr,
                              const char* command = nullptr);
-
-    bool GetConnectInfo(OTString& hostname, int32_t& port);
-    const OTPseudonym& GetServerNym() const;
-    bool IsFlaggedForShutdown() const;
 
 private:
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
