@@ -159,6 +159,13 @@ private:
                           OTMessage* msg = nullptr,
                           const OTString* messageString = nullptr);
 
+    void DropReplyNoticeToNymbox(const OTIdentifier& serverId,
+                                 const OTIdentifier& userId,
+                                 const OTString& messageString,
+                                 const int64_t& requestNum,
+                                 const bool replyTransSuccess,
+                                 OTPseudonym* actualNym = nullptr);
+
     void UserCmdCheckServerID(OTPseudonym& nym, OTMessage& msgIn,
                               OTMessage& msgOut);
     void UserCmdCheckUser(OTPseudonym& nym, OTMessage& msgIn,

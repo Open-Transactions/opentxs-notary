@@ -2952,10 +2952,9 @@ void UserCommandProcessor::UserCmdIssueAssetType(OTPseudonym& theNym,
         const OTString strReplyMessage(msgOut);
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
         // If it fails, it logs already.
-        server_->DropReplyNoticeToNymbox(
-            SERVER_ID, USER_ID, strReplyMessage, lReqNum,
-            false, // trans success (not a transaction...)
-            &theNym);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                false, // trans success (not a transaction...)
+                                &theNym);
     }
 }
 
@@ -3450,7 +3449,7 @@ void UserCommandProcessor::UserCmdCreateAccount(OTPseudonym& theNym,
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        server_->DropReplyNoticeToNymbox(
+        DropReplyNoticeToNymbox(
             SERVER_ID, USER_ID, strReplyMessage,
             lReqNum, // No need to update the NymboxHash in this case.
             false);  // trans success (not a transaction)
@@ -4458,9 +4457,9 @@ void UserCommandProcessor::UserCmdDeleteUser(OTPseudonym& theNym,
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        server_->DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
-                                         lReqNum, false, // trans success
-                                         &theNym);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                false, // trans success
+                                &theNym);
     }
 }
 
@@ -4847,10 +4846,9 @@ void UserCommandProcessor::UserCmdDeleteAssetAcct(OTPseudonym& theNym,
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        server_->DropReplyNoticeToNymbox(
-            SERVER_ID, USER_ID, strReplyMessage, lReqNum,
-            false, // trans success (not a transaction.)
-            &theNym);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                false, // trans success (not a transaction.)
+                                &theNym);
     }
 }
 
@@ -5207,7 +5205,7 @@ send_message:
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        server_->DropReplyNoticeToNymbox(
+        DropReplyNoticeToNymbox(
             SERVER_ID, USER_ID, strReplyMessage,
             lReqNum, // (We don't want to update the NymboxHash on the Nym, here
                      // in processNymbox, at least, not at this current point
@@ -5547,11 +5545,11 @@ send_message:
         const int64_t lReqNum = atol(MsgIn.m_strRequestNum.Get());
 
         // If it fails, it logs already.
-        server_->DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
-                                         lReqNum, // We don't want to update the
-                                                  // Nym's copy here in
-                                         // processInbox (I don't think.)
-                                         bTransSuccess);
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
+                                lReqNum, // We don't want to update the
+                                         // Nym's copy here in
+                                // processInbox (I don't think.)
+                                bTransSuccess);
         //      DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
         // strReplyMessage, lReqNum, bTransSuccess, &theNym);
     }
@@ -5828,9 +5826,8 @@ send_message:
         //      DropReplyNoticeToNymbox(SERVER_ID, USER_ID,
         // strReplyMessage, lReqNum, bTransSuccess, &theNym); // We don't want
         // to update the Nym in this case (I don't think.)
-        server_->DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage,
-                                         lReqNum,
-                                         bTransSuccess); // trans success
+        DropReplyNoticeToNymbox(SERVER_ID, USER_ID, strReplyMessage, lReqNum,
+                                bTransSuccess); // trans success
     }
     if (bCancelled) {
         OTLog::vOutput(0, "Success: canceling transaction %ld for nym: %s \n",
@@ -5864,6 +5861,114 @@ bool UserCommandProcessor::SendMessageToNym(
     return server_->DropMessageToNymbox(
         SERVER_ID, SENDER_USER_ID, RECIPIENT_USER_ID, OTTransaction::message,
         pMsg, pstrMessage); //, szCommand=nullptr
+}
+
+// After EVERY / ANY transaction, plus certain messages, we drop a copy of the
+// server's reply into
+// the Nymbox.  This way we are GUARANTEED that the Nym will receive and process
+// it. (And thus
+// never get out of sync.)  This is the function used for doing that.
+//
+void UserCommandProcessor::DropReplyNoticeToNymbox(
+    const OTIdentifier& SERVER_ID, const OTIdentifier& USER_ID,
+    const OTString& strMessage, const int64_t& lRequestNum,
+    const bool bReplyTransSuccess, OTPseudonym* pActualNym)
+{
+    OTLedger theNymbox(USER_ID, USER_ID, SERVER_ID);
+
+    bool bSuccessLoadingNymbox = theNymbox.LoadNymbox();
+
+    if (true == bSuccessLoadingNymbox)
+        bSuccessLoadingNymbox =
+            (theNymbox.VerifyContractID() &&
+             theNymbox.VerifySignature(server_->m_nymServer));
+    //        bSuccessLoadingNymbox    =
+    // theNymbox.VerifyAccount(server_->m_nymServer);
+    // // make sure it's all good.
+
+    if (false == bSuccessLoadingNymbox) {
+        const OTString strNymID(USER_ID);
+        OTLog::vOutput(0, "OTServer::DropReplyNoticeToNymbox: Failed loading "
+                          "or verifying Nymbox for user: %s\n",
+                       strNymID.Get());
+    }
+    else {
+        int64_t lReplyNoticeTransNum = 0;
+        bool bGotNextTransNum = server_->transactor_.issueNextTransactionNumber(
+            server_->m_nymServer, lReplyNoticeTransNum,
+            false); // bool bStoreTheNumber = false
+
+        if (!bGotNextTransNum) {
+            lReplyNoticeTransNum = 0;
+            OTLog::Error("OTServer::DropReplyNoticeToNymbox: Error getting "
+                         "next transaction number for an "
+                         "OTTransaction::replyNotice.\n");
+        }
+        else { // Drop in the Nymbox
+            //
+            OTTransaction* pReplyNotice = OTTransaction::GenerateTransaction(
+                theNymbox, OTTransaction::replyNotice, lReplyNoticeTransNum);
+            OT_ASSERT(nullptr != pReplyNotice);
+            OTItem* pReplyNoticeItem = OTItem::CreateItemFromTransaction(
+                *pReplyNotice, OTItem::replyNotice);
+            OT_ASSERT(nullptr != pReplyNoticeItem);
+            pReplyNoticeItem->SetStatus(
+                OTItem::acknowledgement); // Nymbox notice is always a success.
+                                          // It's just a notice. (The message
+                                          // inside it will have success/failure
+                                          // also, and any transaction inside
+                                          // that will also.)
+            pReplyNoticeItem->SetAttachment(
+                strMessage); // Purpose of this notice is to carry a copy of
+                             // server's reply message (to certain requests,
+                             // including all transactions.)
+            pReplyNoticeItem->SignContract(server_->m_nymServer);
+            pReplyNoticeItem->SaveContract();
+            pReplyNotice->AddItem(*pReplyNoticeItem); // the Transaction's
+                                                      // destructor will cleanup
+                                                      // the item. It "owns" it
+                                                      // now.
+            // So the client-side can quickly/easily match up the replyNotices
+            // in
+            // the Nymbox with the request numbers of the messages that were
+            // sent.
+            // I think this is actually WHY the server message low-level
+            // functions
+            // now RETURN the request number.
+            // FYI: replyNotices will ONLY be in my Nymbox if the MESSAGE was
+            // successful.
+            // (Meaning, the balance agreement might have failed, and the
+            // transaction
+            // might have failed, but the MESSAGE ITSELF must be a success, in
+            // order for
+            // the replyNotice to appear in the Nymbox.)
+            //
+            pReplyNotice->SetRequestNum(lRequestNum);
+            pReplyNotice->SetReplyTransSuccess(bReplyTransSuccess);
+            pReplyNotice->SignContract(server_->m_nymServer);
+            pReplyNotice->SaveContract();
+            theNymbox.AddTransaction(*pReplyNotice); // Add the replyNotice to
+                                                     // the nymbox. It takes
+                                                     // ownership.
+            theNymbox.ReleaseSignatures();
+            theNymbox.SignContract(server_->m_nymServer);
+            theNymbox.SaveContract();
+
+            OTIdentifier NYMBOX_HASH;
+            theNymbox.SaveNymbox(&NYMBOX_HASH);
+
+            pReplyNotice->SaveBoxReceipt(theNymbox);
+
+            if ((nullptr != pActualNym) && pActualNym->CompareID(USER_ID)) {
+                pActualNym->SetNymboxHashServerSide(NYMBOX_HASH);
+                pActualNym->SaveSignedNymfile(server_->m_nymServer);
+            }
+            else if (nullptr != pActualNym)
+                OTLog::Error("OTServer::DropReplyNoticeToNymbox: ERROR: "
+                             "pActualNym was not nullptr, but it didn't match "
+                             "USER_ID.\n");
+        }
+    }
 }
 
 } // namespace opentxs

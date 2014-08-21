@@ -193,13 +193,6 @@ public:
 private:
     bool ValidateServerIDfromUser(OTString& serverID);
 
-    void DropReplyNoticeToNymbox(const OTIdentifier& serverId,
-                                 const OTIdentifier& userId,
-                                 const OTString& messageString,
-                                 const int64_t& requestNum,
-                                 const bool replyTransSuccess,
-                                 OTPseudonym* actualNym = nullptr);
-
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
     bool DropMessageToNymbox(const OTIdentifier& serverId,
