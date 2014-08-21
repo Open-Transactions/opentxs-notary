@@ -560,18 +560,6 @@ void OTServer::Init(bool bReadOnly)
             OTLog::vError("\n%s: Error in Loading Main File!\n", __FUNCTION__);
             OT_FAIL; // end execution here.
         }
-
-        // We just want to call this function once in order to make sure that
-        // the
-        // Nym is loaded up and ready for use decrypting messages that are sent
-        // to it.
-        // If you comment this out, the server will be unable to decrypt and
-        // open envelopes.
-        if (!ValidateServerIDfromUser(m_strServerID)) {
-            OTLog::vError("\n%s: Error in Validation of ServerID from User!\n",
-                          __FUNCTION__);
-            OT_FAIL; // end execution here.
-        }
     }
 
     // With the Server's private key loaded, and the latest transaction number
