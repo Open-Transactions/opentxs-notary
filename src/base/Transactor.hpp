@@ -246,7 +246,7 @@ private:
     // Need a way to look up a Basket Account ID using its Contract ID
     BasketsMap contractIdToBasketAccountId_;
     // The list of voucher accounts (see GetVoucherAccount below for details)
-    OTAcctList m_VoucherAccts;
+    OTAcctList voucherAccounts_;
     // The mints for each asset type.
     MintsMap mintsMap_;
 

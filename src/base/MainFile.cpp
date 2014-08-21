@@ -93,7 +93,7 @@ bool MainFile::SaveMainFileToString(OTString& strMainFile)
                                 strBasketContractID.Get());
     }
 
-    server_->transactor_.m_VoucherAccts.Serialize(strMainFile);
+    server_->transactor_.voucherAccounts_.Serialize(strMainFile);
 
     strMainFile.Concatenate("</notaryServer>\n");
 
@@ -495,7 +495,7 @@ bool MainFile::LoadMainFile(bool bReadOnly)
                         xml->getAttributeValue("count");
 
                     if ((-1) ==
-                        server_->transactor_.m_VoucherAccts.ReadFromXMLNode(
+                        server_->transactor_.voucherAccounts_.ReadFromXMLNode(
                             xml, strAcctType, strAcctCount))
                         OTLog::vError(
                             "%s: Error loading voucher accountList.\n",

@@ -538,9 +538,9 @@ std::shared_ptr<OTAccount> Transactor::getVoucherAccount(
     const OTIdentifier SERVER_USER_ID(server_->m_nymServer),
         SERVER_ID(server_->m_strServerID);
     bool bWasAcctCreated = false;
-    pAccount = m_VoucherAccts.GetOrCreateAccount(server_->m_nymServer,
-                                                 SERVER_USER_ID, ASSET_TYPE_ID,
-                                                 SERVER_ID, bWasAcctCreated);
+    pAccount = voucherAccounts_.GetOrCreateAccount(
+        server_->m_nymServer, SERVER_USER_ID, ASSET_TYPE_ID, SERVER_ID,
+        bWasAcctCreated);
     if (bWasAcctCreated) {
         OTString strAcctID;
         pAccount->GetIdentifier(strAcctID);
