@@ -218,17 +218,6 @@ private:
     std::shared_ptr<OTAccount> GetVoucherAccount(
         const OTIdentifier& assetTypeId);
 
-    bool AddBasketAccountID(const OTIdentifier& basketId,
-                            const OTIdentifier& basketAccountId,
-                            const OTIdentifier& basketContractId);
-    bool LookupBasketAccountID(const OTIdentifier& basketId,
-                               OTIdentifier& basketAccountId);
-
-    bool LookupBasketAccountIDByContractID(const OTIdentifier& basketContractId,
-                                           OTIdentifier& basketAccountId);
-    bool LookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
-                                           OTIdentifier& basketContractId);
-
     // If the server receives a notarizeTransactions command, it will be
     // accompanied by a payload containing a ledger to be notarized.
     // UserCmdNotarizeTransactions will loop through that ledger,
@@ -281,7 +270,6 @@ private:
     // accidentally remove one from the list every time another is added. Thus
     // multimap is employed.
     typedef std::multimap<std::string, OTMint*> MintsMap;
-    typedef std::map<std::string, std::string> BasketsMap;
 
 private:
     MainFile mainFile_;
@@ -312,12 +300,6 @@ private:
     MintsMap m_mapMints;
     // The list of voucher accounts (see GetVoucherAccount below for details)
     OTAcctList m_VoucherAccts;
-    // maps basketId with basketAccountId
-    BasketsMap m_mapBaskets;
-    // basket issuer account ID, which is *different* on each server, using the
-    // Basket Currency's ID, which is the *same* on every server.)
-    // Need a way to look up a Basket Account ID using its Contract ID
-    BasketsMap m_mapBasketContracts;
 
     OTCron m_Cron; // This is where re-occurring and expiring tasks go.
 };

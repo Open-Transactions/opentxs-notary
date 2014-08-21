@@ -263,106 +263,6 @@ bool OTServer::IsFlaggedForShutdown() const
     return m_bShutdownFlag;
 }
 
-// Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID.
-bool OTServer::AddBasketAccountID(const OTIdentifier& BASKET_ID,
-                                  const OTIdentifier& BASKET_ACCOUNT_ID,
-                                  const OTIdentifier& BASKET_CONTRACT_ID)
-{
-    OTIdentifier theBasketAcctID;
-
-    if (LookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
-        OTLog::Output(0, "User attempted to add Basket that already exists.\n");
-        return false;
-    }
-
-    OTString strBasketID(BASKET_ID), strBasketAcctID(BASKET_ACCOUNT_ID),
-        strBasketContractID(BASKET_CONTRACT_ID);
-
-    m_mapBaskets[strBasketID.Get()] = strBasketAcctID.Get();
-    m_mapBasketContracts[strBasketContractID.Get()] = strBasketAcctID.Get();
-
-    return true;
-}
-
-/// Use this to find the basket account ID for this server (which is unique to
-/// this server)
-/// using the contract ID to look it up. (The basket contract ID is unique to
-/// this server.)
-bool OTServer::LookupBasketAccountIDByContractID(
-    const OTIdentifier& BASKET_CONTRACT_ID, OTIdentifier& BASKET_ACCOUNT_ID)
-{
-    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
-    // through that map...
-    for (auto& it : m_mapBasketContracts) {
-        OTString strBasketContractID = it.first.c_str();
-        OTString strBasketAcctID = it.second.c_str();
-
-        OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
-            id_BASKET_ACCT(strBasketAcctID);
-
-        if (BASKET_CONTRACT_ID == id_BASKET_CONTRACT) // if the basket contract
-                                                      // ID passed in matches
-                                                      // this one...
-        {
-            BASKET_ACCOUNT_ID = id_BASKET_ACCT;
-            return true;
-        }
-    }
-    return false;
-}
-
-/// Use this to find the basket account ID for this server (which is unique to
-/// this server)
-/// using the contract ID to look it up. (The basket contract ID is unique to
-/// this server.)
-bool OTServer::LookupBasketContractIDByAccountID(
-    const OTIdentifier& BASKET_ACCOUNT_ID, OTIdentifier& BASKET_CONTRACT_ID)
-{
-    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
-    // through that map...
-    for (auto& it : m_mapBasketContracts) {
-        OTString strBasketContractID = it.first.c_str();
-        OTString strBasketAcctID = it.second.c_str();
-
-        OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
-            id_BASKET_ACCT(strBasketAcctID);
-
-        if (BASKET_ACCOUNT_ID == id_BASKET_ACCT) // if the basket contract ID
-                                                 // passed in matches this
-                                                 // one...
-        {
-            BASKET_CONTRACT_ID = id_BASKET_CONTRACT;
-            return true;
-        }
-    }
-    return false;
-}
-
-/// Use this to find the basket account for this server (which is unique to this
-/// server)
-/// using the basket ID to look it up (the Basket ID is the same for all
-/// servers)
-bool OTServer::LookupBasketAccountID(const OTIdentifier& BASKET_ID,
-                                     OTIdentifier& BASKET_ACCOUNT_ID)
-{
-    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
-    // through that map...
-    for (auto& it : m_mapBaskets) {
-        OTString strBasketID = it.first.c_str();
-        OTString strBasketAcctID = it.second.c_str();
-
-        OTIdentifier id_BASKET(strBasketID), id_BASKET_ACCT(strBasketAcctID);
-
-        if (BASKET_ID ==
-            id_BASKET) // if the basket ID passed in matches this one...
-        {
-            BASKET_ACCOUNT_ID = id_BASKET_ACCT;
-            return true;
-        }
-    }
-    return false;
-}
-
 /// Looked up the voucher account (where cashier's cheques are issued for any
 /// given asset type)
 /// return a pointer to the account.  Since it's SUPPOSED to exist, and since
@@ -6804,8 +6704,8 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
             OTAccount* pBasketAcct = nullptr;
             OTCleanup<OTAccount> theBasketAcctGuardian;
 
-            bool bLookup = LookupBasketAccountIDByContractID(BASKET_CONTRACT_ID,
-                                                             BASKET_ACCOUNT_ID);
+            bool bLookup = transactor_.lookupBasketAccountIDByContractID(
+                BASKET_CONTRACT_ID, BASKET_ACCOUNT_ID);
             if (!bLookup) {
                 OTLog::Error("OTServer::NotarizeExchangeBasket: Asset type is "
                              "not a basket currency.\n");

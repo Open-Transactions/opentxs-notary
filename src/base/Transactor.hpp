@@ -184,14 +184,32 @@ public:
     bool addAssetContract(OTAssetContract& contract);
     OTAssetContract* getAssetContract(const OTIdentifier& id);
 
+    bool addBasketAccountID(const OTIdentifier& basketId,
+                            const OTIdentifier& basketAccountId,
+                            const OTIdentifier& basketContractId);
+    bool lookupBasketAccountID(const OTIdentifier& basketId,
+                               OTIdentifier& basketAccountId);
+
+    bool lookupBasketAccountIDByContractID(const OTIdentifier& basketContractId,
+                                           OTIdentifier& basketAccountId);
+    bool lookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
+                                           OTIdentifier& basketContractId);
+
 private:
     typedef std::map<std::string, OTAssetContract*> ContractsMap;
+    typedef std::map<std::string, std::string> BasketsMap;
 
 private:
     // This stores the last VALID AND ISSUED transaction number.
     int64_t transactionNumber_;
     // The asset types supported by this server.
     ContractsMap contractsMap_;
+    // maps basketId with basketAccountId
+    BasketsMap idToBasketMap_;
+    // basket issuer account ID, which is *different* on each server, using the
+    // Basket Currency's ID, which is the *same* on every server.)
+    // Need a way to look up a Basket Account ID using its Contract ID
+    BasketsMap contractIdToBasketAccountId_;
 
     OTServer* server_; // TODO: remove later when feasible
 };

@@ -67,15 +67,16 @@ bool MainFile::SaveMainFileToString(OTString& strMainFile)
 
     // Save the basket account information
 
-    for (auto& it : server_->m_mapBaskets) {
+    for (auto& it : server_->transactor_.idToBasketMap_) {
         OTString strBasketID = it.first.c_str();
         OTString strBasketAcctID = it.second.c_str();
 
         const OTIdentifier BASKET_ACCOUNT_ID(strBasketAcctID);
         OTIdentifier BASKET_CONTRACT_ID;
 
-        bool bContractID = server_->LookupBasketContractIDByAccountID(
-            BASKET_ACCOUNT_ID, BASKET_CONTRACT_ID);
+        bool bContractID =
+            server_->transactor_.lookupBasketContractIDByAccountID(
+                BASKET_ACCOUNT_ID, BASKET_CONTRACT_ID);
 
         if (!bContractID) {
             OTLog::vError("%s: Error: Missing Contract ID for basket ID %s\n",
@@ -510,8 +511,8 @@ bool MainFile::LoadMainFile(bool bReadOnly)
                         BASKET_ACCT_ID(strBasketAcctID),
                         BASKET_CONTRACT_ID(strBasketContractID);
 
-                    if (server_->AddBasketAccountID(BASKET_ID, BASKET_ACCT_ID,
-                                                    BASKET_CONTRACT_ID))
+                    if (server_->transactor_.addBasketAccountID(
+                            BASKET_ID, BASKET_ACCT_ID, BASKET_CONTRACT_ID))
                         OTLog::vOutput(0, "Loading basket currency info...\n "
                                           "Basket ID: %s\n Basket Acct ID: "
                                           "%s\n Basket Contract ID: %s\n",

@@ -414,4 +414,105 @@ bool Transactor::addAssetContract(OTAssetContract& theContract)
     return true;
 }
 
+// Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID.
+bool Transactor::addBasketAccountID(const OTIdentifier& BASKET_ID,
+                                    const OTIdentifier& BASKET_ACCOUNT_ID,
+                                    const OTIdentifier& BASKET_CONTRACT_ID)
+{
+    OTIdentifier theBasketAcctID;
+
+    if (lookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
+        OTLog::Output(0, "User attempted to add Basket that already exists.\n");
+        return false;
+    }
+
+    OTString strBasketID(BASKET_ID), strBasketAcctID(BASKET_ACCOUNT_ID),
+        strBasketContractID(BASKET_CONTRACT_ID);
+
+    idToBasketMap_[strBasketID.Get()] = strBasketAcctID.Get();
+    contractIdToBasketAccountId_[strBasketContractID.Get()] =
+        strBasketAcctID.Get();
+
+    return true;
+}
+
+/// Use this to find the basket account ID for this server (which is unique to
+/// this server)
+/// using the contract ID to look it up. (The basket contract ID is unique to
+/// this server.)
+bool Transactor::lookupBasketAccountIDByContractID(
+    const OTIdentifier& BASKET_CONTRACT_ID, OTIdentifier& BASKET_ACCOUNT_ID)
+{
+    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
+    // through that map...
+    for (auto& it : contractIdToBasketAccountId_) {
+        OTString strBasketContractID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
+
+        OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
+            id_BASKET_ACCT(strBasketAcctID);
+
+        if (BASKET_CONTRACT_ID == id_BASKET_CONTRACT) // if the basket contract
+                                                      // ID passed in matches
+                                                      // this one...
+        {
+            BASKET_ACCOUNT_ID = id_BASKET_ACCT;
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Use this to find the basket account ID for this server (which is unique to
+/// this server)
+/// using the contract ID to look it up. (The basket contract ID is unique to
+/// this server.)
+bool Transactor::lookupBasketContractIDByAccountID(
+    const OTIdentifier& BASKET_ACCOUNT_ID, OTIdentifier& BASKET_CONTRACT_ID)
+{
+    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
+    // through that map...
+    for (auto& it : contractIdToBasketAccountId_) {
+        OTString strBasketContractID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
+
+        OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
+            id_BASKET_ACCT(strBasketAcctID);
+
+        if (BASKET_ACCOUNT_ID == id_BASKET_ACCT) // if the basket contract ID
+                                                 // passed in matches this
+                                                 // one...
+        {
+            BASKET_CONTRACT_ID = id_BASKET_CONTRACT;
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Use this to find the basket account for this server (which is unique to this
+/// server)
+/// using the basket ID to look it up (the Basket ID is the same for all
+/// servers)
+bool Transactor::lookupBasketAccountID(const OTIdentifier& BASKET_ID,
+                                       OTIdentifier& BASKET_ACCOUNT_ID)
+{
+    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
+    // through that map...
+    for (auto& it : idToBasketMap_) {
+        OTString strBasketID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
+
+        OTIdentifier id_BASKET(strBasketID), id_BASKET_ACCT(strBasketAcctID);
+
+        if (BASKET_ID ==
+            id_BASKET) // if the basket ID passed in matches this one...
+        {
+            BASKET_ACCOUNT_ID = id_BASKET_ACCT;
+            return true;
+        }
+    }
+    return false;
+}
+
 } // namespace opentxs
