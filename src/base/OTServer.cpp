@@ -173,6 +173,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <deque>
 #include <fstream>
 
 #include <time.h>
