@@ -152,7 +152,6 @@
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTMarket.hpp>
 #include <opentxs/core/OTMessage.hpp>
-#include <opentxs/core/OTMint.hpp>
 #include <opentxs/core/OTNymOrSymmetricKey.hpp>
 #include <opentxs/core/OTOffer.hpp>
 #include <opentxs/core/OTParty.hpp>
@@ -252,82 +251,6 @@ bool OTServer::IsFlaggedForShutdown() const
     return m_bShutdownFlag;
 }
 
-/// Lookup the current mint for any given asset type ID and series.
-OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
-                          int32_t nSeries) // Each asset contract has its own
-                                           // Mint.
-{
-    OTMint* pMint = nullptr;
-
-    for (auto& it : m_mapMints) {
-        pMint = it.second;
-        OT_ASSERT_MSG(nullptr != pMint,
-                      "nullptr mint pointer in OTServer::GetMint\n");
-
-        OTIdentifier theID;
-        pMint->GetIdentifier(theID);
-
-        if ((ASSET_TYPE_ID ==
-             theID) && // if the ID on the Mint matches the ID passed in
-            (nSeries == pMint->GetSeries())) // and the series also matches...
-            return pMint; // return the pointer right here, we're done.
-    }
-    // The mint isn't in memory for the series requested.
-    const OTString ASSET_ID_STR(ASSET_TYPE_ID);
-
-    OTString strMintFilename;
-    strMintFilename.Format("%s%s%s%s%d", m_strServerID.Get(),
-                           OTLog::PathSeparator(), ASSET_ID_STR.Get(), ".",
-                           nSeries);
-
-    const char* szFoldername = OTFolders::Mint().Get();
-    const char* szFilename = strMintFilename.Get();
-    pMint = OTMint::MintFactory(m_strServerID, m_strServerUserID, ASSET_ID_STR);
-
-    // You cannot hash the Mint to get its ID. (The ID is a hash of the asset
-    // contract.)
-    // Instead, you must READ the ID from the Mint file, and then compare it to
-    // the one expected
-    // to see if they match (similar to how Account IDs are verified.)
-
-    OT_ASSERT_MSG(nullptr != pMint,
-                  "Error allocating memory for Mint in OTServer::GetMint");
-    OTString strSeries;
-    strSeries.Format("%s%d", ".", nSeries);
-    //
-    if (pMint->LoadMint(strSeries.Get())) {
-        if (pMint->VerifyMint(m_nymServer)) // I don't verify the Mint's
-                                            // expiration date here, just its
-                                            // signature, ID, etc.
-        { // (Expiry dates are enforced on tokens during deposit--and checked
-            // against mint--
-            // but expiry dates are only enforced on the Mint itself during a
-            // withdrawal.)
-            // It's a multimap now...
-            // m_mapMints[ASSET_ID_STR.Get()] = pMint;
-
-            m_mapMints.insert(
-                std::pair<std::string, OTMint*>(ASSET_ID_STR.Get(), pMint));
-
-            return pMint;
-        }
-        else {
-            OTLog::vError(
-                "Error verifying Mint in OTServer::GetMint:\n%s%s%s\n",
-                szFoldername, OTLog::PathSeparator(), szFilename);
-        }
-    }
-    else {
-        OTLog::vError("Error loading Mint in OTServer::GetMint:\n%s%s%s\n",
-                      szFoldername, OTLog::PathSeparator(), szFilename);
-    }
-
-    if (nullptr != pMint) delete pMint;
-    pMint = nullptr;
-
-    return nullptr;
-}
-
 OTServer::OTServer()
     : mainFile_(this)
     , notary_(this)
@@ -344,14 +267,6 @@ OTServer::~OTServer()
     if (nullptr == m_pServerContract) delete m_pServerContract;
     m_pServerContract = nullptr;
 
-    while (!m_mapMints.empty()) {
-        auto it = m_mapMints.begin();
-        OTMint* pMint = it->second;
-        OT_ASSERT(nullptr != pMint);
-        m_mapMints.erase(it);
-        delete pMint;
-        pMint = nullptr;
-    }
     // PID -- Set it to 0 in the lock file so the next time we run OT, it knows
     // there isn't
     // another copy already running (otherwise we might wind up with two copies

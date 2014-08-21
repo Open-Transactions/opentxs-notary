@@ -142,6 +142,7 @@
 namespace opentxs
 {
 
+class OTMint;
 class OTServer;
 class OTPseudonym;
 class OTAssetContract;
@@ -214,7 +215,22 @@ public:
     std::shared_ptr<OTAccount> getVoucherAccount(
         const OTIdentifier& assetTypeId);
 
+    // Each asset contract has its own series of Mints
+    OTMint* getMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
+
 private:
+    // Why does the map of mints use multimap instead of map?
+    // Because there might be multiple valid mints for the same asset type.
+    // Perhaps I am redeeming tokens from the previous series, which have not
+    // yet expired.
+    // Only tokens from the new series are being issued today, but tokens from
+    // the previous series are still good until their own expiration date, which
+    // is coming up soon.
+    // Therefore the server manages different mints for the same asset type, and
+    // since the asset type is the key in the multimap, we don't want to
+    // accidentally remove one from the list every time another is added. Thus
+    // multimap is employed.
+    typedef std::multimap<std::string, OTMint*> MintsMap;
     typedef std::map<std::string, OTAssetContract*> ContractsMap;
     typedef std::map<std::string, std::string> BasketsMap;
 
@@ -231,6 +247,8 @@ private:
     BasketsMap contractIdToBasketAccountId_;
     // The list of voucher accounts (see GetVoucherAccount below for details)
     OTAcctList m_VoucherAccts;
+    // The mints for each asset type.
+    MintsMap mintsMap_;
 
     OTServer* server_; // TODO: remove later when feasible
 };

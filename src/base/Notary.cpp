@@ -1167,8 +1167,8 @@ void Notary::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
                     // So I grab a copy here for later...
                     theDeque.push_front(pToken);
 
-                    pMint =
-                        server_->GetMint(ASSET_TYPE_ID, pToken->GetSeries());
+                    pMint = server_->transactor_.getMint(ASSET_TYPE_ID,
+                                                         pToken->GetSeries());
 
                     if (nullptr == pMint) {
                         OTLog::vError("Notary::NotarizeWithdrawal: Unable to "
@@ -3813,8 +3813,8 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                     // or leaking memory.
                     OTCleanup<OTToken> theTokenGuardian(*pToken);
 
-                    pMint =
-                        server_->GetMint(ASSET_TYPE_ID, pToken->GetSeries());
+                    pMint = server_->transactor_.getMint(ASSET_TYPE_ID,
+                                                         pToken->GetSeries());
 
                     if (nullptr == pMint) {
                         OTLog::Error("Notary::NotarizeDeposit: Unable to get "

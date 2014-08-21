@@ -132,6 +132,8 @@
 
 #include "Transactor.hpp"
 #include "OTServer.hpp"
+#include <opentxs/core/OTFolders.hpp>
+#include <opentxs/core/OTMint.hpp>
 #include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTIdentifier.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
@@ -157,6 +159,15 @@ Transactor::~Transactor()
         contractsMap_.erase(it);
         delete pContract;
         pContract = nullptr;
+    }
+
+    while (!mintsMap_.empty()) {
+        auto it = mintsMap_.begin();
+        OTMint* pMint = it->second;
+        OT_ASSERT(nullptr != pMint);
+        mintsMap_.erase(it);
+        delete pMint;
+        pMint = nullptr;
     }
 }
 
@@ -546,6 +557,84 @@ std::shared_ptr<OTAccount> Transactor::getVoucherAccount(
     }
 
     return pAccount;
+}
+
+/// Lookup the current mint for any given asset type ID and series.
+OTMint* Transactor::getMint(const OTIdentifier& ASSET_TYPE_ID,
+                            int32_t nSeries) // Each asset contract has its own
+                                             // Mint.
+{
+    OTMint* pMint = nullptr;
+
+    for (auto& it : mintsMap_) {
+        pMint = it.second;
+        OT_ASSERT_MSG(nullptr != pMint,
+                      "nullptr mint pointer in Transactor::getMint\n");
+
+        OTIdentifier theID;
+        pMint->GetIdentifier(theID);
+
+        if ((ASSET_TYPE_ID ==
+             theID) && // if the ID on the Mint matches the ID passed in
+            (nSeries == pMint->GetSeries())) // and the series also matches...
+            return pMint; // return the pointer right here, we're done.
+    }
+    // The mint isn't in memory for the series requested.
+    const OTString ASSET_ID_STR(ASSET_TYPE_ID);
+
+    OTString strMintFilename;
+    strMintFilename.Format("%s%s%s%s%d", server_->m_strServerID.Get(),
+                           OTLog::PathSeparator(), ASSET_ID_STR.Get(), ".",
+                           nSeries);
+
+    const char* szFoldername = OTFolders::Mint().Get();
+    const char* szFilename = strMintFilename.Get();
+    pMint = OTMint::MintFactory(server_->m_strServerID,
+                                server_->m_strServerUserID, ASSET_ID_STR);
+
+    // You cannot hash the Mint to get its ID. (The ID is a hash of the asset
+    // contract.)
+    // Instead, you must READ the ID from the Mint file, and then compare it to
+    // the one expected
+    // to see if they match (similar to how Account IDs are verified.)
+
+    OT_ASSERT_MSG(nullptr != pMint,
+                  "Error allocating memory for Mint in Transactor::getMint");
+    OTString strSeries;
+    strSeries.Format("%s%d", ".", nSeries);
+    //
+    if (pMint->LoadMint(strSeries.Get())) {
+        if (pMint->VerifyMint(server_->m_nymServer)) // I don't verify the
+                                                     // Mint's
+            // expiration date here, just its
+            // signature, ID, etc.
+        { // (Expiry dates are enforced on tokens during deposit--and checked
+            // against mint--
+            // but expiry dates are only enforced on the Mint itself during a
+            // withdrawal.)
+            // It's a multimap now...
+            // mintsMap_[ASSET_ID_STR.Get()] = pMint;
+
+            mintsMap_.insert(
+                std::pair<std::string, OTMint*>(ASSET_ID_STR.Get(), pMint));
+
+            return pMint;
+        }
+        else {
+            OTLog::vError(
+                "Error verifying Mint in Transactor::getMint:\n%s%s%s\n",
+                szFoldername, OTLog::PathSeparator(), szFilename);
+        }
+    }
+    else {
+        OTLog::vError("Error loading Mint in Transactor::getMint:\n%s%s%s\n",
+                      szFoldername, OTLog::PathSeparator(), szFilename);
+    }
+
+    if (nullptr != pMint) delete pMint;
+    pMint = nullptr;
+
+    return nullptr;
 }
 
 } // namespace opentxs
