@@ -168,7 +168,7 @@ public:
 
     bool IsFlaggedForShutdown() const;
 
-    bool GetConnectInfo(OTString& hostname, int32_t& port);
+    bool GetConnectInfo(OTString& hostname, int32_t& port) const;
 
     const OTPseudonym& GetServerNym() const;
 

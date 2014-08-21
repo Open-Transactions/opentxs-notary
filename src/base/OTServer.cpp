@@ -756,7 +756,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
     return false;
 }
 
-bool OTServer::GetConnectInfo(OTString& strHostname, int32_t& nPort)
+bool OTServer::GetConnectInfo(OTString& strHostname, int32_t& nPort) const
 {
     if (nullptr == m_pServerContract) return false;
 
