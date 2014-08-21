@@ -4134,7 +4134,6 @@ void OTServer::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                                    strAccountID.Get());
                 }
                 else {
-                    bSourceAcctAlreadyLoaded = true;
                     if (bSourceAcctIsRemitter) {
                         pRemitterAcct = pSourceAcct;
                         bRemitterAcctAlreadyLoaded = true;
