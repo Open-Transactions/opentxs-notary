@@ -175,6 +175,7 @@ public:
     void ActivateCron();
     void ProcessCron();
 
+private:
     bool SendInstrumentToNym(const OTIdentifier& serverId,
                              const OTIdentifier& senderUserId,
                              const OTIdentifier& recipientUserId,
@@ -182,7 +183,6 @@ public:
                              const OTPayment* payment = nullptr,
                              const char* command = nullptr);
 
-private:
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
     bool DropMessageToNymbox(const OTIdentifier& serverId,
