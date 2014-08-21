@@ -187,7 +187,7 @@ bool UserCommandProcessor::ProcessUserCommand(OTMessage& theMessage,
 
     // Validate the server ID, to keep users from intercepting a valid requst
     // and sending it to the wrong server.
-    if (!server_->ValidateServerIDfromUser(theMessage.m_strServerID)) {
+    if (!(server_->m_strServerID == theMessage.m_strServerID)) {
         OTLog::Error("UserCommandProcessor::ProcessUserCommand: Invalid server "
                      "ID sent in "
                      "command request.\n");
@@ -3004,8 +3004,8 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
 
         // Use BASKET_ID to look up the Basket account and see if it already
         // exists (the server keeps a list.)
-        bool bFoundBasket =
-            server_->LookupBasketAccountID(BASKET_ID, BASKET_ACCOUNT_ID);
+        bool bFoundBasket = server_->transactor_.lookupBasketAccountID(
+            BASKET_ID, BASKET_ACCOUNT_ID);
 
         if (bFoundBasket) {
             OTLog::vError("%s: Rejected: user tried to create basket currency "
@@ -3247,7 +3247,7 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
                         // (The account ID will be different from server to
                         // server, thus the need
                         // to be able to look it up via the basket ID.)
-                        server_->AddBasketAccountID(
+                        server_->transactor_.addBasketAccountID(
                             BASKET_ID, BASKET_ACCOUNT_ID, BASKET_CONTRACT_ID);
 
                         server_->mainFile_.SaveMainFile(); // So the main xml

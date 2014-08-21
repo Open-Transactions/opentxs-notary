@@ -137,11 +137,9 @@
 #include "MainFile.hpp"
 #include "UserCommandProcessor.hpp"
 #include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTAcctList.hpp>
 #include <opentxs/core/OTCron.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
-#include <memory>
 #include <string>
 #include <map>
 #include <cstddef>
@@ -172,12 +170,14 @@ public:
 
     void Init(bool readOnly = false);
 
+    bool IsFlaggedForShutdown() const;
+
+    bool GetConnectInfo(OTString& hostname, int32_t& port);
+
+    const OTPseudonym& GetServerNym() const;
+
     void ActivateCron();
     void ProcessCron();
-
-    bool ProcessUserCommand(OTMessage& msg, OTMessage& msgOut,
-                            ClientConnection* connection = nullptr,
-                            OTPseudonym* nym = nullptr);
 
     bool SendInstrumentToNym(const OTIdentifier& serverId,
                              const OTIdentifier& senderUserId,
@@ -186,13 +186,7 @@ public:
                              const OTPayment* payment = nullptr,
                              const char* command = nullptr);
 
-    bool GetConnectInfo(OTString& hostname, int32_t& port);
-    const OTPseudonym& GetServerNym() const;
-    bool IsFlaggedForShutdown() const;
-
 private:
-    bool ValidateServerIDfromUser(OTString& serverID);
-
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
     bool DropMessageToNymbox(const OTIdentifier& serverId,
@@ -205,33 +199,6 @@ private:
 
     // Each asset contract has its own series of Mints
     OTMint* GetMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
-
-    // Whenever the server issues a voucher (like a cashier's cheque), it puts
-    // the funds in one
-    // of these voucher accounts (one for each asset type ID). Then it issues
-    // the cheque from the
-    // same account.
-    // TODO: also should save the cheque itself to a folder, where the folder is
-    // named based on the date
-    // that the cheque will expire.  This way, the server operator can go back
-    // later, or have a script,
-    // to retrieve the cheques from the expired folders, and total them. The
-    // server operator is free to
-    // remove that total from the Voucher Account once the cheque has expired:
-    // it is his money now.
-    std::shared_ptr<OTAccount> GetVoucherAccount(
-        const OTIdentifier& assetTypeId);
-
-    bool AddBasketAccountID(const OTIdentifier& basketId,
-                            const OTIdentifier& basketAccountId,
-                            const OTIdentifier& basketContractId);
-    bool LookupBasketAccountID(const OTIdentifier& basketId,
-                               OTIdentifier& basketAccountId);
-
-    bool LookupBasketAccountIDByContractID(const OTIdentifier& basketContractId,
-                                           OTIdentifier& basketAccountId);
-    bool LookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
-                                           OTIdentifier& basketContractId);
 
     // If the server receives a notarizeTransactions command, it will be
     // accompanied by a payload containing a ledger to be notarized.
@@ -285,7 +252,6 @@ private:
     // accidentally remove one from the list every time another is added. Thus
     // multimap is employed.
     typedef std::multimap<std::string, OTMint*> MintsMap;
-    typedef std::map<std::string, std::string> BasketsMap;
 
 private:
     MainFile mainFile_;
@@ -314,14 +280,6 @@ private:
 
     // The mints for each asset type.
     MintsMap m_mapMints;
-    // The list of voucher accounts (see GetVoucherAccount below for details)
-    OTAcctList m_VoucherAccts;
-    // maps basketId with basketAccountId
-    BasketsMap m_mapBaskets;
-    // basket issuer account ID, which is *different* on each server, using the
-    // Basket Currency's ID, which is the *same* on every server.)
-    // Need a way to look up a Basket Account ID using its Contract ID
-    BasketsMap m_mapBasketContracts;
 
     OTCron m_Cron; // This is where re-occurring and expiring tasks go.
 };

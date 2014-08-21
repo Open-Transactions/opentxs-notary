@@ -132,6 +132,7 @@
 
 #include "Transactor.hpp"
 #include "OTServer.hpp"
+#include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTIdentifier.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTString.hpp>
@@ -412,6 +413,139 @@ bool Transactor::addAssetContract(OTAssetContract& theContract)
     contractsMap_[STR_CONTRACT_ID.Get()] = &theContract;
 
     return true;
+}
+
+// Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID.
+bool Transactor::addBasketAccountID(const OTIdentifier& BASKET_ID,
+                                    const OTIdentifier& BASKET_ACCOUNT_ID,
+                                    const OTIdentifier& BASKET_CONTRACT_ID)
+{
+    OTIdentifier theBasketAcctID;
+
+    if (lookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
+        OTLog::Output(0, "User attempted to add Basket that already exists.\n");
+        return false;
+    }
+
+    OTString strBasketID(BASKET_ID), strBasketAcctID(BASKET_ACCOUNT_ID),
+        strBasketContractID(BASKET_CONTRACT_ID);
+
+    idToBasketMap_[strBasketID.Get()] = strBasketAcctID.Get();
+    contractIdToBasketAccountId_[strBasketContractID.Get()] =
+        strBasketAcctID.Get();
+
+    return true;
+}
+
+/// Use this to find the basket account ID for this server (which is unique to
+/// this server)
+/// using the contract ID to look it up. (The basket contract ID is unique to
+/// this server.)
+bool Transactor::lookupBasketAccountIDByContractID(
+    const OTIdentifier& BASKET_CONTRACT_ID, OTIdentifier& BASKET_ACCOUNT_ID)
+{
+    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
+    // through that map...
+    for (auto& it : contractIdToBasketAccountId_) {
+        OTString strBasketContractID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
+
+        OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
+            id_BASKET_ACCT(strBasketAcctID);
+
+        if (BASKET_CONTRACT_ID == id_BASKET_CONTRACT) // if the basket contract
+                                                      // ID passed in matches
+                                                      // this one...
+        {
+            BASKET_ACCOUNT_ID = id_BASKET_ACCT;
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Use this to find the basket account ID for this server (which is unique to
+/// this server)
+/// using the contract ID to look it up. (The basket contract ID is unique to
+/// this server.)
+bool Transactor::lookupBasketContractIDByAccountID(
+    const OTIdentifier& BASKET_ACCOUNT_ID, OTIdentifier& BASKET_CONTRACT_ID)
+{
+    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
+    // through that map...
+    for (auto& it : contractIdToBasketAccountId_) {
+        OTString strBasketContractID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
+
+        OTIdentifier id_BASKET_CONTRACT(strBasketContractID),
+            id_BASKET_ACCT(strBasketAcctID);
+
+        if (BASKET_ACCOUNT_ID == id_BASKET_ACCT) // if the basket contract ID
+                                                 // passed in matches this
+                                                 // one...
+        {
+            BASKET_CONTRACT_ID = id_BASKET_CONTRACT;
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Use this to find the basket account for this server (which is unique to this
+/// server)
+/// using the basket ID to look it up (the Basket ID is the same for all
+/// servers)
+bool Transactor::lookupBasketAccountID(const OTIdentifier& BASKET_ID,
+                                       OTIdentifier& BASKET_ACCOUNT_ID)
+{
+    // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
+    // through that map...
+    for (auto& it : idToBasketMap_) {
+        OTString strBasketID = it.first.c_str();
+        OTString strBasketAcctID = it.second.c_str();
+
+        OTIdentifier id_BASKET(strBasketID), id_BASKET_ACCT(strBasketAcctID);
+
+        if (BASKET_ID ==
+            id_BASKET) // if the basket ID passed in matches this one...
+        {
+            BASKET_ACCOUNT_ID = id_BASKET_ACCT;
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Looked up the voucher account (where cashier's cheques are issued for any
+/// given asset type) return a pointer to the account.  Since it's SUPPOSED to
+/// exist, and since it's being requested, also will GENERATE it if it cannot
+/// be found, add it to the list, and return the pointer. Should always succeed.
+std::shared_ptr<OTAccount> Transactor::getVoucherAccount(
+    const OTIdentifier& ASSET_TYPE_ID)
+{
+    std::shared_ptr<OTAccount> pAccount;
+    const OTIdentifier SERVER_USER_ID(server_->m_nymServer),
+        SERVER_ID(server_->m_strServerID);
+    bool bWasAcctCreated = false;
+    pAccount = m_VoucherAccts.GetOrCreateAccount(server_->m_nymServer,
+                                                 SERVER_USER_ID, ASSET_TYPE_ID,
+                                                 SERVER_ID, bWasAcctCreated);
+    if (bWasAcctCreated) {
+        OTString strAcctID;
+        pAccount->GetIdentifier(strAcctID);
+        const OTString strAssetTypeID(ASSET_TYPE_ID);
+
+        OTLog::vOutput(0, "OTServer::GetVoucherAccount: Successfully created "
+                          "voucher account ID: %s Asset Type ID: %s\n",
+                       strAcctID.Get(), strAssetTypeID.Get());
+
+        if (!server_->mainFile_.SaveMainFile()) {
+            OTLog::Error("OTServer::GetVoucherAccount: Error saving main "
+                         "server file containing new account ID!!\n");
+        }
+    }
+
+    return pAccount;
 }
 
 } // namespace opentxs
