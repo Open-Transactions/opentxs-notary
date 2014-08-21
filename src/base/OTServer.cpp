@@ -188,8 +188,6 @@ namespace opentxs
 {
 
 typedef std::list<OTAccount*> listOfAccounts;
-typedef std::map<std::string, std::string> mapOfStrings;
-
 typedef std::deque<OTToken*> dequeOfTokenPtrs;
 
 //#ifdef _WIN32
