@@ -133,8 +133,10 @@
 #ifndef __OPENTXS_TRANSACTOR_HPP__
 #define __OPENTXS_TRANSACTOR_HPP__
 
+#include <opentxs/core/OTAcctList.hpp>
 #include <string>
 #include <map>
+#include <memory>
 #include <cstdint>
 
 namespace opentxs
@@ -144,6 +146,7 @@ class OTServer;
 class OTPseudonym;
 class OTAssetContract;
 class OTIdentifier;
+class OTAccount;
 class MainFile;
 
 class Transactor
@@ -195,6 +198,22 @@ public:
     bool lookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
                                            OTIdentifier& basketContractId);
 
+    // Whenever the server issues a voucher (like a cashier's cheque), it puts
+    // the funds in one
+    // of these voucher accounts (one for each asset type ID). Then it issues
+    // the cheque from the
+    // same account.
+    // TODO: also should save the cheque itself to a folder, where the folder is
+    // named based on the date
+    // that the cheque will expire.  This way, the server operator can go back
+    // later, or have a script,
+    // to retrieve the cheques from the expired folders, and total them. The
+    // server operator is free to
+    // remove that total from the Voucher Account once the cheque has expired:
+    // it is his money now.
+    std::shared_ptr<OTAccount> getVoucherAccount(
+        const OTIdentifier& assetTypeId);
+
 private:
     typedef std::map<std::string, OTAssetContract*> ContractsMap;
     typedef std::map<std::string, std::string> BasketsMap;
@@ -210,6 +229,8 @@ private:
     // Basket Currency's ID, which is the *same* on every server.)
     // Need a way to look up a Basket Account ID using its Contract ID
     BasketsMap contractIdToBasketAccountId_;
+    // The list of voucher accounts (see GetVoucherAccount below for details)
+    OTAcctList m_VoucherAccts;
 
     OTServer* server_; // TODO: remove later when feasible
 };

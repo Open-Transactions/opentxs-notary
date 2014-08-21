@@ -137,11 +137,9 @@
 #include "MainFile.hpp"
 #include "UserCommandProcessor.hpp"
 #include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTAcctList.hpp>
 #include <opentxs/core/OTCron.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
-#include <memory>
 #include <string>
 #include <map>
 #include <cstddef>
@@ -199,22 +197,6 @@ private:
 
     // Each asset contract has its own series of Mints
     OTMint* GetMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
-
-    // Whenever the server issues a voucher (like a cashier's cheque), it puts
-    // the funds in one
-    // of these voucher accounts (one for each asset type ID). Then it issues
-    // the cheque from the
-    // same account.
-    // TODO: also should save the cheque itself to a folder, where the folder is
-    // named based on the date
-    // that the cheque will expire.  This way, the server operator can go back
-    // later, or have a script,
-    // to retrieve the cheques from the expired folders, and total them. The
-    // server operator is free to
-    // remove that total from the Voucher Account once the cheque has expired:
-    // it is his money now.
-    std::shared_ptr<OTAccount> GetVoucherAccount(
-        const OTIdentifier& assetTypeId);
 
     // If the server receives a notarizeTransactions command, it will be
     // accompanied by a payload containing a ledger to be notarized.
@@ -296,8 +278,6 @@ private:
 
     // The mints for each asset type.
     MintsMap m_mapMints;
-    // The list of voucher accounts (see GetVoucherAccount below for details)
-    OTAcctList m_VoucherAccts;
 
     OTCron m_Cron; // This is where re-occurring and expiring tasks go.
 };

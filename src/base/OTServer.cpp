@@ -263,39 +263,6 @@ bool OTServer::IsFlaggedForShutdown() const
     return m_bShutdownFlag;
 }
 
-/// Looked up the voucher account (where cashier's cheques are issued for any
-/// given asset type)
-/// return a pointer to the account.  Since it's SUPPOSED to exist, and since
-/// it's being requested,
-/// also will GENERATE it if it cannot be found, add it to the list, and return
-/// the pointer. Should
-/// always succeed.
-std::shared_ptr<OTAccount> OTServer::GetVoucherAccount(
-    const OTIdentifier& ASSET_TYPE_ID)
-{
-    std::shared_ptr<OTAccount> pAccount;
-    const OTIdentifier SERVER_USER_ID(m_nymServer), SERVER_ID(m_strServerID);
-    bool bWasAcctCreated = false;
-    pAccount = m_VoucherAccts.GetOrCreateAccount(
-        m_nymServer, SERVER_USER_ID, ASSET_TYPE_ID, SERVER_ID, bWasAcctCreated);
-    if (bWasAcctCreated) {
-        OTString strAcctID;
-        pAccount->GetIdentifier(strAcctID);
-        const OTString strAssetTypeID(ASSET_TYPE_ID);
-
-        OTLog::vOutput(0, "OTServer::GetVoucherAccount: Successfully created "
-                          "voucher account ID: %s Asset Type ID: %s\n",
-                       strAcctID.Get(), strAssetTypeID.Get());
-
-        if (!mainFile_.SaveMainFile()) {
-            OTLog::Error("OTServer::GetVoucherAccount: Error saving main "
-                         "server file containing new account ID!!\n");
-        }
-    }
-
-    return pAccount;
-}
-
 /// Lookup the current mint for any given asset type ID and series.
 OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
                           int32_t nSeries) // Each asset contract has its own
@@ -1585,12 +1552,12 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
         // The server will already have a special account for issuing vouchers.
         // Actually, a list of them --
         // one for each asset type. Since this is the normal way of doing
-        // business, GetVoucherAccount() will
+        // business, transactor_.getVoucherAccount() will
         // just create it if it doesn't already exist, and then return the
         // pointer. Therefore, a failure here
         // is a catastrophic failure!  Should never fail.
         //
-        else if ((pVoucherReserveAcct = GetVoucherAccount(
+        else if ((pVoucherReserveAcct = transactor_.getVoucherAccount(
                       ASSET_TYPE_ID)) && // If assignment results in good
                                          // pointer...
                  pVoucherReserveAcct->VerifyAccount(m_nymServer)) // and if it
@@ -1770,11 +1737,12 @@ void OTServer::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
                 // else{} // TODO log that there was a problem with the amount
 
             } // voucher request loaded successfully from string
-        }     // GetVoucherAccount()
+        }     // transactor_.getVoucherAccount()
         else {
-            OTLog::vError("GetVoucherAccount() failed in NotarizeWithdrawal. "
-                          "Asset Type:\n%s\n",
-                          strAssetTypeID.Get());
+            OTLog::vError(
+                "transactor_.getVoucherAccount() failed in NotarizeWithdrawal. "
+                "Asset Type:\n%s\n",
+                strAssetTypeID.Get());
         }
     }
 
@@ -2550,14 +2518,15 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                 // The server will already have a special account for issuing
                 // vouchers. Actually, a list of them --
                 // one for each asset type. Since this is the normal way of
-                // doing business, GetVoucherAccount() will
+                // doing business, transactor_.getVoucherAccount() will
                 // just create it if it doesn't already exist, and then return
                 // the pointer. Therefore, a failure here
                 // is a catastrophic failure!  Should never fail.
                 //
-                else if ((pVoucherReserveAcct = GetVoucherAccount(
-                              PAYOUT_ASSET_ID)) && // If GetVoucherAccount
-                                                   // returns a good pointer...
+                else if ((pVoucherReserveAcct = transactor_.getVoucherAccount(
+                              PAYOUT_ASSET_ID)) && // If
+                         // transactor_.getVoucherAccount
+                         // returns a good pointer...
                          pVoucherReserveAcct->VerifyAccount(
                              m_nymServer)) // ...and if it points to an acct
                                            // that verifies with the server's
@@ -2981,11 +2950,11 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
                         // amount
 
                     } // voucher request loaded successfully from string
-                }     // GetVoucherAccount()
+                }     // transactor_.getVoucherAccount()
                 else {
-                    OTLog::vError(
-                        "%s: GetVoucherAccount() failed. Asset Type:\n%s\n",
-                        szFunc, strAssetTypeID.Get());
+                    OTLog::vError("%s: transactor_.getVoucherAccount() failed. "
+                                  "Asset Type:\n%s\n",
+                                  szFunc, strAssetTypeID.Get());
                 }
             }
         } // (else bLoadContract is true)

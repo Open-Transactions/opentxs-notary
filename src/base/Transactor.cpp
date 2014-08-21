@@ -132,6 +132,7 @@
 
 #include "Transactor.hpp"
 #include "OTServer.hpp"
+#include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTIdentifier.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTString.hpp>
@@ -513,6 +514,38 @@ bool Transactor::lookupBasketAccountID(const OTIdentifier& BASKET_ID,
         }
     }
     return false;
+}
+
+/// Looked up the voucher account (where cashier's cheques are issued for any
+/// given asset type) return a pointer to the account.  Since it's SUPPOSED to
+/// exist, and since it's being requested, also will GENERATE it if it cannot
+/// be found, add it to the list, and return the pointer. Should always succeed.
+std::shared_ptr<OTAccount> Transactor::getVoucherAccount(
+    const OTIdentifier& ASSET_TYPE_ID)
+{
+    std::shared_ptr<OTAccount> pAccount;
+    const OTIdentifier SERVER_USER_ID(server_->m_nymServer),
+        SERVER_ID(server_->m_strServerID);
+    bool bWasAcctCreated = false;
+    pAccount = m_VoucherAccts.GetOrCreateAccount(server_->m_nymServer,
+                                                 SERVER_USER_ID, ASSET_TYPE_ID,
+                                                 SERVER_ID, bWasAcctCreated);
+    if (bWasAcctCreated) {
+        OTString strAcctID;
+        pAccount->GetIdentifier(strAcctID);
+        const OTString strAssetTypeID(ASSET_TYPE_ID);
+
+        OTLog::vOutput(0, "OTServer::GetVoucherAccount: Successfully created "
+                          "voucher account ID: %s Asset Type ID: %s\n",
+                       strAcctID.Get(), strAssetTypeID.Get());
+
+        if (!server_->mainFile_.SaveMainFile()) {
+            OTLog::Error("OTServer::GetVoucherAccount: Error saving main "
+                         "server file containing new account ID!!\n");
+        }
+    }
+
+    return pAccount;
 }
 
 } // namespace opentxs
