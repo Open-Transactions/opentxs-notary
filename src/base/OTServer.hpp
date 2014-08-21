@@ -135,6 +135,7 @@
 
 #include "Transactor.hpp"
 #include "MainFile.hpp"
+#include "UserCommandProcessor.hpp"
 #include <opentxs/core/OTCommon.hpp>
 #include <opentxs/core/OTAcctList.hpp>
 #include <opentxs/core/OTCron.hpp>
@@ -160,6 +161,8 @@ class OTServerContract;
 class OTServer
 {
     friend class Transactor;
+    friend class MessageProcessor;
+    friend class UserCommandProcessor;
     friend class MainFile;
     friend class AcctFunctor_PayDividend;
 
@@ -188,12 +191,6 @@ public:
     bool IsFlaggedForShutdown() const;
 
 private:
-    bool SendMessageToNym(const OTIdentifier& serverId,
-                          const OTIdentifier& senderUserId,
-                          const OTIdentifier& recipientUserId,
-                          OTMessage* msg = nullptr,
-                          const OTString* messageString = nullptr);
-
     bool ValidateServerIDfromUser(OTString& serverID);
 
     void DropReplyNoticeToNymbox(const OTIdentifier& serverId,
@@ -254,77 +251,6 @@ private:
     bool LookupBasketContractIDByAccountID(const OTIdentifier& basketAccountId,
                                            OTIdentifier& basketContractId);
 
-    void UserCmdCheckServerID(OTPseudonym& nym, OTMessage& msgIn,
-                              OTMessage& msgOut);
-    void UserCmdCheckUser(OTPseudonym& nym, OTMessage& msgIn,
-                          OTMessage& msgOut);
-    void UserCmdSendUserMessage(OTPseudonym& nym, OTMessage& msgIn,
-                                OTMessage& msgOut);
-    void UserCmdSendUserInstrument(OTPseudonym& nym, OTMessage& msgIn,
-                                   OTMessage& msgOut);
-    void UserCmdGetRequest(OTPseudonym& nym, OTMessage& msgIn,
-                           OTMessage& msgOut);
-    void UserCmdGetTransactionNum(OTPseudonym& nym, OTMessage& msgIn,
-                                  OTMessage& msgOut);
-    void UserCmdIssueAssetType(OTPseudonym& nym, OTMessage& msgIn,
-                               OTMessage& msgOut);
-    void UserCmdIssueBasket(OTPseudonym& nym, OTMessage& msgIn,
-                            OTMessage& msgOut);
-    void UserCmdGetBoxReceipt(OTPseudonym& nym, OTMessage& msgIn,
-                              OTMessage& msgOut);
-    void UserCmdDeleteUser(OTPseudonym& nym, OTMessage& msgIn,
-                           OTMessage& msgOut);
-    void UserCmdDeleteAssetAcct(OTPseudonym& nym, OTMessage& msgIn,
-                                OTMessage& msgOut);
-    void UserCmdCreateAccount(OTPseudonym& nym, OTMessage& msgIn,
-                              OTMessage& msgOut);
-    void UserCmdNotarizeTransactions(OTPseudonym& nym, OTMessage& msgIn,
-                                     OTMessage& msgOut);
-    void UserCmdGetNymbox(OTPseudonym& nym, OTMessage& msgIn,
-                          OTMessage& msgOut);
-    // Deprecated (replaced by UserCmdGetAccountFiles)
-    void UserCmdGetInbox(OTPseudonym& nym, OTMessage& msgIn, OTMessage& msgOut);
-    // Deprecated (replaced by UserCmdGetAccountFiles)
-    void UserCmdGetOutbox(OTPseudonym& nym, OTMessage& msgIn,
-                          OTMessage& msgOut);
-    // Deprecated (replaced by UserCmdGetAccountFiles)
-    void UserCmdGetAccount(OTPseudonym& nym, OTMessage& msgIn,
-                           OTMessage& msgOut);
-    // This combines GetInbox, GetOutbox, and GetAccount.
-    void UserCmdGetAccountFiles(OTPseudonym& nym, OTMessage& msgIn,
-                                OTMessage& msgOut);
-    void UserCmdGetContract(OTPseudonym& nym, OTMessage& msgIn,
-                            OTMessage& msgOut);
-    void UserCmdGetMint(OTPseudonym& nym, OTMessage& msgIn, OTMessage& msgOut);
-    void UserCmdProcessInbox(OTPseudonym& nym, OTMessage& msgIn,
-                             OTMessage& msgOut);
-    void UserCmdProcessNymbox(OTPseudonym& nym, OTMessage& msgIn,
-                              OTMessage& msgOut);
-
-    void UserCmdUsageCredits(OTPseudonym& nym, OTMessage& msgIn,
-                             OTMessage& msgOut);
-    void UserCmdTriggerClause(OTPseudonym& nym, OTMessage& msgIn,
-                              OTMessage& msgOut);
-
-    void UserCmdQueryAssetTypes(OTPseudonym& nym, OTMessage& msgIn,
-                                OTMessage& msgOut);
-
-    // Get the list of markets on this server.
-    void UserCmdGetMarketList(OTPseudonym& nym, OTMessage& msgIn,
-                              OTMessage& msgOut);
-
-    // Get the publicly-available list of offers on a specific market.
-    void UserCmdGetMarketOffers(OTPseudonym& nym, OTMessage& msgIn,
-                                OTMessage& msgOut);
-
-    // Get a report of recent trades that have occurred on a specific market.
-    void UserCmdGetMarketRecentTrades(OTPseudonym& nym, OTMessage& msgIn,
-                                      OTMessage& msgOut);
-
-    // Get the offers that a specific Nym has placed on a specific market.
-    void UserCmdGetNym_MarketOffers(OTPseudonym& nym, OTMessage& msgIn,
-                                    OTMessage& msgOut);
-
     // If the server receives a notarizeTransactions command, it will be
     // accompanied by a payload containing a ledger to be notarized.
     // UserCmdNotarizeTransactions will loop through that ledger,
@@ -383,6 +309,7 @@ private:
 private:
     MainFile mainFile_;
     Transactor transactor_;
+    UserCommandProcessor userCommandProcessor_;
 
     OTString m_strWalletFilename;
     OTString m_strConfigFilename;
