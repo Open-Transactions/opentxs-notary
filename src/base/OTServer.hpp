@@ -187,8 +187,6 @@ public:
     bool IsFlaggedForShutdown() const;
 
 private:
-    bool ValidateServerIDfromUser(OTString& serverID);
-
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
     bool DropMessageToNymbox(const OTIdentifier& serverId,

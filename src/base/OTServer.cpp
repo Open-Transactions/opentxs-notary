@@ -10883,59 +10883,6 @@ void OTServer::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
     tranOut.SaveContract(szFoldername, strPath.Get());
 }
 
-bool OTServer::ValidateServerIDfromUser(OTString& strServerID)
-{
-    static bool bFirstTime = true;
-
-    if (bFirstTime) {
-        bFirstTime = false;
-
-        // This part is now done when the server XML file is first loaded
-        //        if (!m_nymServer.Loadx509CertAndPrivateKey())
-        //        {
-        //            OTLog::Error("Error loading server certificate and
-        // keys.\n");
-        //        }
-        //        else {
-        //            OTLog::Error("Success loading server certificate and
-        // keys.\n");
-        //        }
-
-        // TODO..  Notice after calling Loadx509CertAndPrivateKey, I do not call
-        // VerifyPseudonym immediately after, like the client does. That's
-        // because
-        // the client's ID is a hash of his public key, so that function
-        // compares
-        // the two.
-        //
-        // But the server ID is a hash of the SERVER CONTRACT. Which will NOT
-        // match
-        // the hash of the server public key.
-        //
-        // Ideally the server will load the contract, and then EXTRACT the
-        // public key
-        // from the contract, and then use it to verify the signature on the
-        // contract,
-        // and THEN hash the contract, to get the ServerID,
-
-        // Here's basically what I need to add:  m_ServerContract
-        //
-        // ServerContract.SetFilename("server contract file")
-        // ServerContract.LoadContract()
-        // ServerContract.VerifyContractID()
-        // if (success)
-        //    ServerContract.VerifySignature(m_nymServer);
-        // if (success)
-        //    SUCCESS LOADING SERVER CERTIFICATES AND KEYS.
-    }
-
-    if (m_strServerID == strServerID) {
-        return true;
-    }
-
-    return false;
-}
-
 bool OTServer::GetConnectInfo(OTString& strHostname, int32_t& nPort)
 {
     if (nullptr == m_pServerContract) return false;

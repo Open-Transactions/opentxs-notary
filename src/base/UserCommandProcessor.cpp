@@ -187,7 +187,7 @@ bool UserCommandProcessor::ProcessUserCommand(OTMessage& theMessage,
 
     // Validate the server ID, to keep users from intercepting a valid requst
     // and sending it to the wrong server.
-    if (!server_->ValidateServerIDfromUser(theMessage.m_strServerID)) {
+    if (!(server_->m_strServerID == theMessage.m_strServerID)) {
         OTLog::Error("UserCommandProcessor::ProcessUserCommand: Invalid server "
                      "ID sent in "
                      "command request.\n");
