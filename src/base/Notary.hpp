@@ -1,6 +1,6 @@
 /************************************************************
  *
- *  OTServer.hpp
+ *  Notary.hpp
  *
  */
 
@@ -130,124 +130,65 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#ifndef __OT_SERVER_HPP__
-#define __OT_SERVER_HPP__
-
-#include "Transactor.hpp"
-#include "Notary.hpp"
-#include "MainFile.hpp"
-#include "UserCommandProcessor.hpp"
-#include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTCron.hpp>
-#include <opentxs/core/OTPseudonym.hpp>
-#include <opentxs/core/OTTransaction.hpp>
-#include <string>
-#include <map>
-#include <cstddef>
+#ifndef __OPENTXS_NOTARY_HPP__
+#define __OPENTXS_NOTARY_HPP__
 
 namespace opentxs
 {
 
+class OTTransaction;
+class OTPseudonym;
 class OTAccount;
-class OTAssetContract;
-class ClientConnection;
-class OTIdentifier;
-class OTMessage;
-class OTMint;
-class OTPayment;
-class OTServerContract;
+class OTServer;
 
-class OTServer
+class Notary
 {
-    friend class Transactor;
-    friend class MessageProcessor;
-    friend class UserCommandProcessor;
-    friend class MainFile;
-    friend class AcctFunctor_PayDividend;
-    friend class Notary;
-
 public:
-    OTServer();
-    ~OTServer();
+    explicit Notary(OTServer* server);
 
-    void Init(bool readOnly = false);
-
-    bool IsFlaggedForShutdown() const;
-
-    bool GetConnectInfo(OTString& hostname, int32_t& port);
-
-    const OTPseudonym& GetServerNym() const;
-
-    void ActivateCron();
-    void ProcessCron();
-
-    bool SendInstrumentToNym(const OTIdentifier& serverId,
-                             const OTIdentifier& senderUserId,
-                             const OTIdentifier& recipientUserId,
-                             OTMessage* msg = nullptr,
-                             const OTPayment* payment = nullptr,
-                             const char* command = nullptr);
-
-private:
-    // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
-    // They are higher-level, this is lower-level.
-    bool DropMessageToNymbox(const OTIdentifier& serverId,
-                             const OTIdentifier& senderUserId,
-                             const OTIdentifier& recipientUserId,
-                             OTTransaction::transactionType transactionType,
-                             OTMessage* msg = nullptr,
-                             const OTString* messageString = nullptr,
-                             const char* command = nullptr);
-
-    // Each asset contract has its own series of Mints
-    OTMint* GetMint(const OTIdentifier& assetTypeId, int32_t seriesCount);
-
-private:
-    // Why does the map of mints use multimap instead of map?
-    // Because there might be multiple valid mints for the same asset type.
-    // Perhaps I am redeeming tokens from the previous series, which have not
-    // yet expired.
-    // Only tokens from the new series are being issued today, but tokens from
-    // the previous series are still good until their own expiration date, which
-    // is coming up soon.
-    // Therefore the server manages different mints for the same asset type, and
-    // since the asset type is the key in the multimap, we don't want to
-    // accidentally remove one from the list every time another is added. Thus
-    // multimap is employed.
-    typedef std::multimap<std::string, OTMint*> MintsMap;
+    // If the server receives a notarizeTransactions command, it will be
+    // accompanied by a payload containing a ledger to be notarized.
+    // UserCmdNotarizeTransactions will loop through that ledger,
+    // and for each transaction within, it calls THIS method.
+    void NotarizeTransaction(OTPseudonym& nym, OTTransaction& tranIn,
+                             OTTransaction& tranOut, bool& outSuccess);
+    void NotarizeTransfer(OTPseudonym& nym, OTAccount& fromAccount,
+                          OTTransaction& tranIn, OTTransaction& tranOut,
+                          bool& outSuccess);
+    void NotarizeDeposit(OTPseudonym& nym, OTAccount& account,
+                         OTTransaction& tranIn, OTTransaction& tranOut,
+                         bool& outSuccess);
+    void NotarizeWithdrawal(OTPseudonym& nym, OTAccount& account,
+                            OTTransaction& tranIn, OTTransaction& tranOut,
+                            bool& outSuccess);
+    void NotarizeProcessInbox(OTPseudonym& nym, OTAccount& account,
+                              OTTransaction& tranIn, OTTransaction& tranOut,
+                              bool& outSuccess);
+    void NotarizeProcessNymbox(OTPseudonym& nym, OTTransaction& tranIn,
+                               OTTransaction& tranOut, bool& outSuccess);
+    void NotarizeMarketOffer(OTPseudonym& nym, OTAccount& assetAccount,
+                             OTTransaction& tranIn, OTTransaction& tranOut,
+                             bool& outSuccess);
+    void NotarizePaymentPlan(OTPseudonym& nym, OTAccount& depositorAccount,
+                             OTTransaction& tranIn, OTTransaction& tranOut,
+                             bool& outSuccess);
+    void NotarizeSmartContract(OTPseudonym& nym, OTAccount& activatingAccount,
+                               OTTransaction& tranIn, OTTransaction& tranOut,
+                               bool& outSuccess);
+    void NotarizeCancelCronItem(OTPseudonym& nym, OTAccount& assetAccount,
+                                OTTransaction& tranIn, OTTransaction& tranOut,
+                                bool& outSuccess);
+    void NotarizeExchangeBasket(OTPseudonym& nym, OTAccount& sourceAccount,
+                                OTTransaction& tranIn, OTTransaction& tranOut,
+                                bool& outSuccess);
+    void NotarizePayDividend(OTPseudonym& nym, OTAccount& account,
+                             OTTransaction& tranIn, OTTransaction& tranOut,
+                             bool& outSuccess);
 
 private:
-    MainFile mainFile_;
-    Notary notary_;
-    Transactor transactor_;
-    UserCommandProcessor userCommandProcessor_;
-
-    OTString m_strWalletFilename;
-    OTString m_strConfigFilename;
-    OTString m_strLogFilename;
-    // Used at least for whether or not to write to the PID.
-    bool m_bReadOnly;
-    // If the server wants to be shut down, it can set
-    // this flag so the caller knows to do so.
-    bool m_bShutdownFlag;
-
-    OTString m_strVersion;
-    // A hash of the server contract
-    OTString m_strServerID;
-    // A hash of the public key that signed the server contract
-    OTString m_strServerUserID;
-    // This is the server's own contract, containing its public key and
-    // connect info.
-    OTServerContract* m_pServerContract;
-
-    OTPseudonym m_nymServer;
-
-    // The mints for each asset type.
-    MintsMap m_mapMints;
-
-    OTCron m_Cron; // This is where re-occurring and expiring tasks go.
+    OTServer* server_;
 };
 
 } // namespace opentxs
 
-#endif // __OT_SERVER_HPP__
+#endif // __OPENTXS_NOTARY_HPP__

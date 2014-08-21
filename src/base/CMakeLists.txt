@@ -8,6 +8,7 @@ set(cxx-sources
   MessageProcessor.cpp
   MainFile.cpp
   UserCommandProcessor.cpp
+  Notary.cpp
   Transactor.cpp
   OTServer.cpp
 )
