@@ -52,11 +52,11 @@ bool MainFile::SaveMainFileToString(OTString& strMainFile)
                 szFunc);
     }
 
-    // ContractsMap    m_mapContracts;   // If the server needs to store
+    // ContractsMap    contractsMap_;   // If the server needs to store
     // copies of the asset contracts, then here they are.
     // MintsMap        m_mapMints;          // Mints for each of those.
 
-    for (auto& it : server_->m_mapContracts) {
+    for (auto& it : server_->transactor_.contractsMap_) {
         OTContract* pContract = it.second;
         OT_ASSERT_MSG(nullptr != pContract,
                       "nullptr contract pointer in MainFile::SaveMainFile.\n");
@@ -556,7 +556,8 @@ bool MainFile::LoadMainFile(bool bReadOnly)
 
                             pContract->SetName(AssetName);
 
-                            server_->m_mapContracts[AssetID.Get()] = pContract;
+                            server_->transactor_.contractsMap_[AssetID.Get()] =
+                                pContract;
                         }
                         else {
                             delete pContract;
@@ -619,7 +620,7 @@ bool MainFile::LoadMainFile(bool bReadOnly)
                   {
                   OTLog::Output(0, "** Server Contract Verified **\n");
 
-                  m_mapContracts[ServerID.Get()] = pContract;
+                  contractsMap_[ServerID.Get()] = pContract;
                   }
                   else
                   {

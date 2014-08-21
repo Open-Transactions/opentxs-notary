@@ -2621,7 +2621,8 @@ void UserCommandProcessor::UserCmdIssueAssetType(OTPseudonym& theNym,
     const OTIdentifier USER_ID(theNym), SERVER_ID(server_->m_strServerID),
         ASSET_TYPE_ID(MsgIn.m_strAssetID);
 
-    OTAssetContract* pAssetContract = server_->GetAssetContract(ASSET_TYPE_ID);
+    OTAssetContract* pAssetContract =
+        server_->transactor_.getAssetContract(ASSET_TYPE_ID);
 
     // Make sure the contract isn't already available on this server.
     //
@@ -2763,7 +2764,7 @@ void UserCommandProcessor::UserCmdIssueAssetType(OTPseudonym& theNym,
                         // Now that the account is actually created, let's add
                         // the new asset contract
                         // to the server's list.
-                        server_->AddAssetContract(
+                        server_->transactor_.addAssetContract(
                             *pAssetContract);              // Do NOT clean this
                                                            // up unless failure!
                                                            // Server will clean
@@ -3034,7 +3035,7 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
                 BasketItem* pItem = theBasket.At(i);
                 OT_ASSERT(nullptr != pItem);
 
-                if (nullptr == server_->GetAssetContract(
+                if (nullptr == server_->transactor_.getAssetContract(
                                    pItem->SUB_CONTRACT_ID)) // Sub-currency
                                                             // not found.
                 {
@@ -3196,7 +3197,7 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
                     pBasketContract->SaveContract(strFoldername.Get(),
                                                   strFilename.Get());
 
-                    server_->AddAssetContract(*pBasketContract);
+                    server_->transactor_.addAssetContract(*pBasketContract);
                     // I don't save this here. Instead, I wait for
                     // AddBasketAccountID and then I call SaveMainFile after
                     // that. See below.
@@ -3304,8 +3305,8 @@ void UserCommandProcessor::UserCmdCreateAccount(OTPseudonym& theNym,
     // payload
     if (nullptr != pNewAccount) {
         const char* szFunc = "UserCommandProcessor::UserCmdCreateAccount";
-        OTAssetContract* pContract =
-            server_->GetAssetContract(pNewAccount->GetAssetTypeID());
+        OTAssetContract* pContract = server_->transactor_.getAssetContract(
+            pNewAccount->GetAssetTypeID());
 
         if (nullptr == pContract) {
             const OTString strAssetID(pNewAccount->GetAssetTypeID());
@@ -3991,7 +3992,7 @@ void UserCommandProcessor::UserCmdQueryAssetTypes(OTPseudonym&,
                 {
                     const OTIdentifier theAssetID(str1.c_str());
                     OTAssetContract* pAssetContract =
-                        server_->GetAssetContract(theAssetID);
+                        server_->transactor_.getAssetContract(theAssetID);
                     if (nullptr != pAssetContract) // Yes, it exists.
                         theNewMap[str1] = "true";
                     else
@@ -4045,7 +4046,8 @@ void UserCommandProcessor::UserCmdGetContract(OTPseudonym&, OTMessage& MsgIn,
 
     const OTIdentifier ASSET_TYPE_ID(MsgIn.m_strAssetID);
 
-    OTAssetContract* pContract = server_->GetAssetContract(ASSET_TYPE_ID);
+    OTAssetContract* pContract =
+        server_->transactor_.getAssetContract(ASSET_TYPE_ID);
 
     bool bSuccessLoadingContract = ((pContract != nullptr) ? true : false);
 
@@ -4769,8 +4771,8 @@ void UserCommandProcessor::UserCmdDeleteAssetAcct(OTPseudonym& theNym,
             theAccountSet.erase(MsgIn.m_strAcctID.Get());
 
             theNym.SaveSignedNymfile(server_->m_nymServer);
-            OTAssetContract* pContract =
-                server_->GetAssetContract(pAccount->GetAssetTypeID());
+            OTAssetContract* pContract = server_->transactor_.getAssetContract(
+                pAccount->GetAssetTypeID());
 
             if (nullptr == pContract) {
                 const OTString strAssetID(pAccount->GetAssetTypeID());

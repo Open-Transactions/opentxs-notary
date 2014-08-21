@@ -133,6 +133,8 @@
 #ifndef __OPENTXS_TRANSACTOR_HPP__
 #define __OPENTXS_TRANSACTOR_HPP__
 
+#include <string>
+#include <map>
 #include <cstdint>
 
 namespace opentxs
@@ -140,12 +142,17 @@ namespace opentxs
 
 class OTServer;
 class OTPseudonym;
+class OTAssetContract;
+class OTIdentifier;
 class MainFile;
 
 class Transactor
 {
+    friend class MainFile;
+
 public:
     explicit Transactor(OTServer* server);
+    ~Transactor();
 
     bool issueNextTransactionNumber(OTPseudonym& nym, int64_t& txNumber,
                                     bool storeNumber = true);
@@ -167,9 +174,24 @@ public:
         transactionNumber_ = value;
     }
 
+    // When a user uploads an asset contract, the server adds it to the list
+    // (and verifies the user's key against the
+    // contract.) This way the server has a directory with all the asset
+    // contracts that it supports, saved by their ID.
+    // As long as the IDs are in the server file, it can look them up.
+    // When a new asset type is added, a new Mint is added as well. It goes into
+    // the mints folder.
+    bool addAssetContract(OTAssetContract& contract);
+    OTAssetContract* getAssetContract(const OTIdentifier& id);
+
+private:
+    typedef std::map<std::string, OTAssetContract*> ContractsMap;
+
 private:
     // This stores the last VALID AND ISSUED transaction number.
     int64_t transactionNumber_;
+    // The asset types supported by this server.
+    ContractsMap contractsMap_;
 
     OTServer* server_; // TODO: remove later when feasible
 };
