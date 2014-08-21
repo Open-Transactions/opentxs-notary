@@ -1,10 +1,11 @@
 #ifndef __OPENTXS_MAINFILE_HPP__
 #define __OPENTXS_MAINFILE_HPP__
 
+#include <opentxs/core/OTString.hpp>
+
 namespace opentxs
 {
 
-class OTString;
 class OTServer;
 
 class MainFile
@@ -19,6 +20,7 @@ public:
     bool SaveMainFileToString(OTString& filename);
 
 private:
+    OTString m_strVersion;
     OTServer* server_; // TODO: remove when feasible
 };
 

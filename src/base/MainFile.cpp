@@ -20,7 +20,9 @@
 namespace opentxs
 {
 
-MainFile::MainFile(OTServer* server) : server_(server)
+MainFile::MainFile(OTServer* server)
+    : m_strVersion()
+    , server_(server)
 {
 }
 
@@ -34,7 +36,7 @@ bool MainFile::SaveMainFileToString(OTString& strMainFile)
         " serverID=\"%s\"\n"
         " serverUserID=\"%s\"\n"
         " transactionNum=\"%ld\" >\n\n",
-        OTCachedKey::It()->IsGenerated() ? "2.0" : server_->m_strVersion.Get(),
+        OTCachedKey::It()->IsGenerated() ? "2.0" : m_strVersion.Get(),
         server_->m_strServerID.Get(), server_->m_strServerUserID.Get(),
         server_->transactor_.transactionNumber());
 
@@ -389,7 +391,7 @@ bool MainFile::LoadMainFile(bool bReadOnly)
                 break;
             case irr::io::EXN_ELEMENT: {
                 if (strNodeName.Compare("notaryServer")) {
-                    server_->m_strVersion = xml->getAttributeValue("version");
+                    m_strVersion = xml->getAttributeValue("version");
                     server_->m_strServerID = xml->getAttributeValue("serverID");
                     server_->m_strServerUserID =
                         xml->getAttributeValue("serverUserID");
@@ -408,15 +410,15 @@ bool MainFile::LoadMainFile(bool bReadOnly)
                         "\nLoading Open Transactions server. File version: %s\n"
                         " Last Issued Transaction Number: %ld\n Server ID:     "
                         " %s\n Server User ID: %s\n",
-                        server_->m_strVersion.Get(),
+                        m_strVersion.Get(),
                         server_->transactor_.transactionNumber(),
                         server_->m_strServerID.Get(),
                         server_->m_strServerUserID.Get());
                     //
-                    if (server_->m_strVersion.Compare("1.0")) // This means this
-                                                              // Nym has
-                        // not been converted yet
-                        // to master password.
+                    if (m_strVersion.Compare("1.0")) // This means this
+                                                     // Nym has
+                                                     // not been converted yet
+                                                     // to master password.
                     {
                         bNeedToConvertUser = true;
 
@@ -474,8 +476,7 @@ bool MainFile::LoadMainFile(bool bReadOnly)
                     // (It wasn't that way in version 1, before we had master
                     // keys.)
                     //
-                    if (false ==
-                        server_->m_strVersion.Compare("1.0")) // This is, for
+                    if (false == m_strVersion.Compare("1.0")) // This is, for
                                                               // example, 2.0
                     {
                         if (!LoadServerUserAndContract()) {
@@ -731,7 +732,7 @@ bool MainFile::LoadServerUserAndContract()
 {
     const char* szFunc = "MainFile::LoadServerUserAndContract";
     bool bSuccess = false;
-    OT_ASSERT(server_->m_strVersion.Exists());
+    OT_ASSERT(m_strVersion.Exists());
     OT_ASSERT(server_->m_strServerID.Exists());
     OT_ASSERT(server_->m_strServerUserID.Exists());
     //

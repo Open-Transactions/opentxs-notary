@@ -200,15 +200,12 @@ private:
     UserCommandProcessor userCommandProcessor_;
 
     OTString m_strWalletFilename;
-    OTString m_strConfigFilename;
-    OTString m_strLogFilename;
     // Used at least for whether or not to write to the PID.
     bool m_bReadOnly;
     // If the server wants to be shut down, it can set
     // this flag so the caller knows to do so.
     bool m_bShutdownFlag;
 
-    OTString m_strVersion;
     // A hash of the server contract
     OTString m_strServerID;
     // A hash of the public key that signed the server contract
