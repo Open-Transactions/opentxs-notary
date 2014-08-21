@@ -472,59 +472,6 @@ OTMint* OTServer::GetMint(const OTIdentifier& ASSET_TYPE_ID,
     return nullptr;
 }
 
-/// The server supports various different asset types.
-/// Any user may create a new asset type by uploading the asset contract to the
-/// server.
-/// The server stores the contract in a directory and in its in-memory list of
-/// asset types.
-/// You can call this function to look up any asset contract by ID. If it
-/// returns nullptr,
-/// you can add it yourself by uploading the contract.  But be sure that the
-/// public key
-/// in the contract, used to sign the contract, is also the public key of the
-/// Nym of the
-/// issuer.  They must match.  In the future I may create a special key category
-/// just for
-/// this purpose. Right now I'm using the "contract" key which is already used
-/// to verify
-/// any asset or server contract.
-OTAssetContract* OTServer::GetAssetContract(const OTIdentifier& ASSET_TYPE_ID)
-{
-    for (auto& it : m_mapContracts) {
-        OTAssetContract* pContract = it.second;
-        OT_ASSERT(nullptr != pContract);
-
-        OTIdentifier theContractID;
-        pContract->GetIdentifier(theContractID);
-
-        if (theContractID == ASSET_TYPE_ID) return pContract;
-    }
-
-    return nullptr;
-}
-
-/// OTServer will take ownership of theContract from this point on,
-/// and will be responsible for deleting it. MUST be allocated on the heap.
-bool OTServer::AddAssetContract(OTAssetContract& theContract)
-{
-    OTAssetContract* pContract = nullptr;
-
-    OTString STR_CONTRACT_ID;
-    OTIdentifier CONTRACT_ID;
-    theContract.GetIdentifier(STR_CONTRACT_ID);
-    theContract.GetIdentifier(CONTRACT_ID);
-
-    pContract = GetAssetContract(CONTRACT_ID);
-
-    // already exists
-    if (nullptr != pContract) // if not null
-        return false;
-
-    m_mapContracts[STR_CONTRACT_ID.Get()] = &theContract;
-
-    return true;
-}
-
 OTServer::OTServer()
     : mainFile_(this)
     , transactor_(this)
@@ -545,17 +492,6 @@ OTServer::~OTServer()
 {
     if (nullptr == m_pServerContract) delete m_pServerContract;
     m_pServerContract = nullptr;
-    // Erase various dynamically-allocated objects...
-    // (asset contracts, and mints, for example.)
-    //
-    while (!m_mapContracts.empty()) {
-        auto it = m_mapContracts.begin();
-        OTAssetContract* pContract = it->second;
-        OT_ASSERT(nullptr != pContract);
-        m_mapContracts.erase(it);
-        delete pContract;
-        pContract = nullptr;
-    }
     // Mints...
     //
     while (!m_mapMints.empty()) {
@@ -2578,7 +2514,7 @@ void OTServer::NotarizePayDividend(OTPseudonym& theNym,
             //
             const OTIdentifier SHARES_ASSET_ID = theVoucherRequest.GetAssetID();
             OTAssetContract* pSharesContract =
-                GetAssetContract(SHARES_ASSET_ID);
+                transactor_.getAssetContract(SHARES_ASSET_ID);
             OTAccount* pSharesIssuerAccount = nullptr;
             OTCleanup<OTAccount> theAcctAngel;
 
@@ -6917,7 +6853,7 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
                 else {
                     // Now we get a pointer to its asset contract...
                     OTAssetContract* pContract =
-                        GetAssetContract(BASKET_CONTRACT_ID);
+                        transactor_.getAssetContract(BASKET_CONTRACT_ID);
 
                     // Now let's load up the actual basket, from the actual
                     // asset contract.
@@ -7713,7 +7649,8 @@ void OTServer::NotarizeExchangeBasket(OTPseudonym& theNym,
   else
   {
   // Now we get a pointer to its asset contract...
-  OTAssetContract * pContract = GetAssetContract(BASKET_CONTRACT_ID);
+  OTAssetContract * pContract =
+  transactor_.getAssetContract(BASKET_CONTRACT_ID);
 
   // Now let's load up the actual basket, from the actual asset contract.
   if (pContract &&

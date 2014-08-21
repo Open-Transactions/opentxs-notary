@@ -222,17 +222,6 @@ private:
     std::shared_ptr<OTAccount> GetVoucherAccount(
         const OTIdentifier& assetTypeId);
 
-    // When a user uploads an asset contract, the server adds it to the list
-    // (and verifies the user's key against the
-    // contract.) This way the server has a directory with all the asset
-    // contracts that it supports, saved by their ID.
-    // As long as the IDs are in the server file, it can look them up.
-    // When a new asset type is added, a new Mint is added as well. It goes into
-    // the mints folder.
-    bool AddAssetContract(OTAssetContract& contract);
-
-    OTAssetContract* GetAssetContract(const OTIdentifier& assetTypeId);
-
     bool AddBasketAccountID(const OTIdentifier& basketId,
                             const OTIdentifier& basketAccountId,
                             const OTIdentifier& basketContractId);
@@ -297,7 +286,6 @@ private:
     // multimap is employed.
     typedef std::multimap<std::string, OTMint*> MintsMap;
     typedef std::map<std::string, std::string> BasketsMap;
-    typedef std::map<std::string, OTAssetContract*> ContractsMap;
 
 private:
     MainFile mainFile_;
@@ -324,8 +312,6 @@ private:
 
     OTPseudonym m_nymServer;
 
-    // The asset types supported by this server.
-    ContractsMap m_mapContracts;
     // The mints for each asset type.
     MintsMap m_mapMints;
     // The list of voucher accounts (see GetVoucherAccount below for details)
