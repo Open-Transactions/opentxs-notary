@@ -7,6 +7,7 @@ set(cxx-sources
   ClientConnection.cpp
   MessageProcessor.cpp
   MainFile.cpp
+  UserCommandProcessor.cpp
   Transactor.cpp
   OTServer.cpp
 )

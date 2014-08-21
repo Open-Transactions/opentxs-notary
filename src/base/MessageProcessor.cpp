@@ -369,8 +369,8 @@ bool MessageProcessor::processMessage(const std::string& messageString,
 
     OTPseudonym nym(message.m_strNymID);
 
-    bool processedUserCmd =
-        server_->ProcessUserCommand(message, replyMessage, &client, &nym);
+    bool processedUserCmd = server_->userCommandProcessor_.ProcessUserCommand(
+        message, replyMessage, &client, &nym);
 
     // By optionally passing in &client, the client Nym's public
     // key will be set on it whenever verification is complete. (So
