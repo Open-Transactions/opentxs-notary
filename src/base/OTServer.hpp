@@ -146,9 +146,6 @@
 namespace opentxs
 {
 
-class OTAccount;
-class OTAssetContract;
-class ClientConnection;
 class OTIdentifier;
 class OTMessage;
 class OTPayment;
