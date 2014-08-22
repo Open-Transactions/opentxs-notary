@@ -258,15 +258,12 @@ OTServer::OTServer()
     , userCommandProcessor_(this)
     , m_bReadOnly(false)
     , m_bShutdownFlag(false)
-    , m_pServerContract(nullptr)
+    , m_pServerContract()
 {
 }
 
 OTServer::~OTServer()
 {
-    if (nullptr == m_pServerContract) delete m_pServerContract;
-    m_pServerContract = nullptr;
-
     // PID -- Set it to 0 in the lock file so the next time we run OT, it knows
     // there isn't
     // another copy already running (otherwise we might wind up with two copies
@@ -758,7 +755,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
 
 bool OTServer::GetConnectInfo(OTString& strHostname, int32_t& nPort) const
 {
-    if (nullptr == m_pServerContract) return false;
+    if (!m_pServerContract) return false;
 
     return m_pServerContract->GetConnectInfo(strHostname, nPort);
 }

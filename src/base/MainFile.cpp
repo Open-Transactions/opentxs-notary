@@ -782,9 +782,9 @@ bool MainFile::LoadServerUserAndContract()
         // We have the serverID, so let's load  up the server Contract!
         OTString strContractPath(OTFolders::Contract().Get());
 
-        OTServerContract* pContract = new OTServerContract(
+        std::unique_ptr<OTServerContract> pContract(new OTServerContract(
             server_->m_strServerID, strContractPath, server_->m_strServerID,
-            server_->m_strServerID);
+            server_->m_strServerID));
         OT_ASSERT_MSG(nullptr != pContract,
                       "ASSERT while allocating memory for main Server Contract "
                       "in MainFile::LoadServerUserAndContract\n");
@@ -792,18 +792,14 @@ bool MainFile::LoadServerUserAndContract()
         if (pContract->LoadContract()) {
             if (pContract->VerifyContract()) {
                 OTLog::Output(0, "\n** Main Server Contract Verified **\n");
-                server_->m_pServerContract = pContract;
+                server_->m_pServerContract.swap(pContract);
                 bSuccess = true;
             }
             else {
-                delete pContract;
-                pContract = nullptr;
                 OTLog::Output(0, "\nMain Server Contract FAILED to verify.\n");
             }
         }
         else {
-            delete pContract;
-            pContract = nullptr;
             OTLog::vOutput(0,
                            "\n%s: Failed reading Main Server Contract:\n%s\n",
                            szFunc, strContractPath.Get());
