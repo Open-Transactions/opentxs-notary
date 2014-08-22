@@ -141,6 +141,7 @@
 #include <opentxs/core/OTCron.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
+#include <memory>
 #include <cstddef>
 
 namespace opentxs
@@ -212,7 +213,7 @@ private:
     OTString m_strServerUserID;
     // This is the server's own contract, containing its public key and
     // connect info.
-    OTServerContract* m_pServerContract;
+    std::unique_ptr<OTServerContract> m_pServerContract;
 
     OTPseudonym m_nymServer;
 

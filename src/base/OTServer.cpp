@@ -258,15 +258,12 @@ OTServer::OTServer()
     , userCommandProcessor_(this)
     , m_bReadOnly(false)
     , m_bShutdownFlag(false)
-    , m_pServerContract(nullptr)
+    , m_pServerContract()
 {
 }
 
 OTServer::~OTServer()
 {
-    if (nullptr == m_pServerContract) delete m_pServerContract;
-    m_pServerContract = nullptr;
-
     // PID -- Set it to 0 in the lock file so the next time we run OT, it knows
     // there isn't
     // another copy already running (otherwise we might wind up with two copies
@@ -296,67 +293,53 @@ OTServer::~OTServer()
     }
 }
 
-// Loads the config file,
-// Initializes OTDB:: default storage,
-// Sets up the data folders,
-// Loads the main file,
-// and validates the server ID (for the Nym)
-//
-void OTServer::Init(bool bReadOnly)
+void OTServer::Init(bool readOnly)
 {
+    m_bReadOnly = readOnly;
+
     if (!OTDataFolder::IsInitialized()) {
-        OTLog::vError("%s: Unable to Init data folders", __FUNCTION__);
+        OTLog::vError("Unable to Init data folders!");
         OT_FAIL;
     }
     if (!ConfigLoader::load(m_strWalletFilename)) {
-        OTLog::vError("%s: Unable to Load Config File!", __FUNCTION__);
+        OTLog::vError("Unable to Load Config File!");
         OT_FAIL;
     }
-    m_bReadOnly = bReadOnly;
-    // Server Data Path
-    OTString strDataPath;
-    const bool bGetDataFolderSuccess = OTDataFolder::Get(strDataPath);
+
+    OTString dataPath;
+    bool bGetDataFolderSuccess = OTDataFolder::Get(dataPath);
+
     // PID -- Make sure we're not running two copies of OT on the same data
     // simultaneously here.
-    //
     if (bGetDataFolderSuccess) {
         // If we want to WRITE to the data location, then we can't be in
-        // read-only
-        // mode, and there can't be another copy running at the same time.
-        //
-        if (!bReadOnly) {
+        // read-only mode.
+        if (!readOnly) {
             // 1. READ A FILE STORING THE PID. (It will already exist, if OT is
             // already running.)
             //
             // We open it for reading first, to see if it already exists. If it
-            // does,
-            // we read the number. 0 is fine, since we overwrite with 0 on
-            // shutdown. But
-            // any OTHER number means OT is still running. Or it means it was
-            // killed while
-            // running and didn't shut down properly, and that you need to
-            // delete the pid file
-            // by hand before running OT again. (This is all for the purpose of
-            // preventing two
-            // copies of OT running at the same time and corrupting the data
-            // folder.)
+            // does, we read the number. 0 is fine, since we overwrite with 0 on
+            // shutdown. But any OTHER number means OT is still running. Or it
+            // means it was killed while running and didn't shut down properly,
+            // and that you need to delete the pid file by hand before running
+            // OT again. (This is all for the purpose of preventing two copies
+            // of OT running at the same time and corrupting the data folder.)
             //
             OTString strPIDPath;
-            OTPaths::AppendFile(strPIDPath, strDataPath, SERVER_PID_FILENAME);
+            OTPaths::AppendFile(strPIDPath, dataPath, SERVER_PID_FILENAME);
 
             std::ifstream pid_infile(strPIDPath.Get());
 
             // 2. (IF FILE EXISTS WITH ANY PID INSIDE, THEN DIE.)
-            //
-            if (pid_infile.is_open()) // it existed already
-            {
+            if (pid_infile.is_open()) {
                 uint32_t old_pid = 0;
                 pid_infile >> old_pid;
                 pid_infile.close();
 
                 // There was a real PID in there.
                 if (old_pid != 0) {
-                    const uint64_t lPID = old_pid;
+                    uint64_t lPID = old_pid;
                     OTLog::vError(
                         "\n\n\nIS OPEN-TRANSACTIONS ALREADY RUNNING?\n\n"
                         "I found a PID (%llu) in the data lock file, located "
@@ -375,7 +358,6 @@ void OTServer::Init(bool bReadOnly)
             // can't trample on US.
 
             // 3. GET THE CURRENT (ACTUAL) PROCESS ID.
-            //
             uint64_t the_pid = 0;
 
 #ifdef _WIN32
@@ -385,48 +367,49 @@ void OTServer::Init(bool bReadOnly)
 #endif
 
             // 4. OPEN THE FILE IN WRITE MODE, AND SAVE THE PID TO IT.
-            //
             std::ofstream pid_outfile(strPIDPath.Get());
 
             if (pid_outfile.is_open()) {
                 pid_outfile << the_pid;
                 pid_outfile.close();
             }
-            else
+            else {
                 OTLog::vError("Failed trying to open data locking file (to "
                               "store PID %llu): %s\n",
                               the_pid, strPIDPath.Get());
+            }
         }
     }
     OTDB::InitDefaultStorage(OTDB_DEFAULT_STORAGE, OTDB_DEFAULT_PACKER);
 
     // Load up the transaction number and other OTServer data members.
-    bool bMainFileExists = m_strWalletFilename.Exists()
-                               ? OTDB::Exists(".", m_strWalletFilename.Get())
-                               : false;
+    bool mainFileExists = m_strWalletFilename.Exists()
+                              ? OTDB::Exists(".", m_strWalletFilename.Get())
+                              : false;
 
-    if (!bMainFileExists) {
-        if (bReadOnly) {
+    if (!mainFileExists) {
+        if (readOnly) {
             OTLog::vError(
-                "%s: Error: Main file non-existent (%s). "
+                "Error: Main file non-existent (%s). "
                 "Plus, unable to create, since read-only flag is set.\n",
-                __FUNCTION__, m_strWalletFilename.Get());
+                m_strWalletFilename.Get());
             OT_FAIL;
         }
-        else
-            bMainFileExists = mainFile_.CreateMainFile();
+        else {
+            mainFileExists = mainFile_.CreateMainFile();
+        }
     }
-    if (bMainFileExists) {
-        if (!mainFile_.LoadMainFile(bReadOnly)) {
-            OTLog::vError("\n%s: Error in Loading Main File!\n", __FUNCTION__);
+
+    if (mainFileExists) {
+        if (!mainFile_.LoadMainFile(readOnly)) {
+            OTLog::vError("Error in Loading Main File!\n");
             OT_FAIL;
         }
     }
 
     // With the Server's private key loaded, and the latest transaction number
-    // loaded,
-    // and all the various other data (contracts, etc) the server is now ready
-    // for operation!
+    // loaded, and all the various other data (contracts, etc) the server is now
+    // ready for operation!
 }
 
 // msg, the request msg from payer, which is attached WHOLE to the Nymbox
@@ -758,7 +741,7 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
 
 bool OTServer::GetConnectInfo(OTString& strHostname, int32_t& nPort) const
 {
-    if (nullptr == m_pServerContract) return false;
+    if (!m_pServerContract) return false;
 
     return m_pServerContract->GetConnectInfo(strHostname, nPort);
 }
