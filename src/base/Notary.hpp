@@ -1,6 +1,6 @@
 /************************************************************
  *
- *  OTServer.hpp
+ *  Notary.hpp
  *
  */
 
@@ -130,95 +130,65 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#ifndef __OT_SERVER_HPP__
-#define __OT_SERVER_HPP__
-
-#include "Transactor.hpp"
-#include "Notary.hpp"
-#include "MainFile.hpp"
-#include "UserCommandProcessor.hpp"
-#include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTCron.hpp>
-#include <opentxs/core/OTPseudonym.hpp>
-#include <opentxs/core/OTTransaction.hpp>
-#include <cstddef>
+#ifndef __OPENTXS_NOTARY_HPP__
+#define __OPENTXS_NOTARY_HPP__
 
 namespace opentxs
 {
 
-class OTIdentifier;
-class OTMessage;
-class OTPayment;
-class OTServerContract;
+class OTTransaction;
+class OTPseudonym;
+class OTAccount;
+class OTServer;
 
-class OTServer
+class Notary
 {
-    friend class Transactor;
-    friend class MessageProcessor;
-    friend class UserCommandProcessor;
-    friend class MainFile;
-    friend class AcctFunctor_PayDividend;
-    friend class Notary;
-
 public:
-    OTServer();
-    ~OTServer();
+    explicit Notary(OTServer* server);
 
-    void Init(bool readOnly = false);
-
-    bool IsFlaggedForShutdown() const;
-
-    bool GetConnectInfo(OTString& hostname, int32_t& port) const;
-
-    const OTPseudonym& GetServerNym() const;
-
-    void ActivateCron();
-    void ProcessCron();
+    // If the server receives a notarizeTransactions command, it will be
+    // accompanied by a payload containing a ledger to be notarized.
+    // UserCmdNotarizeTransactions will loop through that ledger,
+    // and for each transaction within, it calls THIS method.
+    void NotarizeTransaction(OTPseudonym& nym, OTTransaction& tranIn,
+                             OTTransaction& tranOut, bool& outSuccess);
+    void NotarizeTransfer(OTPseudonym& nym, OTAccount& fromAccount,
+                          OTTransaction& tranIn, OTTransaction& tranOut,
+                          bool& outSuccess);
+    void NotarizeDeposit(OTPseudonym& nym, OTAccount& account,
+                         OTTransaction& tranIn, OTTransaction& tranOut,
+                         bool& outSuccess);
+    void NotarizeWithdrawal(OTPseudonym& nym, OTAccount& account,
+                            OTTransaction& tranIn, OTTransaction& tranOut,
+                            bool& outSuccess);
+    void NotarizeProcessInbox(OTPseudonym& nym, OTAccount& account,
+                              OTTransaction& tranIn, OTTransaction& tranOut,
+                              bool& outSuccess);
+    void NotarizeProcessNymbox(OTPseudonym& nym, OTTransaction& tranIn,
+                               OTTransaction& tranOut, bool& outSuccess);
+    void NotarizeMarketOffer(OTPseudonym& nym, OTAccount& assetAccount,
+                             OTTransaction& tranIn, OTTransaction& tranOut,
+                             bool& outSuccess);
+    void NotarizePaymentPlan(OTPseudonym& nym, OTAccount& depositorAccount,
+                             OTTransaction& tranIn, OTTransaction& tranOut,
+                             bool& outSuccess);
+    void NotarizeSmartContract(OTPseudonym& nym, OTAccount& activatingAccount,
+                               OTTransaction& tranIn, OTTransaction& tranOut,
+                               bool& outSuccess);
+    void NotarizeCancelCronItem(OTPseudonym& nym, OTAccount& assetAccount,
+                                OTTransaction& tranIn, OTTransaction& tranOut,
+                                bool& outSuccess);
+    void NotarizeExchangeBasket(OTPseudonym& nym, OTAccount& sourceAccount,
+                                OTTransaction& tranIn, OTTransaction& tranOut,
+                                bool& outSuccess);
+    void NotarizePayDividend(OTPseudonym& nym, OTAccount& account,
+                             OTTransaction& tranIn, OTTransaction& tranOut,
+                             bool& outSuccess);
 
 private:
-    bool SendInstrumentToNym(const OTIdentifier& serverId,
-                             const OTIdentifier& senderUserId,
-                             const OTIdentifier& recipientUserId,
-                             OTMessage* msg = nullptr,
-                             const OTPayment* payment = nullptr,
-                             const char* command = nullptr);
-
-    // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
-    // They are higher-level, this is lower-level.
-    bool DropMessageToNymbox(const OTIdentifier& serverId,
-                             const OTIdentifier& senderUserId,
-                             const OTIdentifier& recipientUserId,
-                             OTTransaction::transactionType transactionType,
-                             OTMessage* msg = nullptr,
-                             const OTString* messageString = nullptr,
-                             const char* command = nullptr);
-
-private:
-    MainFile mainFile_;
-    Notary notary_;
-    Transactor transactor_;
-    UserCommandProcessor userCommandProcessor_;
-
-    OTString m_strWalletFilename;
-    // Used at least for whether or not to write to the PID.
-    bool m_bReadOnly;
-    // If the server wants to be shut down, it can set
-    // this flag so the caller knows to do so.
-    bool m_bShutdownFlag;
-
-    // A hash of the server contract
-    OTString m_strServerID;
-    // A hash of the public key that signed the server contract
-    OTString m_strServerUserID;
-    // This is the server's own contract, containing its public key and
-    // connect info.
-    OTServerContract* m_pServerContract;
-
-    OTPseudonym m_nymServer;
-
-    OTCron m_Cron; // This is where re-occurring and expiring tasks go.
+    OTServer* server_;
 };
 
 } // namespace opentxs
 
-#endif // __OT_SERVER_HPP__
+#endif // __OPENTXS_NOTARY_HPP__

@@ -5118,8 +5118,8 @@ void UserCommandProcessor::UserCmdProcessNymbox(OTPseudonym& theNym,
             // sign it after this.
             // There's also no point to change it after this, unless you plan to
             // sign it twice.
-            server_->NotarizeProcessNymbox(theNym, *pTransaction,
-                                           *pTranResponse, bTransSuccess);
+            server_->notary_.NotarizeProcessNymbox(
+                theNym, *pTransaction, *pTranResponse, bTransSuccess);
 
             pTranResponse = nullptr; // at this point, the ledger now "owns" the
                                      // response, and will handle deleting it.
@@ -5421,7 +5421,7 @@ void UserCommandProcessor::UserCmdProcessInbox(OTPseudonym& theNym,
                         OTLog::Output(
                             2, "UserCmdProcessInbox type: Process Inbox\n");
 
-                        server_->NotarizeProcessInbox(
+                        server_->notary_.NotarizeProcessInbox(
                             theNym, theAccount, *pTransaction, *pTranResponse,
                             bTransSuccess);
                         // Where appropriate, remove a transaction number from
@@ -5726,8 +5726,8 @@ void UserCommandProcessor::UserCmdNotarizeTransactions(OTPseudonym& theNym,
             // There's also no point to change it after this, unless you plan to
             // sign it twice.
             //
-            server_->NotarizeTransaction(theNym, *pTransaction, *pTranResponse,
-                                         bTransSuccess);
+            server_->notary_.NotarizeTransaction(theNym, *pTransaction,
+                                                 *pTranResponse, bTransSuccess);
 
             if (pTranResponse->IsCancelled()) bCancelled = true;
 
