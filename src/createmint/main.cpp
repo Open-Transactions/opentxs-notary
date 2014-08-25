@@ -130,9 +130,9 @@
 #include <opentxs/core/OTDataFolder.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTLog.hpp>
-#include <opentxs/core/OTMint.hpp>
 #include <opentxs/core/OTPaths.hpp>
 #include <opentxs/core/OTStorage.hpp>
+#include <opentxs/core/cash/Mint.hpp>
 
 #include <cstdio>
 
@@ -370,8 +370,8 @@ int main(int argc, char* const argv[])
     // nSeries now contains the number we need to use for the next series.
     // and strMintPath now contains the correct file path.
 
-    OTMint* pMint =
-        OTMint::MintFactory(strServerID, strServerNymID, strAssetTypeID);
+    Mint* pMint =
+        Mint::MintFactory(strServerID, strServerNymID, strAssetTypeID);
     OT_ASSERT(nullptr != pMint);
 
     OTString strSeries;

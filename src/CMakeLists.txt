@@ -17,6 +17,7 @@ else()
 
   include_directories(
     ${opentxsIncludePath}
+    ${opentxsIncludePath}/opentxs/core/
   )
 
   find_library(core opentxs-core)

@@ -136,13 +136,10 @@
 #include "ServerSettings.hpp"
 #include "AcctFunctor_PayDividend.hpp"
 #include <opentxs/core/OTSmartContract.hpp>
-#include <opentxs/core/OTMint.hpp>
 #include <opentxs/core/OTPaymentPlan.hpp>
 #include <opentxs/core/OTNymOrSymmetricKey.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
-#include <opentxs/core/OTToken.hpp>
 #include <opentxs/core/OTPayment.hpp>
-#include <opentxs/core/OTPurse.hpp>
 #include <opentxs/core/OTCheque.hpp>
 #include <opentxs/core/OTLedger.hpp>
 #include <opentxs/core/OTAccount.hpp>
@@ -157,6 +154,9 @@
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTCleanup.hpp>
+#include <opentxs/core/cash/Mint.hpp>
+#include <opentxs/core/cash/Purse.hpp>
+#include <opentxs/core/cash/Token.hpp>
 #include <deque>
 #include <memory>
 #include <list>
@@ -165,7 +165,7 @@ namespace opentxs
 {
 
 typedef std::list<OTAccount*> listOfAccounts;
-typedef std::deque<OTToken*> dequeOfTokenPtrs;
+typedef std::deque<Token*> dequeOfTokenPtrs;
 
 Notary::Notary(OTServer* server) : server_(server)
 {
@@ -1067,7 +1067,7 @@ void Notary::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
 
         OTCleanup<OTLedger> theInboxAngel(pInbox);
         OTCleanup<OTLedger> theOutboxAngel(pOutbox);
-        OTMint* pMint = nullptr;
+        Mint* pMint = nullptr;
         OTAccount* pMintCashReserveAcct = nullptr;
 
         if (0 > pItem->GetAmount()) {
@@ -1090,7 +1090,7 @@ void Notary::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
         else {
             // The COIN REQUEST (including the prototokens) comes from the
             // client side.
-            // so we assume the OTToken is in the payload. Now we need to
+            // so we assume the Token is in the payload. Now we need to
             // randomly choose one for
             // signing, and reply to the client with that number so that the
             // client can reply back
@@ -1130,9 +1130,9 @@ void Notary::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
             // the Debits are done one-at-a-time
             // for each token and it's amount/denomination
 
-            OTPurse thePurse(SERVER_ID, ASSET_TYPE_ID);
-            OTPurse theOutputPurse(SERVER_ID, ASSET_TYPE_ID);
-            OTToken* pToken = nullptr;
+            Purse thePurse(SERVER_ID, ASSET_TYPE_ID);
+            Purse theOutputPurse(SERVER_ID, ASSET_TYPE_ID);
+            Token* pToken = nullptr;
             dequeOfTokenPtrs theDeque;
 
             bool bSuccess = false;
@@ -2285,7 +2285,7 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
 
     const OTString strUserID(USER_ID), strAccountID(ACCOUNT_ID);
 
-    OTMint* pMint = nullptr; // the Mint itself.
+    Mint* pMint = nullptr; // the Mint itself.
     OTAccount* pMintCashReserveAcct =
         nullptr; // the Mint's funds for cash withdrawals.
     // Here we find out if we're depositing cash, or a cheque
@@ -3775,8 +3775,8 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
             OTString strPurse;
             pItem->GetAttachment(strPurse);
 
-            OTPurse thePurse(SERVER_ID, ASSET_TYPE_ID);
-            OTToken* pToken = nullptr;
+            Purse thePurse(SERVER_ID, ASSET_TYPE_ID);
+            Token* pToken = nullptr;
 
             bool bLoadContractFromString =
                 thePurse.LoadContractFromString(strPurse);
@@ -3811,7 +3811,7 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                        nullptr) {
                     // This way I don't have to worry about cleaning up pToken
                     // or leaking memory.
-                    OTCleanup<OTToken> theTokenGuardian(*pToken);
+                    OTCleanup<Token> theTokenGuardian(*pToken);
 
                     pMint = server_->transactor_.getMint(ASSET_TYPE_ID,
                                                          pToken->GetSeries());

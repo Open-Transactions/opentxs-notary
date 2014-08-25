@@ -160,10 +160,8 @@
 #include <opentxs/core/OTPaths.hpp>
 #include <opentxs/core/OTPaymentPlan.hpp>
 #include <opentxs/core/OTPayment.hpp>
-#include <opentxs/core/OTPurse.hpp>
 #include <opentxs/core/OTServerContract.hpp>
 #include <opentxs/core/OTSmartContract.hpp>
-#include <opentxs/core/OTToken.hpp>
 #include <opentxs/core/OTTrade.hpp>
 #include <opentxs/core/OTCleanup.hpp>
 

@@ -135,7 +135,6 @@
 #include "ClientConnection.hpp"
 #include "Macros.hpp"
 #include "ServerSettings.hpp"
-#include <opentxs/core/OTMint.hpp>
 #include <opentxs/core/OTParty.hpp>
 #include <opentxs/core/OTSmartContract.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
@@ -151,6 +150,7 @@
 #include <opentxs/core/OTLedger.hpp>
 #include <opentxs/core/OTMarket.hpp>
 #include <opentxs/core/OTBasket.hpp>
+#include <opentxs/core/cash/Mint.hpp>
 
 namespace opentxs
 {
@@ -4263,8 +4263,8 @@ void UserCommandProcessor::UserCmdGetMint(OTPseudonym&, OTMessage& MsgIn,
     const OTString ASSET_ID_STR(ASSET_TYPE_ID);
     bool bSuccessLoadingMint = false;
 
-    OTMint* pMint = OTMint::MintFactory(server_->m_strServerID, ASSET_ID_STR);
-    OTCleanup<OTMint> theMintAngel(pMint);
+    Mint* pMint = Mint::MintFactory(server_->m_strServerID, ASSET_ID_STR);
+    OTCleanup<Mint> theMintAngel(pMint);
     OT_ASSERT(nullptr != pMint);
     if (true == (bSuccessLoadingMint = pMint->LoadMint(".PUBLIC"))) {
         // You cannot hash the Mint to get its ID.
