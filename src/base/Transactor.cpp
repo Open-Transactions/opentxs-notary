@@ -133,13 +133,13 @@
 #include "Transactor.hpp"
 #include "OTServer.hpp"
 #include <opentxs/core/OTFolders.hpp>
-#include <opentxs/core/OTMint.hpp>
 #include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTIdentifier.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTString.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/cash/Mint.hpp>
 
 namespace opentxs
 {
@@ -163,7 +163,7 @@ Transactor::~Transactor()
 
     while (!mintsMap_.empty()) {
         auto it = mintsMap_.begin();
-        OTMint* pMint = it->second;
+        Mint* pMint = it->second;
         OT_ASSERT(nullptr != pMint);
         mintsMap_.erase(it);
         delete pMint;
@@ -560,11 +560,11 @@ std::shared_ptr<OTAccount> Transactor::getVoucherAccount(
 }
 
 /// Lookup the current mint for any given asset type ID and series.
-OTMint* Transactor::getMint(const OTIdentifier& ASSET_TYPE_ID,
-                            int32_t nSeries) // Each asset contract has its own
-                                             // Mint.
+Mint* Transactor::getMint(const OTIdentifier& ASSET_TYPE_ID,
+                          int32_t nSeries) // Each asset contract has its own
+                                           // Mint.
 {
-    OTMint* pMint = nullptr;
+    Mint* pMint = nullptr;
 
     for (auto& it : mintsMap_) {
         pMint = it.second;
@@ -589,8 +589,8 @@ OTMint* Transactor::getMint(const OTIdentifier& ASSET_TYPE_ID,
 
     const char* szFoldername = OTFolders::Mint().Get();
     const char* szFilename = strMintFilename.Get();
-    pMint = OTMint::MintFactory(server_->m_strServerID,
-                                server_->m_strServerUserID, ASSET_ID_STR);
+    pMint = Mint::MintFactory(server_->m_strServerID,
+                              server_->m_strServerUserID, ASSET_ID_STR);
 
     // You cannot hash the Mint to get its ID. (The ID is a hash of the asset
     // contract.)
@@ -616,7 +616,7 @@ OTMint* Transactor::getMint(const OTIdentifier& ASSET_TYPE_ID,
             // mintsMap_[ASSET_ID_STR.Get()] = pMint;
 
             mintsMap_.insert(
-                std::pair<std::string, OTMint*>(ASSET_ID_STR.Get(), pMint));
+                std::pair<std::string, Mint*>(ASSET_ID_STR.Get(), pMint));
 
             return pMint;
         }
