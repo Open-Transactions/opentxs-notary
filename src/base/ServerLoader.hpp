@@ -2,9 +2,9 @@
 #define __OPENTXS_SERVERLOADER_HPP__
 
 #include "OTServer.hpp"
-#include <opentxs/core/OTCachedKey.hpp>
+#include <opentxs/core/crypto/OTCachedKey.hpp>
+#include <opentxs/core/crypto/OTCrypto.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
-#include <opentxs/core/OTCrypto.hpp>
 #include <opentxs/core/OTLog.hpp>
 
 #define SERVER_CONFIG_KEY "server"

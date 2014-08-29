@@ -137,11 +137,11 @@
 #include "ClientConnection.hpp"
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTMessage.hpp>
-#include <opentxs/core/OTEnvelope.hpp>
-#include <opentxs/core/Timer.hpp>
 #include <opentxs/core/OTString.hpp>
 #include <opentxs/core/OTSettings.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
+#include <opentxs/core/crypto/OTEnvelope.hpp>
+#include <opentxs/core/util/Timer.hpp>
 #include <opentxs/ext/OTSocket.hpp>
 
 namespace

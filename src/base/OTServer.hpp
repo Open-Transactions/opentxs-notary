@@ -137,8 +137,8 @@
 #include "Notary.hpp"
 #include "MainFile.hpp"
 #include "UserCommandProcessor.hpp"
-#include <opentxs/core/OTCommon.hpp>
-#include <opentxs/core/OTCron.hpp>
+#include <opentxs/core/util/Common.hpp>
+#include <opentxs/core/cron/OTCron.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <memory>

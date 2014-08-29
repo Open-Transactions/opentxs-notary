@@ -135,22 +135,22 @@
 #include "ClientConnection.hpp"
 #include "Macros.hpp"
 #include "ServerSettings.hpp"
-#include <opentxs/core/OTParty.hpp>
-#include <opentxs/core/OTSmartContract.hpp>
+#include <opentxs/core/script/OTParty.hpp>
+#include <opentxs/core/script/OTSmartContract.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/OTMessage.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTString.hpp>
-#include <opentxs/core/OTAsymmetricKey.hpp>
+#include <opentxs/core/crypto/OTAsymmetricKey.hpp>
 #include <opentxs/core/OTCleanup.hpp>
-#include <opentxs/core/OTASCIIArmor.hpp>
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTLedger.hpp>
-#include <opentxs/core/OTMarket.hpp>
-#include <opentxs/core/OTBasket.hpp>
 #include <opentxs/core/cash/Mint.hpp>
+#include <opentxs/core/trade/OTMarket.hpp>
+#include <opentxs/core/basket/OTBasket.hpp>
 
 namespace opentxs
 {
@@ -3161,7 +3161,7 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
 
                     // The basket does not yet exist on this server. Create a
                     // new Asset Contract to support it...
-                    OTAssetContract* pBasketContract = new OTAssetContract;
+                    OTAssetContract* pBasketContract = new OTAssetContract();
 
                     // todo check for memory allocation failure here.
 

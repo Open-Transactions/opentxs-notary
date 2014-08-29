@@ -132,8 +132,8 @@
 
 #include "ClientConnection.hpp"
 
-#include <opentxs/core/OTAsymmetricKey.hpp>
-#include <opentxs/core/OTEnvelope.hpp>
+#include <opentxs/core/crypto/OTAsymmetricKey.hpp>
+#include <opentxs/core/crypto/OTEnvelope.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTMessage.hpp>
 
