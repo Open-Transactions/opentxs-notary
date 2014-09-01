@@ -134,14 +134,14 @@
 #include "OTServer.hpp"
 #include "Helpers.hpp"
 #include <opentxs/core/OTString.hpp>
-#include <opentxs/core/OTCachedKey.hpp>
-#include <opentxs/core/OTASCIIArmor.hpp>
+#include <opentxs/core/crypto/OTCachedKey.hpp>
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTIdentifier.hpp>
 #include <opentxs/core/OTContract.hpp>
 #include <opentxs/core/OTServerContract.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
-#include <opentxs/core/OTPassword.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTCleanup.hpp>
 #include <opentxs/core/OTFolders.hpp>

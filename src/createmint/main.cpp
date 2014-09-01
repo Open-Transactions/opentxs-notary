@@ -126,7 +126,7 @@
 
 #include "../base/OTServer.hpp"
 
-#include <opentxs/core/OTCrypto.hpp>
+#include <opentxs/core/crypto/OTCrypto.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTLog.hpp>

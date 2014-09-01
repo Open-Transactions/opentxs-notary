@@ -13,7 +13,7 @@ if(MSVC)
   set(core opentxs-core)
   set(ext opentxs-ext)
 else()
-  find_path(opentxsIncludePath opentxs/core/OTglobal.h)
+  find_path(opentxsIncludePath opentxs/core/OTPseudonym.hpp)
 
   include_directories(
     ${opentxsIncludePath}
