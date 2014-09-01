@@ -144,7 +144,7 @@ namespace opentxs
 // that part fails) if the override Nym's ID matches to the Nym ID passed in (as
 // a const char *).
 #define NYM_IS_ALLOWED(SZ_NYM_ID, BOOL_VAR_NAME)                               \
-    ((ServerSettings::BOOL_VAR_NAME) ||                                        \
+    ((BOOL_VAR_NAME) ||                                                        \
      ((ServerSettings::GetOverrideNymID().size() > 0) &&                       \
       (0 == ServerSettings::GetOverrideNymID().compare((SZ_NYM_ID)))))
 

@@ -7,10 +7,7 @@ set(cxx-sources
 )
 
 add_executable(${name} ${cxx-sources})
-if(MSVC)
-  target_link_libraries(${name} opentxs-server-base ${core} ${ext} irrxml)
-else()
-  target_link_libraries(${name} opentxs-server-base ${core} ${ext})
-endif(MSVC)
+
+target_link_libraries(${name} opentxs-server-base ${core} ${ext})
 
 install(TARGETS opentxs-server DESTINATION bin)
