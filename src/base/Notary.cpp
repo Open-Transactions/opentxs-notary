@@ -154,7 +154,6 @@
 #include <opentxs/core/basket/OTBasket.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTLog.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 #include <opentxs/core/cash/Mint.hpp>
 #include <opentxs/core/cash/Purse.hpp>
 #include <opentxs/core/cash/Token.hpp>
@@ -288,12 +287,9 @@ void Notary::NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
 
         // Set the ID on the To Account based on what the transaction request
         // said. (So we can load it up.)
-        OTAccount* pDestinationAcct = OTAccount::LoadExistingAccount(
-            pItem->GetDestinationAcctID(), SERVER_ID);
-        OTCleanup<OTAccount> theDestAcctGuardian(
-            pDestinationAcct); // This is safe in cases where nullptr is
-                               // returned.
-                               // No more need to cleanup pDestAcct.
+        std::unique_ptr<OTAccount> pDestinationAcct(
+            OTAccount::LoadExistingAccount(pItem->GetDestinationAcctID(),
+                                           SERVER_ID));
 
         // Only accept transfers with positive amounts.
         if (0 > pItem->GetAmount()) {
@@ -402,11 +398,10 @@ void Notary::NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
                 OTLog::Error("Notary::NotarizeTransfer: Error loading 'from' "
                              "outbox.\n");
 
-            OTLedger* pInbox = theFromAccount.LoadInbox(server_->m_nymServer);
-            OTLedger* pOutbox = theFromAccount.LoadOutbox(server_->m_nymServer);
-
-            OTCleanup<OTLedger> theInboxAngel(pInbox);
-            OTCleanup<OTLedger> theOutboxAngel(pOutbox);
+            std::unique_ptr<OTLedger> pInbox(
+                theFromAccount.LoadInbox(server_->m_nymServer));
+            std::unique_ptr<OTLedger> pOutbox(
+                theFromAccount.LoadOutbox(server_->m_nymServer));
 
             if (nullptr == pInbox) {
                 OTLog::Error("Error loading or verifying inbox.\n");
@@ -625,10 +620,7 @@ void Notary::NotarizeTransfer(OTPseudonym& theNym, OTAccount& theFromAccount,
                     }
                     else {
                         delete pOutboxTransaction;
-                        pOutboxTransaction =
-                            nullptr; // I can't use OTCleanup here
-                                     // because sometimes we DON'T
-                                     // delete it. (above)
+                        pOutboxTransaction = nullptr;
                         delete pInboxTransaction;
                         pInboxTransaction = nullptr;
                         OTLog::vOutput(0, "%s: Unable to debit account %s in "
@@ -809,11 +801,11 @@ void Notary::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
         //        OTAccount * pVoucherReserveAcct    = nullptr;
         // contains the server's funds to back vouchers of a specific asset type
         std::shared_ptr<OTAccount> pVoucherReserveAcct;
-        OTLedger* pInbox = theAccount.LoadInbox(server_->m_nymServer);
-        OTLedger* pOutbox = theAccount.LoadOutbox(server_->m_nymServer);
+        std::unique_ptr<OTLedger> pInbox(
+            theAccount.LoadInbox(server_->m_nymServer));
+        std::unique_ptr<OTLedger> pOutbox(
+            theAccount.LoadOutbox(server_->m_nymServer));
 
-        OTCleanup<OTLedger> theInboxAngel(pInbox);
-        OTCleanup<OTLedger> theOutboxAngel(pOutbox);
         // I'm using the operator== because it exists.
         // If the ID on the "from" account that was passed in,
         // does not match the "Acct From" ID on this transaction item.
@@ -1063,11 +1055,11 @@ void Notary::NotarizeWithdrawal(OTPseudonym& theNym, OTAccount& theAccount,
         pResponseBalanceItem->SetReferenceToNum(
             pItem->GetTransactionNum()); // This response item is IN RESPONSE to
                                          // pItem and its Owner Transaction.
-        OTLedger* pInbox = theAccount.LoadInbox(server_->m_nymServer);
-        OTLedger* pOutbox = theAccount.LoadOutbox(server_->m_nymServer);
+        std::unique_ptr<OTLedger> pInbox(
+            theAccount.LoadInbox(server_->m_nymServer));
+        std::unique_ptr<OTLedger> pOutbox(
+            theAccount.LoadOutbox(server_->m_nymServer));
 
-        OTCleanup<OTLedger> theInboxAngel(pInbox);
-        OTCleanup<OTLedger> theOutboxAngel(pOutbox);
         Mint* pMint = nullptr;
         OTAccount* pMintCashReserveAcct = nullptr;
 
@@ -1652,12 +1644,12 @@ void Notary::NotarizePayDividend(OTPseudonym& theNym,
             OTAssetContract* pSharesContract =
                 server_->transactor_.getAssetContract(SHARES_ASSET_ID);
             OTAccount* pSharesIssuerAccount = nullptr;
-            OTCleanup<OTAccount> theAcctAngel;
+            std::unique_ptr<OTAccount> theAcctAngel;
 
             if (nullptr != pSharesContract) {
                 pSharesIssuerAccount = OTAccount::LoadExistingAccount(
                     SHARES_ISSUER_ACCT_ID, SERVER_ID);
-                theAcctAngel.SetCleanupTargetPointer(pSharesIssuerAccount);
+                theAcctAngel.reset(pSharesIssuerAccount);
             }
 
             if (nullptr == pSharesContract) {
@@ -1748,12 +1740,10 @@ void Notary::NotarizePayDividend(OTPseudonym& theNym,
                 // individual receipts, containing the vouchers
                 // for any failures, so he can have a record of them, and so he
                 // can recover the funds.
-                OTLedger* pInbox =
-                    theSourceAccount.LoadInbox(server_->m_nymServer);
-                OTLedger* pOutbox =
-                    theSourceAccount.LoadOutbox(server_->m_nymServer);
-                OTCleanup<OTLedger> theInboxAngel(pInbox);
-                OTCleanup<OTLedger> theOutboxAngel(pOutbox);
+                std::unique_ptr<OTLedger> pInbox(
+                    theSourceAccount.LoadInbox(server_->m_nymServer));
+                std::unique_ptr<OTLedger> pOutbox(
+                    theSourceAccount.LoadOutbox(server_->m_nymServer));
                 // contains the server's funds to back vouchers of a specific
                 // asset type.
                 std::shared_ptr<OTAccount> pVoucherReserveAcct;
@@ -2400,11 +2390,10 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
         pResponseBalanceItem->SetReferenceToNum(
             pItem->GetTransactionNum()); // This response item is IN RESPONSE to
                                          // pItem and its Owner Transaction.
-        OTLedger* pInbox = theAccount.LoadInbox(server_->m_nymServer);
-        OTLedger* pOutbox = theAccount.LoadOutbox(server_->m_nymServer);
-
-        OTCleanup<OTLedger> theInboxAngel(pInbox);
-        OTCleanup<OTLedger> theOutboxAngel(pOutbox);
+        std::unique_ptr<OTLedger> pInbox(
+            theAccount.LoadInbox(server_->m_nymServer));
+        std::unique_ptr<OTLedger> pOutbox(
+            theAccount.LoadOutbox(server_->m_nymServer));
 
         if (nullptr ==
             pInbox) // || !pInbox->VerifyAccount(server_->m_nymServer)) Verified
@@ -2743,18 +2732,12 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                 OTLedger* pRemitterInbox = &theRemitterInbox;
                 OTAccount* pRemitterAcct =
                     nullptr; // Only used in the case of vouchers.
-                OTCleanup<OTAccount> theRemitterAcctGuardian; // This is set
-                                                              // below, right
-                                                              // after
+                std::unique_ptr<OTAccount> theRemitterAcctGuardian;
                 OTAccount* pSourceAcct =
                     nullptr; // We'll load this up and change
                              // its balance, save it then
                              // delete the instance.
-                // (I'll use OTCleanup to take care of deleting the instance, so
-                // it's automatic.)
-                OTCleanup<OTAccount> theSourceAcctGuardian; // This is set
-                                                            // below, right
-                                                            // after
+                std::unique_ptr<OTAccount> theSourceAcctGuardian;
                 // OTAccount::LoadExistingAccount().
                 OTPseudonym theRemitterNym(REMITTER_USER_ID);
                 OTPseudonym* pRemitterNym = &theRemitterNym;
@@ -2889,7 +2872,7 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                     // points to the server, and we're already loaded.
                     if (bDepositAcctIsRemitter) {
                         pRemitterAcct = &theAccount;
-                        pRemitterInbox = pInbox;
+                        pRemitterInbox = pInbox.get();
 
                         bRemitterAcctAlreadyLoaded = true;
                         bSuccessLoadRemitterInbox = true;
@@ -3124,8 +3107,7 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                          ((nullptr ==
                            (pSourceAcct = OTAccount::LoadExistingAccount(
                                 SOURCE_ACCT_ID, SERVER_ID))) ||
-                          (theSourceAcctGuardian.SetCleanupTargetPointer(
-                               pSourceAcct),
+                          (theSourceAcctGuardian.reset(pSourceAcct),
                            false // I want this to eval to false, but I want
                                  // SetCleanup to call.
                            )) // Also, SetCleanup() is safe even if pointer is
@@ -3211,8 +3193,7 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                         ((nullptr ==
                           (pRemitterAcct = OTAccount::LoadExistingAccount(
                                REMITTER_ACCT_ID, SERVER_ID))) ||
-                         (theRemitterAcctGuardian.SetCleanupTargetPointer(
-                              pRemitterAcct),
+                         (theRemitterAcctGuardian.reset(pRemitterAcct),
                           false // I want this to eval to false, but I want
                                 // SetCleanup to call.
                           )     // Also, SetCleanup() is safe even if pointer is
@@ -3700,12 +3681,6 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                             // the balance agreement already? Double check.
                         }
 
-                        // Make sure we clean this up.
-                        //                      delete pSourceAcct; // No longer
-                        // necessary -- handled by OTCleanup in this case.
-                        //                      pSourceAcct = nullptr; //
-                        // OTCleanup
-                        // handles this now.
                     } // "else"
                 }     // "else"
             }         // successfully loaded cheque from string
@@ -3757,11 +3732,10 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
                               "'from' account ID on the deposit item.\n");
         }
         else {
-            OTLedger* pInbox = theAccount.LoadInbox(server_->m_nymServer);
-            OTLedger* pOutbox = theAccount.LoadOutbox(server_->m_nymServer);
-
-            OTCleanup<OTLedger> theInboxAngel(pInbox);
-            OTCleanup<OTLedger> theOutboxAngel(pOutbox);
+            std::unique_ptr<OTLedger> pInbox(
+                theAccount.LoadInbox(server_->m_nymServer));
+            std::unique_ptr<OTLedger> pOutbox(
+                theAccount.LoadOutbox(server_->m_nymServer));
 
             if (nullptr == pInbox) {
                 OTLog::Error("Notary::NotarizeDeposit: Error loading or "
@@ -3777,7 +3751,6 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
             pItem->GetAttachment(strPurse);
 
             Purse thePurse(SERVER_ID, ASSET_TYPE_ID);
-            Token* pToken = nullptr;
 
             bool bLoadContractFromString =
                 thePurse.LoadContractFromString(strPurse);
@@ -3808,11 +3781,12 @@ void Notary::NotarizeDeposit(OTPseudonym& theNym, OTAccount& theAccount,
 
                 // Pull the token(s) out of the purse that was received from the
                 // client.
-                while ((pToken = thePurse.Pop(server_->m_nymServer)) !=
-                       nullptr) {
-                    // This way I don't have to worry about cleaning up pToken
-                    // or leaking memory.
-                    OTCleanup<Token> theTokenGuardian(*pToken);
+                while (true) {
+                    std::unique_ptr<Token> pToken(
+                        thePurse.Pop(server_->m_nymServer));
+                    if (!pToken) {
+                        break;
+                    }
 
                     pMint = server_->transactor_.getMint(ASSET_TYPE_ID,
                                                          pToken->GetSeries());
@@ -4489,19 +4463,14 @@ void Notary::NotarizePaymentPlan(OTPseudonym& theNym,
                             // Load up the recipient ACCOUNT and validate it.
                             //
                             OTAccount* pRecipientAcct = nullptr;
-                            OTCleanup<OTAccount> theRecipientAcctGuardian;
+                            std::unique_ptr<OTAccount> theRecipientAcctGuardian;
                             if (!bCancelling) // ACTIVATING
                             {
                                 pRecipientAcct = OTAccount::LoadExistingAccount(
                                     RECIPIENT_ACCT_ID, SERVER_ID);
-                                theRecipientAcctGuardian
-                                    .SetCleanupTargetPointer(
-                                         pRecipientAcct); // This will cleanup
-                                                          // pRecipAcct, or do
-                                                          // nothing if it's
-                                                          // nullptr.
+                                theRecipientAcctGuardian.reset(pRecipientAcct);
                             }
-                            else                        // CANCELLING
+                            else // CANCELLING
                             {
                                 pRecipientAcct = &theDepositorAccount;
                             }
@@ -4796,8 +4765,7 @@ void Notary::NotarizePaymentPlan(OTPseudonym& theNym,
             // If the payment plan WAS successfully added to Cron, then we don't
             // need to
             // delete it here, since Cron owns it now, and will deal with
-            // cleaning
-            // it up at the right time. (So I can't use OTCleanup on pPlan.)
+            // cleaning it up at the right time.
             if ((nullptr != pPlan) &&
                 (pResponseItem->GetStatus() != OTItem::acknowledgement)) {
                 delete pPlan;
@@ -5508,9 +5476,7 @@ void Notary::NotarizeSmartContract(OTPseudonym& theNym,
             // If the smart contract WAS successfully added to Cron, then we
             // don't need to
             // delete it here, since Cron owns it now, and will deal with
-            // cleaning
-            // it up at the right time. (So I can't use OTCleanup on pContract.)
-            //
+            // cleaning it up at the right time.
             if ((nullptr != pContract) &&
                 (pResponseItem->GetStatus() != OTItem::acknowledgement)) {
                 delete pContract;
@@ -5764,11 +5730,11 @@ void Notary::NotarizeExchangeBasket(OTPseudonym& theNym, OTAccount& theAccount,
 
     const OTString strUserID(USER_ID);
 
-    OTLedger* pInbox = theAccount.LoadInbox(server_->m_nymServer);
-    OTLedger* pOutbox = theAccount.LoadOutbox(server_->m_nymServer);
+    std::unique_ptr<OTLedger> pInbox(
+        theAccount.LoadInbox(server_->m_nymServer));
+    std::unique_ptr<OTLedger> pOutbox(
+        theAccount.LoadOutbox(server_->m_nymServer));
 
-    OTCleanup<OTLedger> theInboxAngel(pInbox);
-    OTCleanup<OTLedger> theOutboxAngel(pOutbox);
     pResponseItem =
         OTItem::CreateItemFromTransaction(tranOut, OTItem::atExchangeBasket);
     pResponseItem->SetStatus(OTItem::rejection); // the default.
@@ -5859,7 +5825,7 @@ void Notary::NotarizeExchangeBasket(OTPseudonym& theNym, OTAccount& theAccount,
             OTIdentifier BASKET_ACCOUNT_ID;
 
             OTAccount* pBasketAcct = nullptr;
-            OTCleanup<OTAccount> theBasketAcctGuardian;
+            std::unique_ptr<OTAccount> theBasketAcctGuardian;
 
             bool bLookup =
                 server_->transactor_.lookupBasketAccountIDByContractID(
@@ -5894,7 +5860,7 @@ void Notary::NotarizeExchangeBasket(OTPseudonym& theNym, OTAccount& theAccount,
                 // If the pointer is nullptr, that works too. Otherwise it
                 // cleans
                 // up the object at the end of this function.
-                theBasketAcctGuardian.SetCleanupTargetPointer(pBasketAcct);
+                theBasketAcctGuardian.reset(pBasketAcct);
 
                 if (nullptr == pBasketAcct) {
                     OTLog::Error("ERROR loading the basket account in "
@@ -6613,11 +6579,9 @@ void Notary::NotarizeExchangeBasket(OTPseudonym& theNym, OTAccount& theAccount,
                             "basket didn't match actual basket.\n");
                     }
                 } // pBasket exists and signature verifies
-                // NO need to cleanup pBasketAcct here, since OTCleanup handles
-                // it now.
-            } // theRequestBasket loaded properly.
-        }     // else (balance agreement verified.)
-    }         // Balance Agreement item found.
+            }     // theRequestBasket loaded properly.
+        }         // else (balance agreement verified.)
+    }             // Balance Agreement item found.
 
     // I put this here so it's signed/saved whether the balance agreement itself
     // was successful OR NOT.
@@ -6744,11 +6708,8 @@ void Notary::NotarizeMarketOffer(OTPseudonym& theNym,
                                           // successful.
 
             // Load up the currency account and validate it.
-            OTAccount* pCurrencyAcct =
-                OTAccount::LoadExistingAccount(CURRENCY_ACCT_ID, SERVER_ID);
-            OTCleanup<OTAccount> theCurrencyAcctGuardian(
-                pCurrencyAcct); // Now I don't have to worry about deleting
-                                // pCurrencyAcct.
+            std::unique_ptr<OTAccount> pCurrencyAcct(
+                OTAccount::LoadExistingAccount(CURRENCY_ACCT_ID, SERVER_ID));
 
             // Also load up the Trade from inside the transaction item.
             OTString strOffer;
@@ -8130,11 +8091,11 @@ void Notary::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
     const OTString strUserID(USER_ID);
 
     OTPseudonym theTempNym, theTempClosingNumNym;
-    OTLedger* pInbox = theAccount.LoadInbox(server_->m_nymServer);
-    OTLedger* pOutbox = theAccount.LoadOutbox(server_->m_nymServer);
+    std::unique_ptr<OTLedger> pInbox(
+        theAccount.LoadInbox(server_->m_nymServer));
+    std::unique_ptr<OTLedger> pOutbox(
+        theAccount.LoadOutbox(server_->m_nymServer));
 
-    OTCleanup<OTLedger> theInboxAngel(pInbox);
-    OTCleanup<OTLedger> theOutboxAngel(pOutbox);
     pResponseBalanceItem =
         OTItem::CreateItemFromTransaction(tranOut, OTItem::atBalanceStatement);
     pResponseBalanceItem->SetStatus(OTItem::rejection); // the default.
@@ -8439,12 +8400,10 @@ void Notary::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                     OTString strOriginalItem;
                     pServerTransaction->GetReferenceString(strOriginalItem);
 
-                    OTItem* pOriginalItem = OTItem::CreateItemFromString(
-                        strOriginalItem, SERVER_ID,
-                        pServerTransaction->GetReferenceToNum());
-                    OTCleanup<OTItem> theOrigItemGuardian(
-                        pOriginalItem); // So I don't have to clean it up later.
-                                        // No memory leaks.
+                    std::unique_ptr<OTItem> pOriginalItem(
+                        OTItem::CreateItemFromString(
+                            strOriginalItem, SERVER_ID,
+                            pServerTransaction->GetReferenceToNum()));
 
                     if (nullptr != pOriginalItem) {
                         // If pOriginalItem is acceptPending, that means the
@@ -9016,13 +8975,10 @@ void Notary::NotarizeProcessInbox(OTPseudonym& theNym, OTAccount& theAccount,
                             pServerTransaction->GetReferenceString(
                                 strOriginalItem);
 
-                            OTItem* pOriginalItem =
+                            std::unique_ptr<OTItem> pOriginalItem(
                                 OTItem::CreateItemFromString(
                                     strOriginalItem, SERVER_ID,
-                                    pServerTransaction->GetReferenceToNum());
-                            OTCleanup<OTItem> theOrigItemGuardian(
-                                pOriginalItem); // So I don't have to clean it
-                                                // up later. No memory leaks.
+                                    pServerTransaction->GetReferenceToNum()));
 
                             if (nullptr != pOriginalItem) {
 
