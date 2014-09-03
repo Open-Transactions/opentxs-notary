@@ -15,4 +15,4 @@ set(cxx-sources
 
 add_library(opentxs-server-base ${cxx-sources})
 
-target_link_libraries(opentxs-server-base ${core} ${ext})
+target_link_libraries(opentxs-server-base ${cash} ${core} ${ext})

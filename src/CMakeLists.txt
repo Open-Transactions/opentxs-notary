@@ -12,6 +12,7 @@ if(MSVC)
   )
   set(core opentxs-core)
   set(ext opentxs-ext)
+  set(cash opentxs-cash)
 else()
   find_path(opentxsIncludePath opentxs/core/OTPseudonym.hpp)
 
@@ -22,8 +23,9 @@ else()
 
   find_library(core opentxs-core)
   find_library(ext opentxs-ext)
+  find_library(cash opentxs-cash)
 endif(MSVC)
-   
+
 add_subdirectory(base)
 add_subdirectory(server)
 add_subdirectory(createmint)
