@@ -143,12 +143,11 @@
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTString.hpp>
 #include <opentxs/core/crypto/OTAsymmetricKey.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTLedger.hpp>
-#include <opentxs/core/cash/Mint.hpp>
+#include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/trade/OTMarket.hpp>
 #include <opentxs/core/basket/OTBasket.hpp>
 
@@ -335,12 +334,12 @@ bool UserCommandProcessor::ProcessUserCommand(OTMessage& theMessage,
                        "\n==> Received a checkServerID message. Nym: %s ...\n",
                        strMsgNymID.Get());
         OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_check_server_id);
-        OTAsymmetricKey* pNymAuthentKey = OTAsymmetricKey::KeyFactory();
-        OTAsymmetricKey* pNymEncryptKey = OTAsymmetricKey::KeyFactory();
+        std::unique_ptr<OTAsymmetricKey> pNymAuthentKey(
+            OTAsymmetricKey::KeyFactory());
+        std::unique_ptr<OTAsymmetricKey> pNymEncryptKey(
+            OTAsymmetricKey::KeyFactory());
         OT_ASSERT(nullptr != pNymAuthentKey);
         OT_ASSERT(nullptr != pNymEncryptKey);
-        OTCleanup<OTAsymmetricKey> theAuthKeyAngel(pNymAuthentKey);
-        OTCleanup<OTAsymmetricKey> theEncrKeyAngel(pNymEncryptKey);
         OTAsymmetricKey& nymAuthentKey = *pNymAuthentKey;
         OTAsymmetricKey& nymEncryptionKey = *pNymEncryptKey;
         const bool bIfNymPublicKey =
@@ -435,14 +434,10 @@ bool UserCommandProcessor::ProcessUserCommand(OTMessage& theMessage,
             OTString strCredentialList(ascArmor);
 
             if (strCredentialList.Exists()) {
-                OTDB::Storable* pStorable = OTDB::DecodeObject(
-                    OTDB::STORED_OBJ_STRING_MAP, ascArmor2.Get());
-                OTCleanup<OTDB::Storable> theStorableAngel(
-                    pStorable); // It will definitely be cleaned up.
+                std::unique_ptr<OTDB::Storable> pStorable(OTDB::DecodeObject(
+                    OTDB::STORED_OBJ_STRING_MAP, ascArmor2.Get()));
                 OTDB::StringMap* pMap =
-                    (nullptr == pStorable)
-                        ? nullptr
-                        : dynamic_cast<OTDB::StringMap*>(pStorable);
+                    dynamic_cast<OTDB::StringMap*>(pStorable.get());
                 if (nullptr == pMap)
                     OTLog::vOutput(0, "%s: @createUserAccount: Failed decoding "
                                       "StringMap object.\n",
@@ -2316,21 +2311,13 @@ void UserCommandProcessor::UserCmdCheckUser(OTPseudonym&, OTMessage& MsgIn,
         //
         if (nym2.GetMasterCredentialCount() > 0) {
             // Create an OTDB::StringMap object.
-            //
-            OTDB::Storable* pStorable = nullptr;
-            OTCleanup<OTDB::Storable> theAngel;
-            OTDB::StringMap* pMap = nullptr;
-            pStorable =
-                OTDB::CreateObject(OTDB::STORED_OBJ_STRING_MAP); // this asserts
-                                                                 // already, on
-                                                                 // failure.
-            theAngel.SetCleanupTargetPointer(
-                pStorable); // It will definitely be cleaned up.
-            pMap = (nullptr == pStorable)
-                       ? nullptr
-                       : dynamic_cast<OTDB::StringMap*>(pStorable);
-            // It exists.
-            //
+
+            // this asserts already, on failure.
+            std::unique_ptr<OTDB::Storable> pStorable(
+                OTDB::CreateObject(OTDB::STORED_OBJ_STRING_MAP));
+            OTDB::StringMap* pMap =
+                dynamic_cast<OTDB::StringMap*>(pStorable.get());
+
             if (nullptr == pMap) {
                 OTLog::vError("%s: Error: failed trying to create a "
                               "STORED_OBJ_STRING_MAP.\n",
@@ -2737,12 +2724,11 @@ void UserCommandProcessor::UserCmdIssueAssetType(OTPseudonym& theNym,
                 if (pAssetContract->VerifyContract()) {
                     // Create an ISSUER account (like a normal account, except
                     // it can go negative)
-                    OTAccount* pNewAccount = nullptr;
-                    OTCleanup<OTAccount> theAcctGuardian;
 
-                    pNewAccount = OTAccount::GenerateNewAccount(
-                        USER_ID, SERVER_ID, server_->m_nymServer, MsgIn,
-                        OTAccount::issuer);
+                    std::unique_ptr<OTAccount> pNewAccount(
+                        OTAccount::GenerateNewAccount(
+                            USER_ID, SERVER_ID, server_->m_nymServer, MsgIn,
+                            OTAccount::issuer));
 
                     // If we successfully create the account, then bundle it in
                     // the message XML payload
@@ -2750,10 +2736,6 @@ void UserCommandProcessor::UserCmdIssueAssetType(OTPseudonym& theNym,
                         pNewAccount) // This last parameter generates an
                                      // ISSUER account
                     {                // instead of the default SIMPLE.
-                        theAcctGuardian.SetCleanupTarget(
-                            *pNewAccount); // So I don't have to worry about
-                                           // cleaning it up.
-
                         OTString tempPayload(*pNewAccount);
                         msgOut.m_ascPayload.SetString(tempPayload);
 
@@ -3297,9 +3279,8 @@ void UserCommandProcessor::UserCmdCreateAccount(OTPseudonym& theNym,
 
     const OTIdentifier USER_ID(theNym), SERVER_ID(server_->m_strServerID);
 
-    OTAccount* pNewAccount = OTAccount::GenerateNewAccount(
-        USER_ID, SERVER_ID, server_->m_nymServer, MsgIn);
-    OTCleanup<OTAccount> theAcctAngel(pNewAccount);
+    std::unique_ptr<OTAccount> pNewAccount(OTAccount::GenerateNewAccount(
+        USER_ID, SERVER_ID, server_->m_nymServer, MsgIn));
 
     // If we successfully create the account, then bundle it in the message XML
     // payload
@@ -3684,17 +3665,11 @@ void UserCommandProcessor::UserCmdGetAccountFiles(OTPseudonym&,
     {
         // Create an OTDB::StringMap object.
         // (To return the three files in.)
-        //
-        OTDB::Storable* pStorable = nullptr;
-        OTCleanup<OTDB::Storable> theAngel;
-        OTDB::StringMap* pMap = nullptr;
-        pStorable = OTDB::CreateObject(
-            OTDB::STORED_OBJ_STRING_MAP); // this asserts already, on failure.
-        theAngel.SetCleanupTargetPointer(
-            pStorable); // It will definitely be cleaned up.
-        pMap = (nullptr == pStorable)
-                   ? nullptr
-                   : dynamic_cast<OTDB::StringMap*>(pStorable);
+
+        // this asserts already, on failure.
+        std::unique_ptr<OTDB::Storable> pStorable(
+            OTDB::CreateObject(OTDB::STORED_OBJ_STRING_MAP));
+        OTDB::StringMap* pMap = dynamic_cast<OTDB::StringMap*>(pStorable.get());
         // It exists.
         //
         if (nullptr == pMap)
@@ -3957,13 +3932,9 @@ void UserCommandProcessor::UserCmdQueryAssetTypes(OTPseudonym&,
 
     if (MsgIn.m_ascPayload.Exists()) // (which it should)
     {
-        OTDB::Storable* pStorable = OTDB::DecodeObject(
-            OTDB::STORED_OBJ_STRING_MAP, MsgIn.m_ascPayload.Get());
-        OTCleanup<OTDB::Storable> theAngel(
-            pStorable); // It will definitely be cleaned up.
-        OTDB::StringMap* pMap = (nullptr == pStorable)
-                                    ? nullptr
-                                    : dynamic_cast<OTDB::StringMap*>(pStorable);
+        std::unique_ptr<OTDB::Storable> pStorable(OTDB::DecodeObject(
+            OTDB::STORED_OBJ_STRING_MAP, MsgIn.m_ascPayload.Get()));
+        OTDB::StringMap* pMap = dynamic_cast<OTDB::StringMap*>(pStorable.get());
 
         if (nullptr != pMap) // There was definitely a StringMap in the payload.
         {
@@ -4263,8 +4234,8 @@ void UserCommandProcessor::UserCmdGetMint(OTPseudonym&, OTMessage& MsgIn,
     const OTString ASSET_ID_STR(ASSET_TYPE_ID);
     bool bSuccessLoadingMint = false;
 
-    Mint* pMint = Mint::MintFactory(server_->m_strServerID, ASSET_ID_STR);
-    OTCleanup<Mint> theMintAngel(pMint);
+    std::unique_ptr<Mint> pMint(
+        Mint::MintFactory(server_->m_strServerID, ASSET_ID_STR));
     OT_ASSERT(nullptr != pMint);
     if (true == (bSuccessLoadingMint = pMint->LoadMint(".PUBLIC"))) {
         // You cannot hash the Mint to get its ID.
@@ -4491,7 +4462,7 @@ void UserCommandProcessor::UserCmdGetBoxReceipt(OTPseudonym&, OTMessage& MsgIn,
         SERVER_ID(MsgIn.m_strServerID), ACCOUNT_ID(MsgIn.m_strAcctID);
 
     OTLedger* pLedger = nullptr;
-    OTCleanup<OTLedger> theLedgerAngel;
+    std::unique_ptr<OTLedger> theLedgerAngel;
 
     bool bErrorCondition = false;
     bool bSuccessLoading = false;
@@ -4501,7 +4472,7 @@ void UserCommandProcessor::UserCmdGetBoxReceipt(OTPseudonym&, OTMessage& MsgIn,
         if (USER_ID == ACCOUNT_ID) {
             pLedger = new OTLedger(USER_ID, USER_ID, SERVER_ID);
             OT_ASSERT(nullptr != pLedger);
-            theLedgerAngel.SetCleanupTarget(*pLedger);
+            theLedgerAngel.reset(pLedger);
             bSuccessLoading = pLedger->LoadNymbox(); // It's verified using
                                                      // VerifyAccount() below
                                                      // this switch block.
@@ -4529,7 +4500,7 @@ void UserCommandProcessor::UserCmdGetBoxReceipt(OTPseudonym&, OTMessage& MsgIn,
         else {
             pLedger = new OTLedger(USER_ID, ACCOUNT_ID, SERVER_ID);
             OT_ASSERT(nullptr != pLedger);
-            theLedgerAngel.SetCleanupTarget(*pLedger);
+            theLedgerAngel.reset(pLedger);
             bSuccessLoading = pLedger->LoadInbox(); // It's verified using
                                                     // VerifyAccount() below
                                                     // this switch block.
@@ -4547,7 +4518,7 @@ void UserCommandProcessor::UserCmdGetBoxReceipt(OTPseudonym&, OTMessage& MsgIn,
         else {
             pLedger = new OTLedger(USER_ID, ACCOUNT_ID, SERVER_ID);
             OT_ASSERT(nullptr != pLedger);
-            theLedgerAngel.SetCleanupTarget(*pLedger);
+            theLedgerAngel.reset(pLedger);
             bSuccessLoading = pLedger->LoadOutbox(); // It's verified using
                                                      // VerifyAccount() below
                                                      // this switch block.
@@ -4712,11 +4683,8 @@ void UserCommandProcessor::UserCmdDeleteAssetAcct(OTPseudonym& theNym,
     const OTIdentifier USER_ID(MsgIn.m_strNymID),
         SERVER_ID(MsgIn.m_strServerID), ACCOUNT_ID(MsgIn.m_strAcctID);
 
-    OTAccount* pAccount = OTAccount::LoadExistingAccount(ACCOUNT_ID, SERVER_ID);
-    OTCleanup<OTAccount> theAcctGuardian(pAccount); // This is safe in cases
-    // where nullptr is returned.
-    // No more need to cleanup
-    // pAccount.
+    std::unique_ptr<OTAccount> pAccount(
+        OTAccount::LoadExistingAccount(ACCOUNT_ID, SERVER_ID));
 
     if (nullptr == pAccount || !pAccount->VerifyAccount(server_->m_nymServer)) {
         OTLog::vError("%s: Error loading or verifying account: %s\n", szFunc,
@@ -4728,11 +4696,10 @@ void UserCommandProcessor::UserCmdDeleteAssetAcct(OTPseudonym& theNym,
                        szFunc, MsgIn.m_strAcctID.Get());
     }
     else {
-        OTLedger* pInbox = pAccount->LoadInbox(server_->m_nymServer);
-        OTLedger* pOutbox = pAccount->LoadOutbox(server_->m_nymServer);
-
-        OTCleanup<OTLedger> theInboxAngel(pInbox);
-        OTCleanup<OTLedger> theOutboxAngel(pOutbox);
+        std::unique_ptr<OTLedger> pInbox(
+            pAccount->LoadInbox(server_->m_nymServer));
+        std::unique_ptr<OTLedger> pOutbox(
+            pAccount->LoadOutbox(server_->m_nymServer));
 
         if (nullptr ==
             pInbox) // || !pInbox->VerifyAccount(server_->m_nymServer)) // NOTE:
@@ -4999,10 +4966,8 @@ void UserCommandProcessor::UserCmdProcessNymbox(OTPseudonym& theNym,
                                                      // as messages. The one we
                                                      // received
     // and the one we're sending back.
-    OTLedger* pResponseLedger =
-        OTLedger::GenerateLedger(SERVER_USER_ID, USER_ID, SERVER_ID,
-                                 OTLedger::message, false); // bCreateFile=false
-    OTCleanup<OTLedger> theRespLedgerGuardian(pResponseLedger);
+    std::unique_ptr<OTLedger> pResponseLedger(OTLedger::GenerateLedger(
+        SERVER_USER_ID, USER_ID, SERVER_ID, OTLedger::message, false));
 
     // Grab the string (containing the request ledger) out of ascii-armored
     // form.
@@ -5239,14 +5204,11 @@ void UserCommandProcessor::UserCmdProcessInbox(OTPseudonym& theNym,
                                                         // used as messages. The
                                                         // one we received,
     // and the one we're sending back.
-    OTLedger* pResponseLedger =
-        OTLedger::GenerateLedger(SERVER_USER_ID, ACCOUNT_ID, SERVER_ID,
-                                 OTLedger::message, false); // bCreateFile=false
+    std::unique_ptr<OTLedger> pResponseLedger(OTLedger::GenerateLedger(
+        SERVER_USER_ID, ACCOUNT_ID, SERVER_ID, OTLedger::message, false));
     OT_ASSERT_MSG(nullptr != pResponseLedger, "UserCommandProcessor::"
                                               "UserCmdProcessInbox: ASSERT: "
                                               "nullptr != pResponseLedger");
-    OTCleanup<OTLedger> theRespLedgerGuardian(*pResponseLedger);
-
     OTTransaction* pTranResponse = nullptr;
 
     // Grab the string (containing the request ledger) out of ascii-armored
@@ -5582,10 +5544,8 @@ void UserCommandProcessor::UserCmdNotarizeTransactions(OTPseudonym& theNym,
                                                         // one we received and
                                                         // the one
     // that we're sending back in response.
-    OTLedger* pResponseLedger = OTLedger::GenerateLedger(
-        SERVER_USER_ID, ACCOUNT_ID, SERVER_ID, OTLedger::message, false);
-    OTCleanup<OTLedger> theRespLedgerGuardian(
-        pResponseLedger); // So I don't have to worry about cleaning it up.
+    std::unique_ptr<OTLedger> pResponseLedger(OTLedger::GenerateLedger(
+        SERVER_USER_ID, ACCOUNT_ID, SERVER_ID, OTLedger::message, false));
 
     bool bTransSuccess = false; // for the Nymbox notice.
     bool bCancelled = false;    // for "failed" transactions that were actually

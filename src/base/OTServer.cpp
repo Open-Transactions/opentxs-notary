@@ -138,6 +138,8 @@
 #include "AcctFunctor_PayDividend.hpp"
 #include "Helpers.hpp"
 
+#include <opentxs/cash/Purse.hpp>
+#include <opentxs/cash/Token.hpp>
 #include <opentxs/core/crypto/OTAsymmetricKey.hpp>
 #include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
@@ -159,13 +161,11 @@
 #include <opentxs/core/crypto/OTPassword.hpp>
 #include <opentxs/core/OTPaths.hpp>
 #include <opentxs/core/OTPaymentPlan.hpp>
-#include <opentxs/core/OTPayment.hpp>
-#include <opentxs/core/cash/Purse.hpp>
 #include <opentxs/core/OTServerContract.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
-#include <opentxs/core/cash/Token.hpp>
 #include <opentxs/core/trade/OTTrade.hpp>
 #include <opentxs/core/OTCleanup.hpp>
+#include <opentxs/ext/OTPayment.hpp>
 
 #include <irrxml/irrXML.hpp>
 

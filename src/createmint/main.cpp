@@ -126,13 +126,13 @@
 
 #include "../base/OTServer.hpp"
 
+#include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/crypto/OTCrypto.hpp>
 #include <opentxs/core/OTDataFolder.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTPaths.hpp>
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/core/cash/Mint.hpp>
 
 #include <cstdio>
 
