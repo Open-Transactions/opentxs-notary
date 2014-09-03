@@ -132,6 +132,8 @@
 
 #include "Transactor.hpp"
 #include "OTServer.hpp"
+
+#include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTIdentifier.hpp>
@@ -139,7 +141,6 @@
 #include <opentxs/core/OTString.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/OTLog.hpp>
-#include <opentxs/core/cash/Mint.hpp>
 
 namespace opentxs
 {

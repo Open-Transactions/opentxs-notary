@@ -136,8 +136,8 @@
 #include <opentxs/core/OTAccount.hpp>
 #include <opentxs/core/OTCheque.hpp>
 #include <opentxs/core/OTLog.hpp>
-#include <opentxs/core/OTPayment.hpp>
 #include <opentxs/core/OTString.hpp>
+#include <opentxs/ext/OTPayment.hpp>
 
 namespace opentxs
 {

@@ -148,7 +148,7 @@
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTLedger.hpp>
-#include <opentxs/core/cash/Mint.hpp>
+#include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/trade/OTMarket.hpp>
 #include <opentxs/core/basket/OTBasket.hpp>
 
