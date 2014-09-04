@@ -164,13 +164,13 @@
 #include <opentxs/core/OTServerContract.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
 #include <opentxs/core/trade/OTTrade.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 #include <opentxs/ext/OTPayment.hpp>
 
 #include <irrxml/irrXML.hpp>
 
 #include <string>
 #include <map>
+#include <memory>
 #include <fstream>
 
 #include <time.h>
@@ -569,14 +569,12 @@ bool OTServer::DropMessageToNymbox(const OTIdentifier& SERVER_ID,
     // If pMsg was not already passed in here, then
     // create pMsg using pstrMessage.
     //
-    OTCleanup<OTMessage> theMsgAngel;
+    std::unique_ptr<OTMessage> theMsgAngel;
 
     if (nullptr == pMsg) // we have to create it ourselves.
     {
         pMsg = new OTMessage;
-        OT_ASSERT(nullptr != pMsg);
-        theMsgAngel.SetCleanupTarget(
-            *pMsg); // In this case we created it, so we clean it up as well.
+        theMsgAngel.reset(pMsg);
         if (nullptr != szCommand)
             pMsg->m_strCommand = szCommand;
         else {

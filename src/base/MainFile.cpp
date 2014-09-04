@@ -143,7 +143,6 @@
 #include <opentxs/core/OTAssetContract.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <irrxml/irrXML.hpp>
 #include <string>
@@ -503,9 +502,8 @@ bool MainFile::LoadMainFile(bool bReadOnly)
         }
         irr::io::IrrXMLReader* xml =
             irr::io::createIrrXMLReader(xmlFileContents);
-        OTCleanup<irr::io::IrrXMLReader> theXMLGuardian(
-            xml); // So I don't have to clean it up later.
-        // parse the file until end reached
+        // cppcheck-suppress unreadVariable
+        std::unique_ptr<irr::io::IrrXMLReader> theXMLGuardian(xml);
         while (xml && xml->read()) {
             // strings for storing the data that we want to read out of the file
 
