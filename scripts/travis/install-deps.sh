@@ -13,6 +13,16 @@ install_cppcheck()
     rm -rf ./cppcheck/
 }
 
+set_openssl_formula()
+{
+    cd `brew --prefix`
+    brew versions openssl
+    git checkout d915ce8 Library/Formula/openssl.rb
+    brew unlink openssl
+    brew install openssl
+    brew switch openssl 1.0.1h
+}
+
 if [ $# -ne 1 ]; then
     echo "Error: expected OS type argument." >&2
     exit 1
@@ -23,8 +33,9 @@ os=$1
 case "$os" in
     osx)
         brew update
-        brew install protobuf-c protobuf boost openssl cppcheck cmake
-        brew link --force openssl
+        set_openssl_formula
+        brew unlink cmake
+        brew install protobuf-c protobuf boost cppcheck cmake zeromq pstree
         ;;
     linux|"" )
         sudo echo 'deb http://llvm.org/apt/precise/ '\
