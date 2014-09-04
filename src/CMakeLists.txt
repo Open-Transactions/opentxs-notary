@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
 if(MSVC)
   include_directories(
     ${PROJECT_SOURCE_DIR}/../opentxs/include
+    ${PROJECT_SOURCE_DIR}/../opentxs/include/opentxs/core
     ${PROJECT_SOURCE_DIR}/../opentxs/deps
   )
   link_directories(

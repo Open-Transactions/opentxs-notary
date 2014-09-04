@@ -145,8 +145,8 @@ class OTServer;
 class MessageProcessor
 {
 public:
-    explicit MessageProcessor(ServerLoader& loader);
-    void run();
+    EXPORT explicit MessageProcessor(ServerLoader& loader);
+    EXPORT void run();
 
 private:
     void init(int port);

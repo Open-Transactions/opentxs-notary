@@ -162,10 +162,10 @@ class OTServer
     friend class Notary;
 
 public:
-    OTServer();
-    ~OTServer();
+    EXPORT OTServer();
+    EXPORT ~OTServer();
 
-    void Init(bool readOnly = false);
+    EXPORT void Init(bool readOnly = false);
 
     bool IsFlaggedForShutdown() const;
 
@@ -173,7 +173,7 @@ public:
 
     const OTPseudonym& GetServerNym() const;
 
-    void ActivateCron();
+    EXPORT void ActivateCron();
     void ProcessCron();
 
 private:
