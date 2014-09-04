@@ -15,7 +15,28 @@ set(cxx-sources
   OTServer.cpp
 )
 
-add_library(opentxs-server-base ${cxx-sources})
+file(GLOB cxx-headers "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+
+set(MODULE_NAME opentxs-server-base)
+if(WIN32)
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../windll.rc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/module.rc
+    @ONLY
+  )
+
+  # we have an extra Windows-specific file to compile
+  add_library(${MODULE_NAME}
+    ${cxx-sources}
+    ${cxx-headers}
+    ${CMAKE_CURRENT_BINARY_DIR}/module.rc
+  )
+else()
+  add_library(${MODULE_NAME}
+    ${cxx-sources}
+    ${cxx-headers}
+  )
+endif()
 
 if(WIN32)
   target_link_libraries(${name} ${cash} ${core} ${ext} irrxml)

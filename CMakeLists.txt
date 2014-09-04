@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 2.8)
 project(opentxs-server)
 
 set(VERSION_MAJOR  0)
-set(VERSION_MINOR  0)
-set(VERSION_BUGFIX 1)
-set(VERSION "0.0.1")
+set(VERSION_MINOR  93)
+set(VERSION_BUGFIX 0)
+set(VERSION "0.93.0")
 
 #-----------------------------------------------------------------------------
 # Options for building
