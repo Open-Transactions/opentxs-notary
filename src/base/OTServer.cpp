@@ -172,8 +172,11 @@
 #include <map>
 #include <memory>
 #include <fstream>
-
 #include <time.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#endif
 
 #define SERVER_CONFIG_KEY "server"
 #define SERVER_DATA_DIR "server_data"
