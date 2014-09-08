@@ -39,9 +39,9 @@ else()
 endif()
 
 if(WIN32)
-  target_link_libraries(${name} ${cash} ${core} ${ext} irrxml)
+  target_link_libraries(${name} ${ext} ${cash} ${basket} ${core} irrxml)
 else()
-  target_link_libraries(${name} ${cash} ${core} ${ext})
+  target_link_libraries(${name} ${ext} ${cash} ${basket} ${core})
 endif(WIN32)
 
 if(WIN32)

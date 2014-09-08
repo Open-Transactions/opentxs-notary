@@ -135,9 +135,12 @@
 #include "Macros.hpp"
 #include "ServerSettings.hpp"
 #include "AcctFunctor_PayDividend.hpp"
+#include <opentxs/ext/OTPayment.hpp>
 #include <opentxs/cash/Mint.hpp>
 #include <opentxs/cash/Purse.hpp>
 #include <opentxs/cash/Token.hpp>
+#include <opentxs/basket/OTBasketItem.hpp>
+#include <opentxs/basket/OTBasket.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
 #include <opentxs/core/OTPaymentPlan.hpp>
 #include <opentxs/core/crypto/OTNymOrSymmetricKey.hpp>
@@ -148,14 +151,11 @@
 #include <opentxs/core/OTPseudonym.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTString.hpp>
-#include <opentxs/core/basket/OTBasketItem.hpp>
 #include <opentxs/core/trade/OTOffer.hpp>
 #include <opentxs/core/OTItem.hpp>
 #include <opentxs/core/trade/OTTrade.hpp>
-#include <opentxs/core/basket/OTBasket.hpp>
 #include <opentxs/core/OTFolders.hpp>
 #include <opentxs/core/OTLog.hpp>
-#include <opentxs/ext/OTPayment.hpp>
 #include <deque>
 #include <memory>
 #include <list>
