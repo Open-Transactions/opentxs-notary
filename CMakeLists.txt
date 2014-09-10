@@ -215,8 +215,8 @@ set(OPEN_TRANSACTIONS_WEBSITE "http://opentransactions.org")
 
 if(RPM)
   set(CPACK_GENERATOR "RPM")
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/opentxs-server.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec" @ONLY IMMEDIATE)
-  set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/opentxs-server.spec")
+  set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+  set(CPACK_RPM_CHANGELOG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ChangeLog")
 endif(RPM)
 
 if(DEB)
