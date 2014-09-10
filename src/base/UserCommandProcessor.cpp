@@ -135,6 +135,8 @@
 #include "ClientConnection.hpp"
 #include "Macros.hpp"
 #include "ServerSettings.hpp"
+#include <opentxs/basket/BasketContract.hpp>
+#include <opentxs/basket/OTBasket.hpp>
 #include <opentxs/core/script/OTParty.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
 #include <opentxs/core/OTAssetContract.hpp>
@@ -149,7 +151,6 @@
 #include <opentxs/core/OTLedger.hpp>
 #include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/trade/OTMarket.hpp>
-#include <opentxs/core/basket/OTBasket.hpp>
 
 namespace opentxs
 {
@@ -3143,9 +3144,6 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
 
                     // The basket does not yet exist on this server. Create a
                     // new Asset Contract to support it...
-                    OTAssetContract* pBasketContract = new OTAssetContract();
-
-                    // todo check for memory allocation failure here.
 
                     // Put the Server's Public Key into the "contract" key field
                     // of the new Asset Contract...
@@ -3158,8 +3156,8 @@ void UserCommandProcessor::UserCmdIssueBasket(OTPseudonym& theNym,
                     // This also updates the m_xmlUnsigned contents, signs the
                     // contract, saves it,
                     // and calculates the new ID.
-                    pBasketContract->CreateBasket(theBasket,
-                                                  server_->m_nymServer);
+                    OTAssetContract* pBasketContract =
+                        new BasketContract(theBasket, server_->m_nymServer);
 
                     // Grab the new asset ID for the new basket currency
                     pBasketContract->GetIdentifier(BASKET_CONTRACT_ID);
