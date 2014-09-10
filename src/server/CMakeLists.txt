@@ -9,7 +9,7 @@ set(cxx-sources
 set(MODULE_NAME opentxs-server)
 if (WIN32)
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../winexe.rc.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/winexe.rc.in
     ${CMAKE_CURRENT_BINARY_DIR}/module.rc
     @ONLY
   )

@@ -20,7 +20,7 @@ file(GLOB cxx-headers "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 set(MODULE_NAME opentxs-server-base)
 if(WIN32)
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../windll.rc.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/windll.rc.in
     ${CMAKE_CURRENT_BINARY_DIR}/module.rc
     @ONLY
   )
@@ -55,4 +55,3 @@ if(WIN32)
     "${CMAKE_BINARY_DIR}/lib/$<CONFIGURATION>/opentxs-server-base.pdb"
     "${CMAKE_BINARY_DIR}/bin/$<CONFIGURATION>/opentxs-server-base.pdb")
 endif(WIN32)
-
