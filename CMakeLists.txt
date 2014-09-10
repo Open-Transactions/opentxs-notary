@@ -4,10 +4,22 @@ cmake_minimum_required(VERSION 2.8)
 
 project(opentxs-server)
 
-set(VERSION_MAJOR  0)
-set(VERSION_MINOR  93)
-set(VERSION_BUGFIX 0)
-set(VERSION "0.93.0")
+find_package(Git)
+if(GIT_FOUND)
+    execute_process(COMMAND git "describe" OUTPUT_VARIABLE GIT_VERSION WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(REGEX REPLACE "^([0-9]+)\\..*" "\\1" VERSION_MAJOR "${GIT_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.([0-9]+).*" "\\1" VERSION_MINOR "${GIT_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" VERSION_BUGFIX "${GIT_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.[0-9]+\\.[0-9]+(.*)" "\\1" VERSION_SHA1 "${GIT_VERSION}")
+    if (DEFINED VERSION_SHA1)
+        set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUGFIX}.${VERSION_SHA1}")
+    else()
+        set(VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUGFIX}")
+    endif()
+else()
+  message(FATAL_ERROR "Git not found.")
+endif()
+
 
 #-----------------------------------------------------------------------------
 # Options for building
@@ -26,15 +38,16 @@ endif()
 #-----------------------------------------------------------------------------
 # Print system information
 
-message(STATUS "CMake version:      ${CMAKE_VERSION}")
-message(STATUS "System:             ${CMAKE_SYSTEM}")
-message(STATUS "Processor:          ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "opentxs-server version:   ${VERSION_STRING}")
+message(STATUS "CMake version:            ${CMAKE_VERSION}")
+message(STATUS "System:                   ${CMAKE_SYSTEM}")
+message(STATUS "Processor:                ${CMAKE_SYSTEM_PROCESSOR}")
 
-message(STATUS "Verbose:            ${BUILD_VERBOSE}")
-message(STATUS "Testing:            ${BUILD_TESTS}")
-message(STATUS "Flatfile keyring:   ${KEYRING_FLATFILE}")
-message(STATUS "Build RPM:          ${RPM}")
-message(STATUS "Build DEB:          ${DEB}")
+message(STATUS "Verbose:                  ${BUILD_VERBOSE}")
+message(STATUS "Testing:                  ${BUILD_TESTS}")
+message(STATUS "Flatfile keyring:         ${KEYRING_FLATFILE}")
+message(STATUS "Build RPM:                ${RPM}")
+message(STATUS "Build DEB:                ${DEB}")
 
 
 #-----------------------------------------------------------------------------
@@ -198,7 +211,7 @@ add_custom_target(uninstall
 # Packaging
 set(CPACK_GENERATOR "TGZ")
 
-set(CPACK_PACKAGE_VERSION ${VERSION})
+set(CPACK_PACKAGE_VERSION ${VERSION_STRING})
 set(CPACK_PACKAGE_NAME "opentxs-server")
 set(CPACK_PACKAGE_RELEASE 1)
 set(CPACK_PACKAGE_CONTACT "Lucas Betschart")
