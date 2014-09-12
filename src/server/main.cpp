@@ -133,11 +133,23 @@
 #include "../base/ServerLoader.hpp"
 #include "../base/MessageProcessor.hpp"
 #include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/Version.hpp>
 #include <cassert>
+#include <string>
 
-int main()
+int main(int argc, char* argv[])
 {
     using namespace opentxs;
+
+    if (argc > 1) {
+        std::string arg(argv[1]);
+        if (arg.compare("version") == 0 || arg.compare("--version") == 0) {
+            otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING << "\n";
+            otOut << "opentxs library " << OPENTXS_VERSION_STRING << "\n";
+            otOut << "Copyright (C) 2014 Open Transactions Developers\n";
+            return 0;
+        }
+    }
 
     if (!OTLog::Init(SERVER_CONFIG_KEY, 0)) {
         assert(false);
