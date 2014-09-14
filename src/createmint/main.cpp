@@ -139,8 +139,10 @@
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/OTPaths.hpp>
 #include <opentxs/core/OTStorage.hpp>
+#include <opentxs/core/Version.hpp>
 
 #include <cstdio>
+#include <string>
 
 extern "C" {
 #ifdef _WIN32
@@ -173,6 +175,16 @@ using namespace opentxs;
 
 int main(int argc, char* const argv[])
 {
+    if (argc > 1) {
+        std::string arg(argv[1]);
+        if (arg.compare("version") == 0 || arg.compare("--version") == 0) {
+            otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING << "\n";
+            otOut << "opentxs library " << OPENTXS_VERSION_STRING << "\n";
+            otOut << "Copyright (C) 2014 Open Transactions Developers\n";
+            return 0;
+        }
+    }
+
     if (argc < 4) {
         printf("\n\nUsage:  createmint  server_id  server_user_id  "
                "asset_type_id \n\n"

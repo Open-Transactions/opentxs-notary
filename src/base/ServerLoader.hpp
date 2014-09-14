@@ -17,11 +17,6 @@ class ServerLoader
 public:
     ServerLoader() : server_(nullptr)
     {
-        OTLog::vOutput(
-            0, "\n\nWelcome to Open Transactions... Test Server -- version %s\n"
-               "(transport build: OTMessage -> OTEnvelope -> ZMQ )\n\n",
-            OTLog::Version());
-
 // This is optional! (I, of course, am using it in this test app...)
 #if defined(OT_SIGNAL_HANDLING)
         OTLog::SetupSignalHandler();
@@ -74,9 +69,7 @@ public:
 
     ~ServerLoader()
     {
-        OTLog::vOutput(0,
-                       "\n\n OT version %s, shutting down and cleaning up.\n",
-                       OTLog::Version());
+        OTLog::vOutput(0, "\n\n Shutting down and cleaning up.\n");
 
         if (server_) {
             delete server_;

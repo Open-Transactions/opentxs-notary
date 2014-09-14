@@ -168,6 +168,8 @@ execute_process(COMMAND git "submodule" "update" "--init" "--recursive")
 #-----------------------------------------------------------------------------
 # Source Definitions
 
+add_definitions(-DOPENTXS_SERVER_VERSION_STRING="${VERSION_STRING}")
+
 if(KEYRING_FLATFILE)
   add_definitions(-DOT_KEYRING_FLATFILE)
 endif()
