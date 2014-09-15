@@ -193,6 +193,8 @@ if(NOT RPM)
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 endif()
 
+LIST(APPEND CMAKE_PREFIX_PATH "/usr/local/share/cmake/Modules")
+
 add_subdirectory(deps)
 add_subdirectory(src)
 add_subdirectory(tests)
