@@ -130,7 +130,7 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include "../base/OTServer.hpp"
+#include <opentxs/server/OTServer.hpp>
 
 #include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/crypto/OTCrypto.hpp>

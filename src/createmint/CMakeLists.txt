@@ -23,6 +23,6 @@ else()
   add_executable(${MODULE_NAME} ${cxx-sources})
 endif()
 
-target_link_libraries(${name} opentxs-server-base ${core} ${ext})
+target_link_libraries(${name} ${server} ${ext} ${basket} ${cash} ${core})
 
 install(TARGETS createmint DESTINATION bin)
