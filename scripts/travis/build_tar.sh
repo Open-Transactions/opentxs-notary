@@ -6,16 +6,16 @@ if [[ -z "$1" ]] ; then
     os="linux"
 fi
 
-cp -r opentxs opentxs-server
-cp -rf build/bin/opentxs-server opentxs-server/bin/
-cp -rf build/bin/createmint opentxs-server/bin/
+cp -r opentxs opentxs-notary
+cp -rf build/bin/opentxs-notary opentxs-notary/bin/
+cp -rf build/bin/createmint opentxs-notary/bin/
 
 version=`cat VERSION`
 compiler=${CXX}
-package="opentxs-server-${version}-${os}-${compiler}.tar.gz"
+package="opentxs-notary-${version}-${os}-${compiler}.tar.gz"
 
 echo "Creating package ${package}"
-tar -vpczf ${package} opentxs-server
+tar -vpczf ${package} opentxs-notary
 
 mkdir s3
 cp ${package} s3/
