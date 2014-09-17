@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(opentxs-server)
+project(opentxs-notary)
 
 find_package(Git)
 if(GIT_FOUND)
@@ -38,7 +38,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Print system information
 
-message(STATUS "opentxs-server version:   ${VERSION_STRING}")
+message(STATUS "opentxs-notary version:   ${VERSION_STRING}")
 message(STATUS "CMake version:            ${CMAKE_VERSION}")
 message(STATUS "System:                   ${CMAKE_SYSTEM}")
 message(STATUS "Processor:                ${CMAKE_SYSTEM_PROCESSOR}")
@@ -98,8 +98,8 @@ message(STATUS "C++ link flags:  ${CMAKE_CXX_LINK_FLAGS}")
 # System libraries used for linking.
 
 if(UNIX AND NOT APPLE)
-  list(APPEND OPENTXS_AUDITOR_SYSTEM_LIBRARIES rt)
-  list(APPEND OPENTXS_AUDITOR_SYSTEM_LIBRARIES dl)
+  list(APPEND OPENTXS_NOTARY_SYSTEM_LIBRARIES rt)
+  list(APPEND OPENTXS_NOTARY_SYSTEM_LIBRARIES dl)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ if(BUILD_TESTS)
   include(CTest)
   enable_testing()
 
-  set(GTEST_ROOT ${OPENTXS_AUDITOR_SOURCE_DIR}/deps/gtest)
+  set(GTEST_ROOT ${PROJECT_SOURCE_DIR}/deps/gtest)
   set(GTEST_FOUND ON)
   set(GTEST_INCLUDE_DIRS ${GTEST_ROOT}/include)
   set(GTEST_LIBRARIES gtest)
@@ -214,7 +214,7 @@ add_custom_target(uninstall
 set(CPACK_GENERATOR "TGZ")
 
 set(CPACK_PACKAGE_VERSION ${VERSION_STRING})
-set(CPACK_PACKAGE_NAME "opentxs-server")
+set(CPACK_PACKAGE_NAME "opentxs-notary")
 set(CPACK_PACKAGE_CONTACT "Lucas Betschart")
 set(CPACK_PACKAGE_VENDOR "Monetas AG")
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})

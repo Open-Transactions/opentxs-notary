@@ -1,12 +1,10 @@
 # Copyright (c) Monetas AG, 2014
 
-set(name opentxs-server)
-
 set(cxx-sources
   main.cpp
 )
 
-set(MODULE_NAME opentxs-server)
+set(MODULE_NAME opentxs-notary)
 if (WIN32)
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/winexe.rc.in
@@ -23,6 +21,6 @@ else()
   add_executable(${MODULE_NAME} ${cxx-sources})
 endif()
 
-target_link_libraries(${name} opentxs-server-base ${ext} ${basket} ${core})
+target_link_libraries(opentxs-notary ${server} ${ext} ${basket} ${cash} ${core})
 
-install(TARGETS opentxs-server DESTINATION bin)
+install(TARGETS opentxs-notary DESTINATION bin)

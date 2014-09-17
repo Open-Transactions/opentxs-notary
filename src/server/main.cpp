@@ -130,8 +130,8 @@
  -----END PGP SIGNATURE-----
  **************************************************************/
 
-#include "../base/ServerLoader.hpp"
-#include "../base/MessageProcessor.hpp"
+#include <opentxs/server/ServerLoader.hpp>
+#include <opentxs/server/MessageProcessor.hpp>
 #include <opentxs/core/OTLog.hpp>
 #include <opentxs/core/Version.hpp>
 #include <cassert>
