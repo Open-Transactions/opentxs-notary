@@ -31,5 +31,5 @@ else()
   find_library(server opentxs-server)
 endif()
 
-add_subdirectory(server)
+add_subdirectory(notary)
 add_subdirectory(createmint)
