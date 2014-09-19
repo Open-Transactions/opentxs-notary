@@ -22,10 +22,10 @@ Install opentxs (the library). Follow this instructions:
 https://github.com/Open-Transactions/opentxs/blob/develop/docs/INSTALL-openSUSE.txt
 
 
-################# Get opentxs-server ###########
+################# Get opentxs-notary ###########
 # git pull from master branch (current stable)
-$ git clone git://github.com/Open-Transactions/opentxs-server.git
-$ cd opentxs-server
+$ git clone git://github.com/Open-Transactions/opentxs-notary.git
+$ cd opentxs-notary
 $ mkdir build && cd build
 
 
@@ -90,14 +90,14 @@ $ cmake .. -DKEYRING_FLATFILE=ON
 # and change the password_folder path to a location appropriate for your system.
 $ mkdir $HOME/.ot/server_data/passphrase
 
-# Run and create opentxs-server as usual as a foreground process and enter the passphrase when requested.
+# Run and create opentxs-notary as usual as a foreground process and enter the passphrase when requested.
 # Then press Ctrl-c to exit the server, 
 $ rm $HOME/.ot/server_data/ot.pid
 $ cd $HOME/.ot (or any other folder you want to run otserver from and store its log file in)
 
-# The following command will run opentxs-server as a daemon process in the background:
+# The following command will run opentxs-notary as a daemon process in the background:
 
-$ nohup opentxs-server &
+$ nohup opentxs-notary &
 
 # All server output will be redirected to a 'nohup.out' file in the folder you 
 # launch otserver from. The pid of the daemon process will be listed after you 
