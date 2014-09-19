@@ -1,7 +1,7 @@
 opentxs-notary
 ==============
 
-[![Stories in Ready](https://badge.waffle.io/open-transactions/opentxs-server.svg?label=ready&title=Ready)](http://waffle.io/open-transactions/opentxs-server)
+[![Stories in Ready](https://badge.waffle.io/open-transactions/opentxs-notary.svg?label=ready&title=Ready)](http://waffle.io/open-transactions/opentxs-notary)
 
 
 ### Contributing
