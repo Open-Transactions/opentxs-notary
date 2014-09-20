@@ -4,6 +4,20 @@ opentxs-notary
 [![Stories in Ready](https://badge.waffle.io/open-transactions/opentxs-notary.svg?label=ready&title=Ready)](http://waffle.io/open-transactions/opentxs-notary)
 
 
+### Build Instructions
+
+OpenTransactions uses the CMake build system. The basic steps are:
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+    make install
+
+This assumes you have [opentxs](https://github.com/Open-Transactions/opentxs)
+installed and available on the system.
+
+
 ### Contributing
 
 If you are planning to contribute please contact the devs in #opentransactions @ freenode.net IRC chat.
