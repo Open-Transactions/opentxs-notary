@@ -17,18 +17,12 @@ if(MSVC)
   set(ext opentxs-ext)
   set(server opentxs-server)
 else()
-  find_path(opentxsIncludePath opentxs/core/OTPseudonym.hpp)
-
-  include_directories(
-    ${opentxsIncludePath}
-    ${opentxsIncludePath}/opentxs/core/
-  )
-
-  find_library(core opentxs-core)
-  find_library(cash opentxs-cash)
-  find_library(basket opentxs-basket)
-  find_library(ext opentxs-ext)
-  find_library(server opentxs-server)
+  find_package(opentxs REQUIRED)
+  set(core opentxs-core)
+  set(basket opentxs-basket)
+  set(cash opentxs-cash)
+  set(ext opentxs-ext)
+  set(server opentxs-server)
 endif()
 
 add_subdirectory(notary)
