@@ -21,10 +21,11 @@ if ! command -v cppcheck >/dev/null; then
 	exit 1
 fi
 
-version="$(cat ./scripts/travis/cppcheck_version)"
-if [ "$(cppcheck --version)" != "Cppcheck $version" ]; then
-    echo    "error: cppcheck outdated!"
-    echo -n "please install cppcheck $version in order to be able"
+expected_version="$(cat ./scripts/travis/cppcheck_version)"
+version=$(cppcheck --version)
+if [ "$version" != "Cppcheck $expected_version" ]; then
+    echo    "error: wrong version $version!"
+    echo -n "please install Cppcheck $expected_version in order to be able"
     echo    " to use this pre-push git-hook"
     exit 1
 fi
