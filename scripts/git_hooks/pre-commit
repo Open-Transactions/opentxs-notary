@@ -1,6 +1,7 @@
 #!/bin/sh
 
-if ! command -v clang-format >/dev/null; then
+if ! command -v clang-format >/dev/null &&
+        ! command -v clang-format-3.5 >/dev/null ; then
     echo -n "error: please install clang-format in order to be able"
     echo    " to use this pre-commit git-hook"
     exit 1
