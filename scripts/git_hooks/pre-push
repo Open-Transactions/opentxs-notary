@@ -21,7 +21,7 @@ if ! command -v cppcheck >/dev/null; then
 	exit 1
 fi
 
-expected_version="$(cat ./scripts/travis/cppcheck_version)"
+expected_version="$(cat ./scripts/build/cppcheck_version)"
 version=$(cppcheck --version)
 if [ "$version" != "Cppcheck $expected_version" ]; then
     echo    "error: wrong version $version!"
@@ -43,7 +43,7 @@ do
 		# we only do something if it's not a branch deletion
 		continue
 	fi
-	output=$(scripts/travis/cppcheck_wrapper.sh ./src/ 2>&1)
+	output=$(scripts/build/cppcheck_wrapper.sh ./src/ 2>&1)
 	error_code=$?
 	filter_string="(information) Cppcheck cannot find all the include files"
 	filter_string="$filter_string (use --check-config for details)"
