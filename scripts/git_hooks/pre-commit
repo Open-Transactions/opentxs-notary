@@ -19,7 +19,7 @@ exec 1>&2
 
 files=$(git diff --cached --name-only --diff-filter=AM $against | \
         grep ^src | grep pp$)
-diffs=$(./scripts/travis/clang-format-wrapper.sh "$files")
+diffs=$(./scripts/build/clang-format-wrapper.sh "$files")
 [ "$diffs" ] || exit 0
 echo Found C++ code style formatting issues:
 echo "$diffs"

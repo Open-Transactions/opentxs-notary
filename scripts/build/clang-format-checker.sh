@@ -6,7 +6,7 @@ if [ "$(uname)" != "Linux" ]; then
 fi
 
 files=$(git ls-files | grep ^src | grep pp$)
-diffs=$(./scripts/travis/clang-format-wrapper.sh "$files")
+diffs=$(./scripts/build/clang-format-wrapper.sh "$files")
 [ "$diffs" ] || exit 0
 echo Found C++ code style formatting issues:
 echo "$diffs"

@@ -26,7 +26,7 @@ All development goes in develop branch - please don't submit pull requests to ma
 
 Please do *NOT* use an editor that automatically reformats.
 
-As part of our [Continuous Integration system](https://travis-ci.org/Open-Transactions/opentxs)
+As part of our Continuous Integration system
 we run [cppcheck](https://github.com/danmar/cppcheck/) and 
 [clang-format](http://clang.llvm.org/docs/ClangFormat.html). The build will fail
 if either of them finds problems.
