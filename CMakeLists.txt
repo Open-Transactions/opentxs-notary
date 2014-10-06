@@ -29,9 +29,17 @@ option(BUILD_TESTS         "Build the unit tests." ON)
 option(KEYRING_FLATFILE    "Build with Flatfile Keyring" OFF)
 option(RPM                 "Build a RPM" OFF)
 option(DEB                 "Build a DEB" OFF)
+set(PACKAGE_CONTACT        ""                              CACHE <TYPE>  "Package Maintainer")
+set(PACKAGE_VENDOR         "Open Transactions Developers"  CACHE <TYPE>  "Package Vendor")
 
 if(BUILD_VERBOSE)
   set(CMAKE_VERBOSE_MAKEFILE true)
+endif()
+
+if(RPM OR DEB)
+    if(NOT PACKAGE_CONTACT)
+        message(FATAL_ERROR "Specify a PACKAGE_CONTACT to build packages.")
+    endif()
 endif()
 
 
@@ -48,6 +56,8 @@ message(STATUS "Testing:                  ${BUILD_TESTS}")
 message(STATUS "Flatfile keyring:         ${KEYRING_FLATFILE}")
 message(STATUS "Build RPM:                ${RPM}")
 message(STATUS "Build DEB:                ${DEB}")
+message(STATUS "Package Contact:          ${PACKAGE_CONTACT}")
+message(STATUS "Package Vendor:           ${PACKAGE_VENDOR}")
 
 
 #-----------------------------------------------------------------------------
@@ -217,8 +227,8 @@ set(CPACK_GENERATOR "TGZ")
 
 set(CPACK_PACKAGE_VERSION ${VERSION_STRING})
 set(CPACK_PACKAGE_NAME "opentxs-notary")
-set(CPACK_PACKAGE_CONTACT "Lucas Betschart")
-set(CPACK_PACKAGE_VENDOR "Monetas AG")
+set(CPACK_PACKAGE_CONTACT ${PACKAGE_CONTACT})
+set(CPACK_PACKAGE_VENDOR ${PACKAGE_VENDOR})
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Transactions Server")
@@ -241,7 +251,7 @@ if(DEB)
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "extra")
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
   set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${OPEN_TRANSACTIONS_WEBSITE})
-  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Lucas Betschart")
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PACKAGE_CONTACT})
 endif(DEB)
 
 include(CPack)
