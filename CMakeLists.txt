@@ -63,8 +63,8 @@ message(STATUS "Package Vendor:           ${PACKAGE_VENDOR}")
 #-----------------------------------------------------------------------------
 # Collect all binaries into bin subdirectory
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 
 #-----------------------------------------------------------------------------
@@ -229,7 +229,6 @@ set(CPACK_PACKAGE_VERSION ${VERSION_STRING})
 set(CPACK_PACKAGE_NAME "opentxs-notary")
 set(CPACK_PACKAGE_CONTACT ${PACKAGE_CONTACT})
 set(CPACK_PACKAGE_VENDOR ${PACKAGE_VENDOR})
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}.${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Open Transactions Server")
 set(CPACK_PACKAGE_DESCRIPTION "
