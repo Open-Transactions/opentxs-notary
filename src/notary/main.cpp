@@ -141,13 +141,17 @@ int main(int argc, char* argv[])
 {
     using namespace opentxs;
 
-    if (argc > 1) {
-        std::string arg(argv[1]);
+    bool onlyInit = false;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg(argv[i]);
         if (arg.compare("version") == 0 || arg.compare("--version") == 0) {
             otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING << "\n";
             otOut << "opentxs library " << OPENTXS_VERSION_STRING << "\n";
             otOut << "Copyright (C) 2014 Open Transactions Developers\n";
             return 0;
+        }
+        else if (arg.compare("--only-init") == 0) {
+            onlyInit = true;
         }
     }
 
@@ -156,6 +160,10 @@ int main(int argc, char* argv[])
     }
 
     ServerLoader loader;
+    if (onlyInit) {
+        // ServerLoader constructor has finished initializing.
+        return 0;
+    }
     MessageProcessor processor(loader);
     processor.run();
 
