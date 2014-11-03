@@ -137,9 +137,9 @@
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/Version.hpp>
 #include <opentxs/core/crypto/OTCrypto.hpp>
-#include <opentxs/core/util/OTDataFolder.hpp>
-#include <opentxs/core/util/OTFolders.hpp>
-#include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/OTDataFolder.hpp>
+#include <opentxs/core/OTFolders.hpp>
+#include <opentxs/core/OTPaths.hpp>
 
 #include <cstdio>
 #include <string>
