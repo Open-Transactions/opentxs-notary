@@ -302,7 +302,7 @@ int main(int argc, char* const argv[])
 
     int nReturnVal = 1;
 
-    OTString strServerID(argv[1]), strServerNymID(argv[2]),
+    String strServerID(argv[1]), strServerNymID(argv[2]),
         strAssetTypeID(argv[3]);
 
     OTIdentifier ASSET_TYPE_ID(strAssetTypeID), SERVER_ID(strServerID);
@@ -342,14 +342,14 @@ int main(int argc, char* const argv[])
     //        return 0;
     //    }
 
-    OTString strMintPath;
+    String strMintPath;
     bool bFileIsPresent = false;
     int nSeries = 0;
 
     for (nSeries = 0; nSeries < 10000; ++nSeries) {
         //        struct stat st;
 
-        OTString strFilename;
+        String strFilename;
         strFilename.Format("%s%s%d", strAssetTypeID.Get(), ".", nSeries);
 
         bFileIsPresent = OTDB::Exists(OTFolders::Mint().Get(),
@@ -392,7 +392,7 @@ int main(int argc, char* const argv[])
         Mint::MintFactory(strServerID, strServerNymID, strAssetTypeID);
     OT_ASSERT(nullptr != pMint);
 
-    OTString strSeries;
+    String strSeries;
     strSeries.Format("%s%d", ".", nSeries);
 
     if (pMint->LoadMint(strSeries.Get())) {
@@ -473,7 +473,7 @@ int main(int argc, char* const argv[])
                 OT_FAIL;
             }
 
-            OTString strServerFolder(""), strMintFolder("");
+            String strServerFolder(""), strMintFolder("");
 
             //            OTLog::vError("DEBUGGING: OTDataFolder::Get().Get():
             // %s \n", OTDataFolder::Get().Get());
