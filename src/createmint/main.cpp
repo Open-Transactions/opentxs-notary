@@ -305,7 +305,7 @@ int main(int argc, char* const argv[])
     String strServerID(argv[1]), strServerNymID(argv[2]),
         strAssetTypeID(argv[3]);
 
-    OTIdentifier ASSET_TYPE_ID(strAssetTypeID), SERVER_ID(strServerID);
+    Identifier ASSET_TYPE_ID(strAssetTypeID), SERVER_ID(strServerID);
 
     //    std::string strDataFolderPath(argv[4]),
     // strNotaryFile("notaryServer.xml");
