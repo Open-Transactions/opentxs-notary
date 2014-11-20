@@ -415,7 +415,7 @@ int main(int argc, char* const argv[])
         // contract, or issuer contract.
         // In the meantime, 3 and 6 months are good enough.
 
-        OTPseudonym theNym;
+        Nym theNym;
         theNym.SetIdentifier(strServerNymID);
 
         // 1 hour    ==     3600 Seconds
