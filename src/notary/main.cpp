@@ -132,7 +132,7 @@
 
 #include <opentxs/server/ServerLoader.hpp>
 #include <opentxs/server/MessageProcessor.hpp>
-#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/Log.hpp>
 #include <opentxs/core/Version.hpp>
 #include <cassert>
 #include <string>
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (!OTLog::Init(SERVER_CONFIG_KEY, 0)) {
+    if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
         assert(false);
     }
 
