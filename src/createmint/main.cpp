@@ -133,7 +133,7 @@
 #include <opentxs/server/OTServer.hpp>
 
 #include <opentxs/cash/Mint.hpp>
-#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/Version.hpp>
 #include <opentxs/core/crypto/OTCrypto.hpp>
@@ -215,13 +215,13 @@ int main(int argc, char* const argv[])
     public:
         __OTcreatemint_RAII()
         {
-            if (!OTLog::Init(SERVER_CONFIG_KEY, 0)) {
+            if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
                 assert(false);
             }; // setup the logger.
 
-            OTLog::vOutput(0, "\n\nWelcome to Open Transactions -- "
-                              "'createmint', version %s\n",
-                           OTLog::Version());
+            Log::vOutput(0, "\n\nWelcome to Open Transactions -- "
+                            "'createmint', version %s\n",
+                         Log::Version());
 #ifdef _WIN32
             WSADATA wsaData;
             WORD wVersionRequested = MAKEWORD(2, 2);
@@ -251,14 +251,14 @@ int main(int argc, char* const argv[])
             /* The Winsock DLL is acceptable. Proceed to use it. */
             /* Add network programming using Winsock here */
             /* then call WSACleanup when done using the Winsock dll */
-            OTLog::vOutput(0, "The Winsock 2.2 dll was found okay\n");
+            Log::vOutput(0, "The Winsock 2.2 dll was found okay\n");
 #endif
 // SIGNALS
 //
 #if defined(OT_SIGNAL_HANDLING)
             //
-            OTLog::SetupSignalHandler(); // <===== SIGNALS
-                                         //
+            Log::SetupSignalHandler(); // <===== SIGNALS
+                                       //
 // This is optional! You can always remove it using the OT_NO_SIGNAL_HANDLING
 //  option, and plus, the internals only execute once anyway. (It keeps count.)
 #endif
@@ -310,10 +310,10 @@ int main(int argc, char* const argv[])
     //    std::string strDataFolderPath(argv[4]),
     // strNotaryFile("notaryServer.xml");
 
-    OTLog::vOutput(0, "\nNow loading the server nym, which will also ask you "
-                      "for a password, to unlock\n"
-                      "its private key. (Default password is \"%s\".)\n",
-                   KEY_PASSWORD);
+    Log::vOutput(0, "\nNow loading the server nym, which will also ask you "
+                    "for a password, to unlock\n"
+                    "its private key. (Default password is \"%s\".)\n",
+                 KEY_PASSWORD);
 
     // Keys, etc are loaded here. ===> Assumes main path is set! <===
     //
@@ -325,7 +325,7 @@ int main(int argc, char* const argv[])
     // above
     //  call to theServer.Init(), which has the InitDefaultStorage inside of it,
     // and
-    //  which uses OTLog::Path(), which the above new code should be setting
+    //  which uses Log::Path(), which the above new code should be setting
     // properly
     //  before theServer.Init() actually gets called. (So this should work....)
     //
@@ -335,7 +335,7 @@ int main(int argc, char* const argv[])
     // strDataFolderPath, strNotaryFile);
     //    if (!bSuccessInitDefault)
     //    {
-    //        OTLog::vError("\n\n%s: Failed invoking OTDB::InitDefaultStorage
+    //        Log::vError("\n\n%s: Failed invoking OTDB::InitDefaultStorage
     // with path: %s and main filename: %s\n\n",
     //                      __FUNCTION__, strDataFolderPath.c_str(),
     // strNotaryFile.c_str());
@@ -357,12 +357,12 @@ int main(int argc, char* const argv[])
 
         // Old Code
         // strMintPath.Format("%s%s%s%s%s%s%s%s%d",
-        //    OTLog::Path(),
-        //    OTLog::PathSeparator(),
+        //    Log::Path(),
+        //    Log::PathSeparator(),
         //    OTFolders::Mint().Get(),
-        //    OTLog::PathSeparator(),
+        //    Log::PathSeparator(),
         //    strServerID.Get(),
-        //    OTLog::PathSeparator(),
+        //    Log::PathSeparator(),
         //    strAssetTypeID.Get(), ".", nSeries);
         // bFileIsPresent = (stat(strMintPath.Get(), &st) == 0);
 
@@ -377,11 +377,11 @@ int main(int argc, char* const argv[])
     // that's 4 per year, that's 2500 years already!!
     //
     if (bFileIsPresent) {
-        OTLog::Output(0, "\n\nThis program automatically finds the next "
-                         "series, up to 10000. You\n"
-                         "have reached 10000. You will have to change the "
-                         "source code of this\n"
-                         "program in order to continue. Sorry.\n\n");
+        Log::Output(0, "\n\nThis program automatically finds the next "
+                       "series, up to 10000. You\n"
+                       "have reached 10000. You will have to change the "
+                       "source code of this\n"
+                       "program in order to continue. Sorry.\n\n");
         return 0;
     }
 
@@ -396,13 +396,13 @@ int main(int argc, char* const argv[])
     strSeries.Format("%s%d", ".", nSeries);
 
     if (pMint->LoadMint(strSeries.Get())) {
-        OTLog::Output(0, "\n\nSorry, that mint already exists. Delete it first "
-                         "if you wish to re-create it.\n\n");
+        Log::Output(0, "\n\nSorry, that mint already exists. Delete it first "
+                       "if you wish to re-create it.\n\n");
     }
     else {
-        OTLog::vOutput(0, "\n\nMint file does not (yet) exist for series %d "
-                          "and asset type:\n%s\n Creating......\n\n",
-                       nSeries, strAssetTypeID.Get());
+        Log::vOutput(0, "\n\nMint file does not (yet) exist for series %d "
+                        "and asset type:\n%s\n Creating......\n\n",
+                     nSeries, strAssetTypeID.Get());
 
         // TODO: read the denominations out of the asset contract itself,
         // instead of hardcoding them here.
@@ -464,10 +464,10 @@ int main(int argc, char* const argv[])
 
             //            OTString strFilename;// strPUBLICFilename;
             //            strFilename.        Format("%s%s%s",
-            // strServerID.Get(), OTLog::PathSeparator(), strAssetTypeID.Get());
+            // strServerID.Get(), Log::PathSeparator(), strAssetTypeID.Get());
             //            strPUBLICFilename.
             // Format("%s%s%s%sPUBLIC",strServerID.Get(),
-            // OTLog::PathSeparator(), strAssetTypeID.Get(), ".");
+            // Log::PathSeparator(), strAssetTypeID.Get(), ".");
 
             if (!OTDataFolder::IsInitialized()) {
                 OT_FAIL;
@@ -475,11 +475,11 @@ int main(int argc, char* const argv[])
 
             String strServerFolder(""), strMintFolder("");
 
-            //            OTLog::vError("DEBUGGING: OTDataFolder::Get().Get():
+            //            Log::vError("DEBUGGING: OTDataFolder::Get().Get():
             // %s \n", OTDataFolder::Get().Get());
-            //            OTLog::vError("DEBUGGING: OTFolders::Mint().Get(): %s
+            //            Log::vError("DEBUGGING: OTFolders::Mint().Get(): %s
             // \n",   OTFolders::Mint().Get());
-            //            OTLog::vError("DEBUGGING: strServerID.Get(): %s \n",
+            //            Log::vError("DEBUGGING: strServerID.Get(): %s \n",
             // strServerID.Get());
 
             if (!OTPaths::AppendFolder(strMintFolder, OTDataFolder::Get(),
@@ -536,16 +536,16 @@ int main(int argc, char* const argv[])
 
                 nReturnVal = 0;
 
-                OTLog::Output(0, "\nDone.\n\n");
+                Log::Output(0, "\nDone.\n\n");
             }
             else
-                OTLog::Output(0, "\n\nError calling "
-                                 "OTLog::ConfirmOrCreateFolder() for "
-                                 "path/mints/server_id\n\n");
+                Log::Output(0, "\n\nError calling "
+                               "Log::ConfirmOrCreateFolder() for "
+                               "path/mints/server_id\n\n");
         }
         else
-            OTLog::Output(0, "\n\nError calling "
-                             "theNym.Loadx509CertAndPrivateKey(false)\n\n");
+            Log::Output(0, "\n\nError calling "
+                           "theNym.Loadx509CertAndPrivateKey(false)\n\n");
     } // Mint file doesn't exist yet (therefore the above block creates it...)
 
     return nReturnVal;
