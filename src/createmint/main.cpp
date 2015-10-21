@@ -136,7 +136,7 @@
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/Version.hpp>
-#include <opentxs/core/crypto/OTCrypto.hpp>
+#include <opentxs/core/crypto/CryptoEngine.hpp>
 #include <opentxs/core/util/OTDataFolder.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
@@ -278,7 +278,7 @@ int main(int argc, char* const argv[])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-            OTCrypto::It()->Init(); // (OpenSSL gets initialized here.)
+            CryptoEngine::Instance(); // (OpenSSL gets initialized here.)
         }
         ~__OTcreatemint_RAII()
         {
@@ -286,7 +286,7 @@ int main(int argc, char* const argv[])
             // just seems
             // like the best default, in absence of any brighter ideas.
             //
-            OTCrypto::It()->Cleanup(); // (OpenSSL gets cleaned up here.)
+            CryptoEngine::Instance(); // (OpenSSL gets cleaned up here.)
 
 #ifdef _WIN32
             WSACleanup(); // Corresponds to WSAStartup() in InitOTAPI().
@@ -429,7 +429,7 @@ int main(int argc, char* const argv[])
         // make a mint available to the client.  The client has to wait a day or
         // until the operator is able to run this script and type the
         // passphrase.
-        if (theNym.Loadx509CertAndPrivateKey(false)) {
+        if (theNym.LoadCredentials(false)) {
             const time64_t CURRENT_TIME = OTTimeGetCurrentTime(),
                            VALID_TO = OTTimeAddTimeInterval(
                                CURRENT_TIME,
