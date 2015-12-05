@@ -429,7 +429,7 @@ int main(int argc, char* const argv[])
         // make a mint available to the client.  The client has to wait a day or
         // until the operator is able to run this script and type the
         // passphrase.
-        if (theNym.LoadCredentials(false)) {
+        if (theNym.LoadCredentials(true)) {
             const time64_t CURRENT_TIME = OTTimeGetCurrentTime(),
                            VALID_TO = OTTimeAddTimeInterval(
                                CURRENT_TIME,
