@@ -136,7 +136,7 @@
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/Version.hpp>
-#include <opentxs/core/crypto/CryptoEngine.hpp>
+#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/util/OTDataFolder.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
@@ -278,7 +278,7 @@ int main(int argc, char* const argv[])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-            CryptoEngine::Instance(); // (OpenSSL gets initialized here.)
+            App::Me();
         }
         ~__OTcreatemint_RAII()
         {
@@ -286,7 +286,7 @@ int main(int argc, char* const argv[])
             // just seems
             // like the best default, in absence of any brighter ideas.
             //
-            CryptoEngine::Instance(); // (OpenSSL gets cleaned up here.)
+            App::Me().Cleanup();
 
 #ifdef _WIN32
             WSACleanup(); // Corresponds to WSAStartup() in InitOTAPI().
