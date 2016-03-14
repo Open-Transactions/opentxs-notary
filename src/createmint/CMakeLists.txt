@@ -23,6 +23,6 @@ else()
   add_executable(${MODULE_NAME} ${cxx-sources})
 endif()
 
-target_link_libraries(${name} ${server} ${ext} ${basket} ${cash} ${core})
+target_link_libraries(${name} ${server} ${ext} ${cash} ${core})
 
 install(TARGETS createmint DESTINATION bin)
