@@ -21,6 +21,6 @@ else()
   add_executable(${MODULE_NAME} ${cxx-sources})
 endif()
 
-target_link_libraries(opentxs-notary ${server} ${ext} ${cash} ${core})
+target_link_libraries(opentxs-notary ${server} ${ext} ${cash} ${core} anyoption)
 
 install(TARGETS opentxs-notary DESTINATION bin)

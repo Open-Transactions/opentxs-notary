@@ -134,7 +134,11 @@
 #include <opentxs/server/MessageProcessor.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/Version.hpp>
+
+#include <anyoption/anyoption.hpp>
+
 #include <cassert>
+#include <map>
 #include <string>
 
 int main(int argc, char* argv[])
@@ -144,22 +148,60 @@ int main(int argc, char* argv[])
     bool onlyInit = false;
     for (int i = 1; i < argc; ++i) {
         std::string arg(argv[i]);
-        if (arg.compare("version") == 0 || arg.compare("--version") == 0) {
+        if (0 == arg.compare("version") || 0 == arg.compare("--version")) {
             otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING << "\n";
             otOut << "opentxs library " << OPENTXS_VERSION_STRING << "\n";
             otOut << "Copyright (C) 2014 Open Transactions Developers\n";
             return 0;
         }
-        else if (arg.compare("--only-init") == 0) {
+        else if (0 == arg.compare("--only-init")) {
             onlyInit = true;
         }
     }
+    // -------------------------------------------------------
+    // Process the command-line options for creating a new server contract.
+    //
+    // (Not used for most server start-ups, but only used when the server
+    // contract is first created.)
+    /*
+     --terms <full path to a text file containing the human-readable terms>
+     --externalip <externally-visible hostname>
+     --commandport <externally-visible port where opentxs commands can be sent>
+     --notificationport <externally-visible port where to listen for push
+     notifications>
+     --bindip <internal ip address where the listen sockets will be opened>
+     --listencommand <internal port number where the opentxs listen socket
+     will bind>
+     --listennotification <internal port number where the push notification
+     socket will bind>
+     --name <server name>
+     */
+    static const std::string createOptions[] = {"terms", "externalip", "commandport",
+        "notificationport",  "bindip",  "listencommand", "listennotification",
+        "name",  ""};
 
+    AnyOption options;
+    std::map<std::string, std::string> arguments;
+    options.processCommandArgs(argc, argv);
+    
+    for (int i = 0; createOptions[i] != ""; i++)
+    {
+        const char * optionName = createOptions[i].c_str();
+
+        if (!options.findOption(optionName))
+            continue;
+
+        const char * value = options.getValue(optionName);
+        
+        if (nullptr != value)
+            arguments[createOptions[i]] = value;
+    }
+    // -------------------------------------------------------
     if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
         assert(false);
     }
 
-    ServerLoader loader;
+    ServerLoader loader(arguments);
     if (onlyInit) {
         // ServerLoader constructor has finished initializing.
         return 0;

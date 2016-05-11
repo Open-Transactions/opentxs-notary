@@ -143,6 +143,7 @@
 
 #include <cstdio>
 #include <string>
+#include <map>
 
 extern "C" {
 #ifdef _WIN32
@@ -315,9 +316,11 @@ int main(int argc, char* const argv[])
                     "its private key. (Default password is \"%s\".)\n",
                  KEY_PASSWORD);
 
+    std::map<std::string, std::string> args;
+    
     // Keys, etc are loaded here. ===> Assumes main path is set! <===
     //
-    theServer.Init(true); // bool bReadOnly=false by default (We don't want to
+    theServer.Init(args, true); // bool bReadOnly=false by default (We don't want to
                           // overwrite anything if the ACTUAL server is
                           // running...)
 
