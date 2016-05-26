@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
     // (Not used for most server start-ups, but only used when the server
     // contract is first created.)
     /*
-     --terms <full path to a text file containing the human-readable terms>
+     --terms <human-readable terms of use>
      --externalip <externally-visible hostname>
      --commandport <externally-visible port where opentxs commands can be sent>
      --notificationport <externally-visible port where to listen for push
@@ -175,27 +175,36 @@ int main(int argc, char* argv[])
      --listennotification <internal port number where the push notification
      socket will bind>
      --name <server name>
+     --onion <hidden service hostname>
      */
-    static const std::string createOptions[] = {"terms", "externalip", "commandport",
-        "notificationport",  "bindip",  "listencommand", "listennotification",
-        "name",  ""};
-
+    static const std::string createOptions[] = {
+        "terms",
+        "externalip",
+        "commandport",
+        "notificationport",
+        "bindip",
+        "listencommand",
+        "listennotification",
+        "name",
+        "onion"};
     AnyOption options;
-    std::map<std::string, std::string> arguments;
-    options.processCommandArgs(argc, argv);
-    
-    for (int i = 0; createOptions[i] != ""; i++)
-    {
-        const char * optionName = createOptions[i].c_str();
 
-        if (!options.findOption(optionName))
-            continue;
-
-        const char * value = options.getValue(optionName);
-        
-        if (nullptr != value)
-            arguments[createOptions[i]] = value;
+    for (const auto& optionName : createOptions) {
+        if (!options.findOption(optionName.c_str())) {
+            options.setCommandOption(optionName.c_str());
+        }
     }
+    options.processCommandArgs(argc, argv);
+    std::map<std::string, std::string> arguments;
+
+    for (const auto& optionName : createOptions) {
+        const char* value = options.getValue(optionName.c_str());
+
+        if (nullptr != value) {
+            arguments[optionName] = value;
+        }
+    }
+
     // -------------------------------------------------------
     if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
         assert(false);
