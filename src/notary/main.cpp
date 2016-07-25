@@ -130,10 +130,10 @@
  -----END PGP SIGNATURE-----
  **************************************************************/
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/server/ServerLoader.hpp>
 #include <opentxs/server/MessageProcessor.hpp>
 #include <opentxs/core/Log.hpp>
-#include <opentxs/core/Version.hpp>
 
 #include <anyoption/anyoption.hpp>
 
