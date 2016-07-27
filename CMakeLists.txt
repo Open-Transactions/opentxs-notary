@@ -30,8 +30,6 @@ option(BUILD_TESTS         "Build the unit tests." ON)
 option(KEYRING_FLATFILE    "Build with Flatfile Keyring" OFF)
 option(RPM                 "Build a RPM" OFF)
 option(DEB                 "Build a DEB" OFF)
-option(OT_CRYPTO_SUPPORTED_KEY_RSA     "Enable RSA key support" ON)
-option(OT_CRYPTO_USING_OPENSSL       "Use OpenSSL crypto implementation" ON)
 
 set(PACKAGE_CONTACT        ""                              CACHE <TYPE>  "Package Maintainer")
 set(PACKAGE_VENDOR         "Open Transactions Developers"  CACHE <TYPE>  "Package Vendor")
@@ -62,12 +60,6 @@ message(STATUS "Build RPM:                ${RPM}")
 message(STATUS "Build DEB:                ${DEB}")
 message(STATUS "Package Contact:          ${PACKAGE_CONTACT}")
 message(STATUS "Package Vendor:           ${PACKAGE_VENDOR}")
-
-message(STATUS "Key algorithms-------------------------------")
-message(STATUS "RSA:                    ${OT_CRYPTO_SUPPORTED_KEY_RSA}")
-
-message(STATUS "Crypto library providers---------------------")
-message(STATUS "OpenSSL:                ${OT_CRYPTO_USING_OPENSSL}")
 
 #-----------------------------------------------------------------------------
 # Collect all binaries into bin subdirectory
@@ -197,18 +189,6 @@ if(WIN32)
     add_definitions("-DEXPORT=__declspec(dllexport)")
 else()
   add_definitions(-DEXPORT=)
-endif()
-
-#Key types
-
-if(OT_CRYPTO_SUPPORTED_KEY_RSA)
-  add_definitions(-DOT_CRYPTO_SUPPORTED_KEY_RSA)
-endif()
-
-#Crypto libraries
-
-if(OT_CRYPTO_USING_OPENSSL)
-add_definitions(-DOT_CRYPTO_USING_OPENSSL)
 endif()
 
 #-----------------------------------------------------------------------------
