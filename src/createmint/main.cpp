@@ -130,16 +130,15 @@
  -----END PGP SIGNATURE-----
 **************************************************************/
 
-#include <opentxs/server/OTServer.hpp>
-
-#include <opentxs/cash/Mint.hpp>
-#include <opentxs/core/Log.hpp>
-#include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/Version.hpp>
+#include <opentxs/cash/Mint.hpp>
 #include <opentxs/core/app/App.hpp>
 #include <opentxs/core/util/OTDataFolder.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/Log.hpp>
+#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/server/OTServer.hpp>
 
 #include <cstdio>
 #include <string>
@@ -317,7 +316,7 @@ int main(int argc, char* const argv[])
                  KEY_PASSWORD);
 
     std::map<std::string, std::string> args;
-    
+
     // Keys, etc are loaded here. ===> Assumes main path is set! <===
     //
     theServer.Init(args, true); // bool bReadOnly=false by default (We don't want to
