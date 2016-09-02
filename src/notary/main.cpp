@@ -175,7 +175,8 @@ int main(int argc, char* argv[])
      --listennotification <internal port number where the push notification
      socket will bind>
      --name <server name>
-     --onion <hidden service hostname>
+     --onion <tor hidden service hostname>
+     --eep <i2p eepsite hostname>
      */
     static const std::string createOptions[] = {
         "terms",
@@ -186,7 +187,8 @@ int main(int argc, char* argv[])
         "listencommand",
         "listennotification",
         "name",
-        "onion"};
+        "onion",
+        "eep"};
     AnyOption options;
 
     for (const auto& optionName : createOptions) {
