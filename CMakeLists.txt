@@ -104,7 +104,6 @@ message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
 message(STATUS "C++ link flags:  ${CMAKE_CXX_LINK_FLAGS}")
 
-
 #-----------------------------------------------------------------------------
 # System libraries used for linking.
 
@@ -112,6 +111,10 @@ if(UNIX AND NOT APPLE)
   list(APPEND OPENTXS_NOTARY_SYSTEM_LIBRARIES rt)
   list(APPEND OPENTXS_NOTARY_SYSTEM_LIBRARIES dl)
 endif()
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+find_package(opentxs REQUIRED)
 
 #-----------------------------------------------------------------------------
 # Force out-of-source build
