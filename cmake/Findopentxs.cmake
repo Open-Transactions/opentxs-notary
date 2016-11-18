@@ -9,7 +9,7 @@ include(FindPkgConfig)
 
   find_library(
       OPENTXS_LIBRARIES
-      NAMES libopentxs.so libopentxs.a libopentxs.dynlib
+      NAMES libopentxs.dylib libopentxs.so libopentxs.a
       HINTS ${PC_OPENTXS_LIBRARY_DIRS}
   )
 
