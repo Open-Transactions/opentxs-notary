@@ -210,10 +210,13 @@ int main(int argc, char* const argv[])
     }
     // **************************************************************************
 
-    class __OTcreatemint_RAII
+    class OTcreatemint_RAII
     {
+    private:
+        std::unique_ptr<AppLoader> app_;
+
     public:
-        __OTcreatemint_RAII()
+        OTcreatemint_RAII()
         {
             if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
                 assert(false);
@@ -278,15 +281,15 @@ int main(int argc, char* const argv[])
                               "main(): Assert failed: Failed to set OT Path");
             }
 
-            App::Me();
+            app_.reset(new AppLoader);
         }
-        ~__OTcreatemint_RAII()
+        ~OTcreatemint_RAII()
         {
             // We clean these up in reverse order from the Init function, which
             // just seems
             // like the best default, in absence of any brighter ideas.
             //
-            App::Me().Cleanup();
+            app_.reset();
 
 #ifdef _WIN32
             WSACleanup(); // Corresponds to WSAStartup() in InitOTAPI().
@@ -294,7 +297,7 @@ int main(int argc, char* const argv[])
         }
     };
 
-    __OTcreatemint_RAII the_createmint_cleanup;
+    OTcreatemint_RAII the_createmint_cleanup;
 
     // **************************************************************************
 
