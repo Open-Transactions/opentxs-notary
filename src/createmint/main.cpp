@@ -131,8 +131,8 @@
 **************************************************************/
 
 #include <opentxs/core/Version.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/cash/Mint.hpp>
-#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/util/OTDataFolder.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
