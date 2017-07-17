@@ -207,11 +207,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    // -------------------------------------------------------
-    if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
-        assert(false);
-    }
-
     ServerLoader loader(arguments);
     if (onlyInit) {
         // ServerLoader constructor has finished initializing.

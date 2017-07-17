@@ -218,9 +218,7 @@ int main(int argc, char* const argv[])
     public:
         OTcreatemint_RAII()
         {
-            if (!Log::Init(SERVER_CONFIG_KEY, 0)) {
-                assert(false);
-            }; // setup the logger.
+            app_.reset(new AppLoader);
 
             Log::vOutput(0, "\n\nWelcome to Open Transactions -- "
                             "'createmint', version %s\n",
@@ -280,8 +278,6 @@ int main(int argc, char* const argv[])
                 OT_ASSERT_MSG(bSetupPathsSuccess,
                               "main(): Assert failed: Failed to set OT Path");
             }
-
-            app_.reset(new AppLoader);
         }
         ~OTcreatemint_RAII()
         {
