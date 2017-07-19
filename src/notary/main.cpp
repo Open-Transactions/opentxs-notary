@@ -177,6 +177,7 @@ int main(int argc, char* argv[])
      --name <server name>
      --onion <tor hidden service hostname>
      --eep <i2p eepsite hostname>
+     --storage primary storage plugin
      --backup storage backup directory
      */
     static const std::string createOptions[] = {
@@ -190,6 +191,7 @@ int main(int argc, char* argv[])
         "name",
         "onion",
         "eep",
+        "storage",
         "backup"};
     AnyOption options;
 
