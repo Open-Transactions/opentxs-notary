@@ -177,6 +177,7 @@ int main(int argc, char* argv[])
      --name <server name>
      --onion <tor hidden service hostname>
      --eep <i2p eepsite hostname>
+     --backup storage backup directory
      */
     static const std::string createOptions[] = {
         "terms",
@@ -188,7 +189,8 @@ int main(int argc, char* argv[])
         "listennotification",
         "name",
         "onion",
-        "eep"};
+        "eep",
+        "backup"};
     AnyOption options;
 
     for (const auto& optionName : createOptions) {
@@ -208,10 +210,12 @@ int main(int argc, char* argv[])
     }
 
     ServerLoader loader(arguments);
+
     if (onlyInit) {
         // ServerLoader constructor has finished initializing.
         return 0;
     }
+
     MessageProcessor processor(loader);
     processor.run();
 
