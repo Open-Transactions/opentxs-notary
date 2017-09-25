@@ -181,18 +181,20 @@ int main(int argc, char* argv[])
      --backup storage backup directory
      */
     static const std::string createOptions[] = {
-        "terms",
-        "externalip",
-        "commandport",
-        "notificationport",
-        "bindip",
-        "listencommand",
-        "listennotification",
-        "name",
-        "onion",
-        "eep",
-        "storage",
-        "backup"};
+        OT_SERVER_OPTION_BACKUP,
+        OT_SERVER_OPTION_BINDIP,
+        OT_SERVER_OPTION_COMMANDPORT,
+        OT_SERVER_OPTION_EEP,
+        OT_SERVER_OPTION_GC,
+        OT_SERVER_OPTION_EXTERNALIP,
+        OT_SERVER_OPTION_LISTENCOMMAND,
+        OT_SERVER_OPTION_LISTENNOTIFY,
+        OT_SERVER_OPTION_NAME,
+        OT_SERVER_OPTION_NOTIFICATIONPORT,
+        OT_SERVER_OPTION_ONION,
+        OT_SERVER_OPTION_STORAGE,
+        OT_SERVER_OPTION_TERMS
+    };
     AnyOption options;
 
     for (const auto& optionName : createOptions) {
