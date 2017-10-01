@@ -161,13 +161,7 @@ extern "C" {
 // Paths
 //
 
-#define SERVER_PATH_DEFAULT "server_data" // should get programmatically
 #define SERVER_CONFIG_KEY "server"
-#define SERVER_CONFIG_FILENAME "server.cfg"
-#define SERVER_LOGFILE_FILENAME "log-server.log"
-#define SERVER_MASTER_KEY_TIMEOUT_DEFAULT -1
-#define SERVER_MAIN_FILENAME "notaryServer.xml"
-
 #define KEY_PASSWORD "test"
 //#define KEY_PASSWORD        ""
 
