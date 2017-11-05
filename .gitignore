@@ -47,9 +47,6 @@ opentxs-server-0.0.1-1.x86_64.rpm
 opentxs-server.spec
 src/CMakeFiles/
 src/cmake_install.cmake
-src/createmint/CMakeFiles/
-src/createmint/cmake_install.cmake
-src/createmint/createmint
 src/opentxs-server
 Makefile
 
