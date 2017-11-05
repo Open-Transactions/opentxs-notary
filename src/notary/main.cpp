@@ -36,7 +36,6 @@
  *
  ************************************************************/
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/api/Server.hpp>
 #include <opentxs/core/Log.hpp>
