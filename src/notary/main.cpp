@@ -85,8 +85,6 @@ int main(int argc, char* argv[])
 
     if (onlyInit) {
         opentxs::OT::Cleanup();
-
-        return 0;
     }
 
     opentxs::OT::Join();
