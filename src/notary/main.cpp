@@ -1,13 +1,5 @@
 /************************************************************
  *
- *  main.cpp
- *
- */
-
-/************************************************************
- -----BEGIN PGP SIGNED MESSAGE-----
- Hash: SHA1
-
  *                 OPEN TRANSACTIONS
  *
  *       Financial Cryptography and Digital Cash
@@ -21,143 +13,98 @@
  *       -- Signed, XML, Ricardian-style Contracts.
  *       -- Scripted smart contracts.
  *
- *  Copyright (C) 2010-2013 by "Fellow Traveler" (A pseudonym)
- *
  *  EMAIL:
- *  FellowTraveler@rayservers.net
- *
- *  BITCOIN:  1NtTPVVjDsUfDWybS4BwvHpG2pdS9RnYyQ
- *
- *  KEY FINGERPRINT (PGP Key in license file):
- *  9DD5 90EB 9292 4B48 0484  7910 0308 00ED F951 BB8E
- *
- *  OFFICIAL PROJECT WIKI(s):
- *  https://github.com/FellowTraveler/Moneychanger
- *  https://github.com/FellowTraveler/Open-Transactions/wiki
+ *  fellowtraveler@opentransactions.org
  *
  *  WEBSITE:
- *  http://www.OpenTransactions.org/
- *
- *  Components and licensing:
- *   -- Moneychanger..A Java client GUI.....LICENSE:.....GPLv3
- *   -- otlib.........A class library.......LICENSE:...LAGPLv3
- *   -- otapi.........A client API..........LICENSE:...LAGPLv3
- *   -- opentxs/ot....Command-line client...LICENSE:...LAGPLv3
- *   -- otserver......Server Application....LICENSE:....AGPLv3
- *  Github.com/FellowTraveler/Open-Transactions/wiki/Components
- *
- *  All of the above OT components were designed and written by
- *  Fellow Traveler, with the exception of Moneychanger, which
- *  was contracted out to Vicky C (bitcointrader4@gmail.com).
- *  The open-source community has since actively contributed.
+ *  http://www.opentransactions.org/
  *
  *  -----------------------------------------------------
  *
  *   LICENSE:
- *   This program is free software: you can redistribute it
- *   and/or modify it under the terms of the GNU Affero
- *   General Public License as published by the Free Software
- *   Foundation, either version 3 of the License, or (at your
- *   option) any later version.
- *
- *   ADDITIONAL PERMISSION under the GNU Affero GPL version 3
- *   section 7: (This paragraph applies only to the LAGPLv3
- *   components listed above.) If you modify this Program, or
- *   any covered work, by linking or combining it with other
- *   code, such other code is not for that reason alone subject
- *   to any of the requirements of the GNU Affero GPL version 3.
- *   (==> This means if you are only using the OT API, then you
- *   don't have to open-source your code--only your changes to
- *   Open-Transactions itself must be open source. Similar to
- *   LGPLv3, except it applies to software-as-a-service, not
- *   just to distributing binaries.)
- *
- *   Extra WAIVER for OpenSSL, Lucre, and all other libraries
- *   used by Open Transactions: This program is released under
- *   the AGPL with the additional exemption that compiling,
- *   linking, and/or using OpenSSL is allowed. The same is true
- *   for any other open source libraries included in this
- *   project: complete waiver from the AGPL is hereby granted to
- *   compile, link, and/or use them with Open-Transactions,
- *   according to their own terms, as long as the rest of the
- *   Open-Transactions terms remain respected, with regard to
- *   the Open-Transactions code itself.
- *
- *   Lucre License:
- *   This code is also "dual-license", meaning that Ben Lau-
- *   rie's license must also be included and respected, since
- *   the code for Lucre is also included with Open Transactions.
- *   See Open-Transactions/src/otlib/lucre/LUCRE_LICENSE.txt
- *   The Laurie requirements are light, but if there is any
- *   problem with his license, simply remove the Lucre code.
- *   Although there are no other blind token algorithms in Open
- *   Transactions (yet. credlib is coming), the other functions
- *   will continue to operate.
- *   See Lucre on Github:  https://github.com/benlaurie/lucre
- *   -----------------------------------------------------
- *   You should have received a copy of the GNU Affero General
- *   Public License along with this program.  If not, see:
- *   http://www.gnu.org/licenses/
- *
- *   If you would like to use this software outside of the free
- *   software license, please contact FellowTraveler.
- *   (Unfortunately many will run anonymously and untraceably,
- *   so who could really stop them?)
+ *   This Source Code Form is subject to the terms of the
+ *   Mozilla Public License, v. 2.0. If a copy of the MPL
+ *   was not distributed with this file, You can obtain one
+ *   at http://mozilla.org/MPL/2.0/.
  *
  *   DISCLAIMER:
- *   This program is distributed in the hope that it will be
- *   useful, but WITHOUT ANY WARRANTY; without even the implied
- *   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *   PURPOSE.  See the GNU Affero General Public License for
- *   more details.
-
- -----BEGIN PGP SIGNATURE-----
- Version: GnuPG v1.4.9 (Darwin)
-
- iQIcBAEBAgAGBQJRSsfJAAoJEAMIAO35UbuOQT8P/RJbka8etf7wbxdHQNAY+2cC
- vDf8J3X8VI+pwMqv6wgTVy17venMZJa4I4ikXD/MRyWV1XbTG0mBXk/7AZk7Rexk
- KTvL/U1kWiez6+8XXLye+k2JNM6v7eej8xMrqEcO0ZArh/DsLoIn1y8p8qjBI7+m
- aE7lhstDiD0z8mwRRLKFLN2IH5rAFaZZUvj5ERJaoYUKdn4c+RcQVei2YOl4T0FU
- LWND3YLoH8naqJXkaOKEN4UfJINCwxhe5Ke9wyfLWLUO7NamRkWD2T7CJ0xocnD1
- sjAzlVGNgaFDRflfIF4QhBx1Ddl6wwhJfw+d08bjqblSq8aXDkmFA7HeunSFKkdn
- oIEOEgyj+veuOMRJC5pnBJ9vV+7qRdDKQWaCKotynt4sWJDGQ9kWGWm74SsNaduN
- TPMyr9kNmGsfR69Q2Zq/FLcLX/j8ESxU+HYUB4vaARw2xEOu2xwDDv6jt0j3Vqsg
- x7rWv4S/Eh18FDNDkVRChiNoOIilLYLL6c38uMf1pnItBuxP3uhgY6COm59kVaRh
- nyGTYCDYD2TK+fI9o89F1297uDCwEJ62U0Q7iTDp5QuXCoxkPfv8/kX6lS6T3y9G
- M9mqIoLbIQ1EDntFv7/t6fUTS2+46uCrdZWbQ5RjYXdrzjij02nDmJAm2BngnZvd
- kamH0Y/n11lCvo1oQxM+
- =uSzz
- -----END PGP SIGNATURE-----
- **************************************************************/
+ *   This program is distributed in the hope that it will
+ *   be useful, but WITHOUT ANY WARRANTY; without even the
+ *   implied warranty of MERCHANTABILITY or FITNESS FOR A
+ *   PARTICULAR PURPOSE.  See the Mozilla Public License
+ *   for more details.
+ *
+ ************************************************************/
 
 #include <opentxs/core/Version.hpp>
-#include <opentxs/server/ServerLoader.hpp>
-#include <opentxs/server/MessageProcessor.hpp>
+#include <opentxs/api/OT.hpp>
+#include <opentxs/api/Server.hpp>
 #include <opentxs/core/Log.hpp>
+#include <opentxs/util/Signals.hpp>
 
 #include <anyoption/anyoption.hpp>
 
-#include <cassert>
+#include <chrono>
 #include <map>
 #include <string>
 
+void process_arguments(
+    int argc,
+    char* argv[],
+    std::map<std::string, std::string>& arguments,
+    bool& version,
+    bool& onlyInit,
+    std::chrono::seconds& gcInterval,
+    std::string& storagePlugin,
+    std::string& backupDirectory);
+
 int main(int argc, char* argv[])
 {
-    using namespace opentxs;
+    std::map<std::string, std::string> serverArgs{};
+    bool onlyInit{false};
+    bool version{false};
+    std::chrono::seconds gc{0};
+    std::string storage{""};
+    std::string backup{""};
+    process_arguments(
+        argc, argv, serverArgs, version, onlyInit, gc, storage, backup);
 
-    bool onlyInit = false;
-    for (int i = 1; i < argc; ++i) {
-        std::string arg(argv[i]);
-        if (0 == arg.compare("version") || 0 == arg.compare("--version")) {
-            otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING << "\n";
-            otOut << "opentxs library " << OPENTXS_VERSION_STRING << "\n";
-            otOut << "Copyright (C) 2014 Open Transactions Developers\n";
-            return 0;
-        }
-        else if (0 == arg.compare("--only-init")) {
-            onlyInit = true;
-        }
+    if (version) {
+        opentxs::otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING
+                       << std::endl;
+        opentxs::otOut << "opentxs library " << OPENTXS_VERSION_STRING
+                       << std::endl;
+        opentxs::otOut << "Copyright (C) 2017 Open Transactions Developers"
+                       << std::endl;
+
+        return 0;
     }
+
+    opentxs::Signals::Block();
+    opentxs::OT::ServerFactory(serverArgs, gc, storage, backup);
+    opentxs::OT::App().HandleSignals();
+
+    if (onlyInit) {
+        opentxs::OT::Cleanup();
+
+        return 0;
+    }
+
+    opentxs::OT::Join();
+
+    return 0;
+}
+
+void process_arguments(
+    int argc,
+    char* argv[],
+    std::map<std::string, std::string>& arguments,
+    bool& version,
+    bool& onlyInit,
+    std::chrono::seconds& gcInterval,
+    std::string& storagePlugin,
+    std::string& backupDirectory)
+{
     // -------------------------------------------------------
     // Process the command-line options for creating a new server contract.
     //
@@ -180,7 +127,7 @@ int main(int argc, char* argv[])
      --storage primary storage plugin
      --backup storage backup directory
      */
-    static const std::string createOptions[] = {
+    const std::string createOptions[] = {
         OT_SERVER_OPTION_BACKUP,
         OT_SERVER_OPTION_BINDIP,
         OT_SERVER_OPTION_COMMANDPORT,
@@ -202,8 +149,8 @@ int main(int argc, char* argv[])
             options.setCommandOption(optionName.c_str());
         }
     }
+
     options.processCommandArgs(argc, argv);
-    std::map<std::string, std::string> arguments;
 
     for (const auto& optionName : createOptions) {
         const char* value = options.getValue(optionName.c_str());
@@ -213,15 +160,43 @@ int main(int argc, char* argv[])
         }
     }
 
-    ServerLoader loader(arguments);
+    const auto gcIt = arguments.find(OT_SERVER_OPTION_GC);
+    const auto storageIt = arguments.find(OT_SERVER_OPTION_STORAGE);
+    const auto backupIt = arguments.find(OT_SERVER_OPTION_BACKUP);
 
-    if (onlyInit) {
-        // ServerLoader constructor has finished initializing.
-        return 0;
+    if (arguments.end() != gcIt) {
+        try {
+            gcInterval = std::chrono::seconds(std::stoll(gcIt->second));
+            opentxs::otErr
+                << ": Setting storage garbage collection interval to "
+                << gcInterval.count() << " seconds" << std::endl;
+        } catch (const std::invalid_argument&) {
+        } catch (const std::out_of_range&) {
+        }
     }
 
-    MessageProcessor processor(loader);
-    processor.run();
+    if (arguments.end() != storageIt) {
+        storagePlugin = storageIt->second;
+        opentxs::otErr << ": Setting primary storage plugin to "
+                       << storagePlugin << std::endl;
+    }
 
-    return 0;
+    if (arguments.end() != backupIt) {
+        backupDirectory = backupIt->second;
+        opentxs::otErr << ": Setting backup directory to " << backupDirectory
+                       << std::endl;
+    }
+
+    version = false;
+    onlyInit = false;
+
+    for (int i = 1; i < argc; ++i) {
+        const std::string arg(argv[i]);
+
+        if (0 == arg.compare("--version")) {
+            version = true;
+        } else if (0 == arg.compare("--only-init")) {
+            onlyInit = true;
+        }
+    }
 }
