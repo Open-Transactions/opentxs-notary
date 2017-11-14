@@ -36,6 +36,7 @@
  *
  ************************************************************/
 
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/api/Server.hpp>
 #include <opentxs/core/Log.hpp>
