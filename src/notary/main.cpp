@@ -36,11 +36,11 @@
  *
  ************************************************************/
 
+#include <opentxs/OT.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/api/Server.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/util/Signals.hpp>
-#include <opentxs/OT.hpp>
 
 #include <anyoption/anyoption.hpp>
 
@@ -48,26 +48,17 @@
 #include <map>
 #include <string>
 
-void process_arguments(
-    int argc,
-    char* argv[],
-    std::map<std::string, std::string>& arguments,
-    bool& version,
-    bool& onlyInit,
-    std::chrono::seconds& gcInterval,
-    std::string& storagePlugin,
-    std::string& backupDirectory);
+void process_arguments(int argc, char* argv[], opentxs::ArgList& args,
+                       bool& version, bool& onlyInit,
+                       std::chrono::seconds& gcInterval);
 
 int main(int argc, char* argv[])
 {
-    std::map<std::string, std::string> serverArgs{};
+    opentxs::ArgList args;
     bool onlyInit{false};
     bool version{false};
     std::chrono::seconds gc{0};
-    std::string storage{""};
-    std::string backup{""};
-    process_arguments(
-        argc, argv, serverArgs, version, onlyInit, gc, storage, backup);
+    process_arguments(argc, argv, args, version, onlyInit, gc);
 
     if (version) {
         opentxs::otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING
@@ -81,7 +72,7 @@ int main(int argc, char* argv[])
     }
 
     opentxs::Signals::Block();
-    opentxs::OT::ServerFactory(serverArgs, gc, storage, backup);
+    opentxs::OT::ServerFactory(args, gc);
     opentxs::OT::App().HandleSignals();
 
     if (onlyInit) {
@@ -93,15 +84,9 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void process_arguments(
-    int argc,
-    char* argv[],
-    std::map<std::string, std::string>& arguments,
-    bool& version,
-    bool& onlyInit,
-    std::chrono::seconds& gcInterval,
-    std::string& storagePlugin,
-    std::string& backupDirectory)
+void process_arguments(int argc, char* argv[], opentxs::ArgList& args,
+                       bool& version, bool& onlyInit,
+                       std::chrono::seconds& gcInterval)
 {
     // -------------------------------------------------------
     // Process the command-line options for creating a new server contract.
@@ -125,21 +110,19 @@ void process_arguments(
      --storage primary storage plugin
      --backup storage backup directory
      */
-    const std::string createOptions[] = {
-        OT_SERVER_OPTION_BACKUP,
-        OT_SERVER_OPTION_BINDIP,
-        OT_SERVER_OPTION_COMMANDPORT,
-        OT_SERVER_OPTION_EEP,
-        OT_SERVER_OPTION_GC,
-        OT_SERVER_OPTION_EXTERNALIP,
-        OT_SERVER_OPTION_LISTENCOMMAND,
-        OT_SERVER_OPTION_LISTENNOTIFY,
-        OT_SERVER_OPTION_NAME,
-        OT_SERVER_OPTION_NOTIFICATIONPORT,
-        OT_SERVER_OPTION_ONION,
-        OT_SERVER_OPTION_STORAGE,
-        OT_SERVER_OPTION_TERMS
-    };
+    const std::string createOptions[] = {OPENTXS_ARG_BACKUP_DIRECTORY,
+                                         OPENTXS_ARG_BINDIP,
+                                         OPENTXS_ARG_COMMANDPORT,
+                                         OPENTXS_ARG_EEP,
+                                         OPENTXS_ARG_GC,
+                                         OPENTXS_ARG_EXTERNALIP,
+                                         OPENTXS_ARG_LISTENCOMMAND,
+                                         OPENTXS_ARG_LISTENNOTIFY,
+                                         OPENTXS_ARG_NAME,
+                                         OPENTXS_ARG_NOTIFICATIONPORT,
+                                         OPENTXS_ARG_ONION,
+                                         OPENTXS_ARG_STORAGE_PLUGIN,
+                                         OPENTXS_ARG_TERMS};
     AnyOption options;
 
     for (const auto& optionName : createOptions) {
@@ -154,34 +137,43 @@ void process_arguments(
         const char* value = options.getValue(optionName.c_str());
 
         if (nullptr != value) {
-            arguments[optionName] = value;
+            args[optionName].emplace(value);
         }
     }
 
-    const auto gcIt = arguments.find(OT_SERVER_OPTION_GC);
-    const auto storageIt = arguments.find(OT_SERVER_OPTION_STORAGE);
-    const auto backupIt = arguments.find(OT_SERVER_OPTION_BACKUP);
+    const auto gcIt = args.find(OPENTXS_ARG_GC);
+    const auto storageIt = args.find(OPENTXS_ARG_STORAGE_PLUGIN);
+    const auto backupIt = args.find(OPENTXS_ARG_BACKUP_DIRECTORY);
 
-    if (arguments.end() != gcIt) {
+    if (args.end() != gcIt) {
+        OT_ASSERT(2 > gcIt->second.size());
+        OT_ASSERT(0 < gcIt->second.size());
+        const auto& gc = *gcIt->second.cbegin();
         try {
-            gcInterval = std::chrono::seconds(std::stoll(gcIt->second));
+            gcInterval = std::chrono::seconds(std::stoll(gc));
             opentxs::otErr
                 << ": Setting storage garbage collection interval to "
                 << gcInterval.count() << " seconds" << std::endl;
-        } catch (const std::invalid_argument&) {
-        } catch (const std::out_of_range&) {
+        }
+        catch (const std::invalid_argument&) {
+        }
+        catch (const std::out_of_range&) {
         }
     }
 
-    if (arguments.end() != storageIt) {
-        storagePlugin = storageIt->second;
-        opentxs::otErr << ": Setting primary storage plugin to "
-                       << storagePlugin << std::endl;
+    if (args.end() != storageIt) {
+        OT_ASSERT(2 > storageIt->second.size());
+        OT_ASSERT(0 < storageIt->second.size());
+        const auto& storage = *storageIt->second.cbegin();
+        opentxs::otErr << ": Setting primary storage plugin to " << storage
+                       << std::endl;
     }
 
-    if (arguments.end() != backupIt) {
-        backupDirectory = backupIt->second;
-        opentxs::otErr << ": Setting backup directory to " << backupDirectory
+    if (args.end() != backupIt) {
+        OT_ASSERT(2 > backupIt->second.size());
+        OT_ASSERT(0 < backupIt->second.size());
+        const auto& backup = *backupIt->second.cbegin();
+        opentxs::otErr << ": Setting backup directory to " << backup
                        << std::endl;
     }
 
@@ -193,7 +185,8 @@ void process_arguments(
 
         if (0 == arg.compare("--version")) {
             version = true;
-        } else if (0 == arg.compare("--only-init")) {
+        }
+        else if (0 == arg.compare("--only-init")) {
             onlyInit = true;
         }
     }
