@@ -48,9 +48,13 @@
 #include <map>
 #include <string>
 
-void process_arguments(int argc, char* argv[], opentxs::ArgList& args,
-                       bool& version, bool& onlyInit,
-                       std::chrono::seconds& gcInterval);
+void process_arguments(
+    int argc,
+    char* argv[],
+    opentxs::ArgList& args,
+    bool& version,
+    bool& onlyInit,
+    std::chrono::seconds& gcInterval);
 
 int main(int argc, char* argv[])
 {
@@ -84,9 +88,13 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void process_arguments(int argc, char* argv[], opentxs::ArgList& args,
-                       bool& version, bool& onlyInit,
-                       std::chrono::seconds& gcInterval)
+void process_arguments(
+    int argc,
+    char* argv[],
+    opentxs::ArgList& args,
+    bool& version,
+    bool& onlyInit,
+    std::chrono::seconds& gcInterval)
 {
     // -------------------------------------------------------
     // Process the command-line options for creating a new server contract.
@@ -154,10 +162,8 @@ void process_arguments(int argc, char* argv[], opentxs::ArgList& args,
             opentxs::otErr
                 << ": Setting storage garbage collection interval to "
                 << gcInterval.count() << " seconds" << std::endl;
-        }
-        catch (const std::invalid_argument&) {
-        }
-        catch (const std::out_of_range&) {
+        } catch (const std::invalid_argument&) {
+        } catch (const std::out_of_range&) {
         }
     }
 
@@ -185,8 +191,7 @@ void process_arguments(int argc, char* argv[], opentxs::ArgList& args,
 
         if (0 == arg.compare("--version")) {
             version = true;
-        }
-        else if (0 == arg.compare("--only-init")) {
+        } else if (0 == arg.compare("--only-init")) {
             onlyInit = true;
         }
     }
