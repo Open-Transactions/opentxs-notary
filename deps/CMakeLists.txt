@@ -1,5 +1,3 @@
-add_subdirectory(gtest)
-
 ### Build anyoption as library
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -158,16 +158,11 @@ endif()
 #-----------------------------------------------------------------------------
 # Unit Testing
 
-if(BUILD_TESTS)
+find_package(GTest REQUIRED)
+
+if(GTEST_FOUND AND BUILD_TESTS)
   include(CTest)
   enable_testing()
-
-  set(GTEST_ROOT ${PROJECT_SOURCE_DIR}/deps/gtest)
-  set(GTEST_FOUND ON)
-  set(GTEST_INCLUDE_DIRS ${GTEST_ROOT}/include)
-  set(GTEST_LIBRARIES gtest)
-  set(GTEST_MAIN_LIBRARIES gtest_main)
-  set(GTEST_BOTH_LIBRARIES ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 endif()
 
 
