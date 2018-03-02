@@ -158,10 +158,9 @@ endif()
 #-----------------------------------------------------------------------------
 # Unit Testing
 
-find_package(GTest REQUIRED)
-
-if(GTEST_FOUND AND BUILD_TESTS)
+if(BUILD_TESTS)
   include(CTest)
+  find_package(GTest REQUIRED)
   enable_testing()
 endif()
 
