@@ -36,11 +36,7 @@
  *
  ************************************************************/
 
-#include <opentxs/OT.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/api/Server.hpp>
-#include <opentxs/core/Log.hpp>
-#include <opentxs/util/Signals.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <anyoption/anyoption.hpp>
 
