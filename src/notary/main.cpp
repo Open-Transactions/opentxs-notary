@@ -1,40 +1,7 @@
-/************************************************************
- *
- *                 OPEN TRANSACTIONS
- *
- *       Financial Cryptography and Digital Cash
- *       Library, Protocol, API, Server, CLI, GUI
- *
- *       -- Anonymous Numbered Accounts.
- *       -- Untraceable Digital Cash.
- *       -- Triple-Signed Receipts.
- *       -- Cheques, Vouchers, Transfers, Inboxes.
- *       -- Basket Currencies, Markets, Payment Plans.
- *       -- Signed, XML, Ricardian-style Contracts.
- *       -- Scripted smart contracts.
- *
- *  EMAIL:
- *  fellowtraveler@opentransactions.org
- *
- *  WEBSITE:
- *  http://www.opentransactions.org/
- *
- *  -----------------------------------------------------
- *
- *   LICENSE:
- *   This Source Code Form is subject to the terms of the
- *   Mozilla Public License, v. 2.0. If a copy of the MPL
- *   was not distributed with this file, You can obtain one
- *   at http://mozilla.org/MPL/2.0/.
- *
- *   DISCLAIMER:
- *   This program is distributed in the hope that it will
- *   be useful, but WITHOUT ANY WARRANTY; without even the
- *   implied warranty of MERCHANTABILITY or FITNESS FOR A
- *   PARTICULAR PURPOSE.  See the Mozilla Public License
- *   for more details.
- *
- ************************************************************/
+// Copyright (c) 2018 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <opentxs/opentxs.hpp>
 
@@ -75,9 +42,7 @@ int main(int argc, char* argv[])
     opentxs::OT::ServerFactory(args, gc);
     opentxs::OT::App().HandleSignals();
 
-    if (onlyInit) {
-        opentxs::OT::Cleanup();
-    }
+    if (onlyInit) { opentxs::OT::Cleanup(); }
 
     opentxs::OT::Join();
 
@@ -140,9 +105,7 @@ void process_arguments(
     for (const auto& optionName : createOptions) {
         const char* value = options.getValue(optionName.c_str());
 
-        if (nullptr != value) {
-            args[optionName].emplace(value);
-        }
+        if (nullptr != value) { args[optionName].emplace(value); }
     }
 
     const auto gcIt = args.find(OPENTXS_ARG_GC);
@@ -158,8 +121,10 @@ void process_arguments(
             opentxs::otErr
                 << ": Setting storage garbage collection interval to "
                 << gcInterval.count() << " seconds" << std::endl;
-        } catch (const std::invalid_argument&) {
-        } catch (const std::out_of_range&) {
+        }
+        catch (const std::invalid_argument&) {
+        }
+        catch (const std::out_of_range&) {
         }
     }
 
@@ -187,7 +152,8 @@ void process_arguments(
 
         if (0 == arg.compare("--version")) {
             version = true;
-        } else if (0 == arg.compare("--only-init")) {
+        }
+        else if (0 == arg.compare("--only-init")) {
             onlyInit = true;
         }
     }
