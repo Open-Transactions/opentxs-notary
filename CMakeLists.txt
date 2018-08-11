@@ -130,6 +130,7 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 find_package(opentxs REQUIRED)
+find_package(Boost REQUIRED program_options)
 
 #-----------------------------------------------------------------------------
 # Force out-of-source build
@@ -219,7 +220,6 @@ endif()
 LIST(APPEND CMAKE_PREFIX_PATH "/usr/share/cmake/Modules")
 LIST(APPEND CMAKE_PREFIX_PATH "/usr/local/share/cmake/Modules")
 
-add_subdirectory(deps)
 add_subdirectory(src)
 add_subdirectory(tests)
 
