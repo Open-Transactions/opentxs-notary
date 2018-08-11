@@ -5,11 +5,50 @@
 
 #include <opentxs/opentxs.hpp>
 
-#include <anyoption/anyoption.hpp>
+#include <boost/program_options.hpp>
 
 #include <chrono>
 #include <map>
+#include <memory>
 #include <string>
+
+namespace po = boost::program_options;
+
+void cleanup_globals();
+po::variables_map& variables();
+po::options_description& options();
+
+static po::variables_map* variables_{};
+static po::options_description* options_{};
+
+po::variables_map& variables()
+{
+    if (nullptr == variables_) { variables_ = new po::variables_map; }
+
+    return *variables_;
+}
+
+po::options_description& options()
+{
+    if (nullptr == options_) {
+        options_ = new po::options_description{"Options"};
+    }
+
+    return *options_;
+}
+
+void cleanup_globals()
+{
+    if (nullptr != variables_) {
+        delete variables_;
+        variables_ = nullptr;
+    }
+
+    if (nullptr != options_) {
+        delete options_;
+        options_ = nullptr;
+    }
+}
 
 void process_arguments(
     int argc,
@@ -18,9 +57,11 @@ void process_arguments(
     bool& version,
     bool& onlyInit,
     std::chrono::seconds& gcInterval);
+void read_options(int argc, char** argv);
 
 int main(int argc, char* argv[])
 {
+    read_options(argc, argv);
     opentxs::ArgList args;
     bool onlyInit{false};
     bool version{false};
@@ -46,6 +87,8 @@ int main(int argc, char* argv[])
 
     opentxs::OT::Join();
 
+    cleanup_globals();
+
     return 0;
 }
 
@@ -57,55 +100,8 @@ void process_arguments(
     bool& onlyInit,
     std::chrono::seconds& gcInterval)
 {
-    // -------------------------------------------------------
-    // Process the command-line options for creating a new server contract.
-    //
-    // (Not used for most server start-ups, but only used when the server
-    // contract is first created.)
-    /*
-     --terms <human-readable terms of use>
-     --externalip <externally-visible hostname>
-     --commandport <externally-visible port where opentxs commands can be sent>
-     --notificationport <externally-visible port where to listen for push
-     notifications>
-     --bindip <internal ip address where the listen sockets will be opened>
-     --listencommand <internal port number where the opentxs listen socket
-     will bind>
-     --listennotification <internal port number where the push notification
-     socket will bind>
-     --name <server name>
-     --onion <tor hidden service hostname>
-     --eep <i2p eepsite hostname>
-     --storage primary storage plugin
-     --backup storage backup directory
-     */
-    const std::string createOptions[] = {OPENTXS_ARG_BACKUP_DIRECTORY,
-                                         OPENTXS_ARG_BINDIP,
-                                         OPENTXS_ARG_COMMANDPORT,
-                                         OPENTXS_ARG_EEP,
-                                         OPENTXS_ARG_GC,
-                                         OPENTXS_ARG_EXTERNALIP,
-                                         OPENTXS_ARG_LISTENCOMMAND,
-                                         OPENTXS_ARG_LISTENNOTIFY,
-                                         OPENTXS_ARG_NAME,
-                                         OPENTXS_ARG_NOTIFICATIONPORT,
-                                         OPENTXS_ARG_ONION,
-                                         OPENTXS_ARG_STORAGE_PLUGIN,
-                                         OPENTXS_ARG_TERMS};
-    AnyOption options;
-
-    for (const auto& optionName : createOptions) {
-        if (!options.findOption(optionName.c_str())) {
-            options.setCommandOption(optionName.c_str());
-        }
-    }
-
-    options.processCommandArgs(argc, argv);
-
-    for (const auto& optionName : createOptions) {
-        const char* value = options.getValue(optionName.c_str());
-
-        if (nullptr != value) { args[optionName].emplace(value); }
+    for (const auto& [name, value] : variables()) {
+        args[name].emplace(value.as<std::string>());
     }
 
     const auto gcIt = args.find(OPENTXS_ARG_GC);
@@ -156,5 +152,56 @@ void process_arguments(
         else if (0 == arg.compare("--only-init")) {
             onlyInit = true;
         }
+    }
+}
+
+void read_options(int argc, char** argv)
+{
+    options().add_options()(
+        OPENTXS_ARG_BACKUP_DIRECTORY,
+        po::value<std::string>(),
+        "Path to directory for storage backup plugin")(
+        OPENTXS_ARG_BINDIP,
+        po::value<std::string>(),
+        "Local IP address to which to bind")(
+        OPENTXS_ARG_COMMANDPORT,
+        po::value<std::string>(),
+        "Public primary port number")(
+        OPENTXS_ARG_EEP,
+        po::value<std::string>(),
+        "Public I2P endpoint")(
+        OPENTXS_ARG_GC,
+        po::value<std::string>(),
+        "Seconds between storage garbage collection operation")(
+        OPENTXS_ARG_EXTERNALIP,
+        po::value<std::string>(),
+        "Public ipv4 endpoint for server")(
+        OPENTXS_ARG_LISTENCOMMAND,
+        po::value<std::string>(),
+        "Local primary port number")(
+        OPENTXS_ARG_LISTENNOTIFY,
+        po::value<std::string>(),
+        "Local notification port number")(
+        OPENTXS_ARG_NAME,
+        po::value<std::string>(),
+        "Server name")(
+        OPENTXS_ARG_NOTIFICATIONPORT,
+        po::value<std::string>(),
+        "Public notification port number")(
+        OPENTXS_ARG_ONION,
+        po::value<std::string>(),
+        "Public Tor endpoint")(
+        OPENTXS_ARG_STORAGE_PLUGIN,
+        po::value<std::string>(),
+        "Primary storage plugin")(
+        OPENTXS_ARG_TERMS,
+        po::value<std::string>(),
+        "Server terms and conditions");
+
+    try {
+        po::store(po::parse_command_line(argc, argv, options()), variables());
+        po::notify(variables());
+    } catch (po::error& e) {
+        std::cerr << "ERROR: " << e.what() << "\n\n" << options() << std::endl;
     }
 }
