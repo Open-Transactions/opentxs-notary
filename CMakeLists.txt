@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(opentxs-notary)
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM LAST)
@@ -77,47 +77,30 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 
 #-----------------------------------------------------------------------------
-# Check which compiler to use
+# Compile options
 
-INCLUDE(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG(-std=c++17 HAVE_STD17)
-
-if(HAVE_STD17)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
-endif()
+set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(PEDANTIC_CXX_FLAGS "-Werror")
+set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -std=c11")
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES GNU)
-  set(GCC_WARN_FLAGS "-Wno-attributes -Wnoexcept -Wstrict-null-sentinel -Wlogical-op")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+  set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Wall -Wextra -pedantic -pedantic-errors -Wswitch-default -Wswitch-enum -Wcast-align -Wdisabled-optimization -Wmissing-declarations -Wmissing-field-initializers -Wunused-macros -Wundef -Wformat=2 -Wlogical-op -Wmissing-include-dirs")
+  set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Weffc++ -Wctor-dtor-privacy -Wold-style-cast -Woverloaded-virtual -Wsynth -Wnoexcept -Wstrict-null-sentinel")
 elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-  set(CMAKE_COMPILER_IS_CLANGXX 1)
-
-  if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -stdlib=libc++")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-  endif()
-endif()
-
-if(WIN32)
-  add_definitions(-D_UNICODE)
-else()
-  set(PEDANTIC_CXX_FLAGS "-Wall -Werror -Wextra -pedantic -Wno-missing-braces -Wcast-align -Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wmissing-include-dirs -Wswitch-default -Wold-style-cast -Woverloaded-virtual -Wmissing-declarations -Wno-deprecated-declarations -Wno-unused-parameter -Wno-old-style-cast -Wunused-macros -Wundef -Wformat=2 -Wno-format-nonliteral ${GCC_WARN_FLAGS}")
-endif()
-
-if(CMAKE_COMPILER_IS_CLANGXX)
-  set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Wno-unused-parameter -Wno-old-style-cast")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+  set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Weverything -Wno-c++98-compat-pedantic -Wno-padded -Wno-weak-vtables -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-float-conversion -Wno-covered-switch-default")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
 
-message(STATUS "C++ Compiler ID: ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "C++ Flags:       ${CMAKE_CXX_FLAGS}")
-message(STATUS "C++ link flags:  ${CMAKE_CXX_LINK_FLAGS}")
+message(STATUS "C Compiler ID:      ${CMAKE_C_COMPILER_ID}")
+message(STATUS "C Flags:            ${CMAKE_C_FLAGS}")
+message(STATUS "C link flags:       ${CMAKE_C_LINK_FLAGS}")
+message(STATUS "C++ Compiler ID:    ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "C++ Flags:          ${CMAKE_CXX_FLAGS}")
+message(STATUS "C++ link flags:     ${CMAKE_CXX_LINK_FLAGS}")
 
 #-----------------------------------------------------------------------------
 # System libraries used for linking.
@@ -165,22 +148,6 @@ if(BUILD_TESTS)
   find_package(GTest REQUIRED)
   enable_testing()
 endif()
-
-
-#-----------------------------------------------------------------------------
-# Build Documentation
-
-# if(BUILD_DOCUMENTATION)
-#    find_package(Doxygen)
-#    if (DOXYGEN_FOUND)
-#      configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-#      add_custom_target(doc
-#        ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-#        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#        COMMENT "Generating API documentation with Doxygen" VERBATIM)
-#      set(CPP-NETLIB_GENERATE_DOCS ON)
-#    endif(DOXYGEN_FOUND)
-# endif(BUILD_DOCUMENTATION)
 
 
 #-----------------------------------------------------------------------------
