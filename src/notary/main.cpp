@@ -7,11 +7,15 @@
 
 #include <boost/program_options.hpp>
 
+#include "Client.hpp"
+
 #include <chrono>
 #include <map>
 #include <memory>
 #include <string>
 
+#define NOTARY_ARGUMENT_ADVERTISE "advertise"
+#define NOTARY_ARGUMENT_ADVERTISE_NETWORK "advertise-network"
 #define NOTARY_OPTION_ONLY_INIT "only-init"
 #define NOTARY_OPTION_VERSION "version"
 
@@ -59,6 +63,8 @@ void process_arguments(
     opentxs::ArgList& args,
     bool& version,
     bool& onlyInit,
+    bool& startClient,
+    int& network,
     std::chrono::seconds& gcInterval);
 void read_options(int argc, char** argv);
 
@@ -68,8 +74,12 @@ int main(int argc, char* argv[])
     opentxs::ArgList args;
     bool onlyInit{false};
     bool version{false};
+    bool startClient{false};
+    int network{1};
     std::chrono::seconds gc{0};
-    process_arguments(argc, argv, args, version, onlyInit, gc);
+    std::unique_ptr<opentxs::notary::Client> client{nullptr};
+    process_arguments(
+        argc, argv, args, version, onlyInit, startClient, network, gc);
 
     if (version) {
         opentxs::otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING
@@ -83,13 +93,19 @@ int main(int argc, char* argv[])
     }
 
     opentxs::Signals::Block();
-    opentxs::OT::ServerFactory(args, gc);
-    opentxs::OT::App().HandleSignals();
+    const auto& ot = opentxs::OT::Start(args, gc);
+    const auto& server = ot.StartServer(args, 0);
+    opentxs::api::Native::ShutdownCallback shutdown{[&] { client.reset(); }};
+    opentxs::OT::App().HandleSignals(&shutdown);
 
     if (onlyInit) { opentxs::OT::Cleanup(); }
 
-    opentxs::OT::Join();
+    if (startClient) {
+        const auto& otClient = ot.StartClient(args, 0);
+        client.reset(new opentxs::notary::Client(otClient, server, network));
+    }
 
+    opentxs::OT::Join();
     cleanup_globals();
 
     return 0;
@@ -101,6 +117,8 @@ void process_arguments(
     opentxs::ArgList& args,
     bool& version,
     bool& onlyInit,
+    bool& startClient,
+    int& network,
     std::chrono::seconds& gcInterval)
 {
     for (const auto& [name, value] : variables()) {
@@ -110,6 +128,8 @@ void process_arguments(
     const auto gcIt = args.find(OPENTXS_ARG_GC);
     const auto storageIt = args.find(OPENTXS_ARG_STORAGE_PLUGIN);
     const auto backupIt = args.find(OPENTXS_ARG_BACKUP_DIRECTORY);
+    const auto advertiseIt = args.find(NOTARY_ARGUMENT_ADVERTISE);
+    const auto networkIt = args.find(NOTARY_ARGUMENT_ADVERTISE_NETWORK);
 
     if (args.end() != gcIt) {
         OT_ASSERT(2 > gcIt->second.size());
@@ -118,12 +138,10 @@ void process_arguments(
         try {
             gcInterval = std::chrono::seconds(std::stoll(gc));
             opentxs::otErr
-                << ": Setting storage garbage collection interval to "
+                << " * Setting storage garbage collection interval to "
                 << gcInterval.count() << " seconds" << std::endl;
-        }
-        catch (const std::invalid_argument&) {
-        }
-        catch (const std::out_of_range&) {
+        } catch (const std::invalid_argument&) {
+        } catch (const std::out_of_range&) {
         }
     }
 
@@ -131,7 +149,7 @@ void process_arguments(
         OT_ASSERT(2 > storageIt->second.size());
         OT_ASSERT(0 < storageIt->second.size());
         const auto& storage = *storageIt->second.cbegin();
-        opentxs::otErr << ": Setting primary storage plugin to " << storage
+        opentxs::otErr << " * Setting primary storage plugin to " << storage
                        << std::endl;
     }
 
@@ -139,8 +157,37 @@ void process_arguments(
         OT_ASSERT(2 > backupIt->second.size());
         OT_ASSERT(0 < backupIt->second.size());
         const auto& backup = *backupIt->second.cbegin();
-        opentxs::otErr << ": Setting backup directory to " << backup
+        opentxs::otErr << " * Setting backup directory to " << backup
                        << std::endl;
+    }
+
+    if (args.end() != advertiseIt) {
+        OT_ASSERT(2 > advertiseIt->second.size());
+        OT_ASSERT(0 < advertiseIt->second.size());
+        const auto& advertise = *advertiseIt->second.cbegin();
+
+        if (advertise == "true") {
+            opentxs::otErr
+                << " * Advertising notary contract on introduction server"
+                << std::endl;
+            startClient = true;
+        } else {
+            startClient = false;
+        }
+    }
+
+    if (args.end() != networkIt) {
+        OT_ASSERT(2 > networkIt->second.size());
+        OT_ASSERT(0 < networkIt->second.size());
+        const auto& networkValue = *networkIt->second.cbegin();
+
+        try {
+            network = std::stoi(networkValue);
+        } catch (...) {
+            network = 1;
+        }
+    } else {
+        network = 1;
     }
 
     version = false;
@@ -151,8 +198,7 @@ void process_arguments(
 
         if (0 == arg.compare("--version")) {
             version = true;
-        }
-        else if (0 == arg.compare("--only-init")) {
+        } else if (0 == arg.compare("--only-init")) {
             onlyInit = true;
         }
     }
@@ -170,9 +216,7 @@ void read_options(int argc, char** argv)
         OPENTXS_ARG_COMMANDPORT,
         po::value<std::string>(),
         "Public primary port number")(
-        OPENTXS_ARG_EEP,
-        po::value<std::string>(),
-        "Public I2P endpoint")(
+        OPENTXS_ARG_EEP, po::value<std::string>(), "Public I2P endpoint")(
         OPENTXS_ARG_GC,
         po::value<std::string>(),
         "Seconds between storage garbage collection operation")(
@@ -185,15 +229,11 @@ void read_options(int argc, char** argv)
         OPENTXS_ARG_LISTENNOTIFY,
         po::value<std::string>(),
         "Local notification port number")(
-        OPENTXS_ARG_NAME,
-        po::value<std::string>(),
-        "Server name")(
+        OPENTXS_ARG_NAME, po::value<std::string>(), "Server name")(
         OPENTXS_ARG_NOTIFICATIONPORT,
         po::value<std::string>(),
         "Public notification port number")(
-        OPENTXS_ARG_ONION,
-        po::value<std::string>(),
-        "Public Tor endpoint")(
+        OPENTXS_ARG_ONION, po::value<std::string>(), "Public Tor endpoint")(
         OPENTXS_ARG_STORAGE_PLUGIN,
         po::value<std::string>(),
         "Primary storage plugin")(
@@ -205,7 +245,14 @@ void read_options(int argc, char** argv)
         "Create or verify notary contract only")(
         NOTARY_OPTION_VERSION,
         po::value<std::string>()->implicit_value("true"),
-        "Display notary version only");
+        "Display notary version only")(
+        NOTARY_ARGUMENT_ADVERTISE,
+        po::value<std::string>(),
+        "Upload the notary contract to the introduction notary")(
+        NOTARY_ARGUMENT_ADVERTISE_NETWORK,
+        po::value<std::string>(),
+        "Connection mode to introduction server. 1 = ipv4, 2 = ipv6, 3 = tor, "
+        "4  = i2p");
 
     try {
         po::store(po::parse_command_line(argc, argv, options()), variables());

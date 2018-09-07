@@ -112,6 +112,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+find_package(opentxs-proto REQUIRED)
 find_package(opentxs REQUIRED)
 find_package(Boost REQUIRED program_options)
 
