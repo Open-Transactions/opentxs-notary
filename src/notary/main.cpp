@@ -12,6 +12,9 @@
 #include <memory>
 #include <string>
 
+#define NOTARY_OPTION_ONLY_INIT "only-init"
+#define NOTARY_OPTION_VERSION "version"
+
 namespace po = boost::program_options;
 
 void cleanup_globals();
@@ -73,7 +76,7 @@ int main(int argc, char* argv[])
                        << std::endl;
         opentxs::otOut << "opentxs library " << OPENTXS_VERSION_STRING
                        << std::endl;
-        opentxs::otOut << "Copyright (C) 2017 Open Transactions Developers"
+        opentxs::otOut << "Copyright (C) 2018 Open Transactions Developers"
                        << std::endl;
 
         return 0;
@@ -196,7 +199,13 @@ void read_options(int argc, char** argv)
         "Primary storage plugin")(
         OPENTXS_ARG_TERMS,
         po::value<std::string>(),
-        "Server terms and conditions");
+        "Server terms and conditions")(
+        NOTARY_OPTION_ONLY_INIT,
+        po::value<std::string>()->implicit_value("true"),
+        "Create or verify notary contract only")(
+        NOTARY_OPTION_VERSION,
+        po::value<std::string>()->implicit_value("true"),
+        "Display notary version only");
 
     try {
         po::store(po::parse_command_line(argc, argv, options()), variables());
