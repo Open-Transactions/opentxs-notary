@@ -6,6 +6,8 @@
 set(MODULE_NAME opentxs-notary)
 
 set(cxx-sources
+  Client.cpp
+  Client.hpp
   main.cpp
 )
 
@@ -25,8 +27,24 @@ else()
   add_executable(${MODULE_NAME} ${cxx-sources})
 endif()
 
-target_link_libraries(${MODULE_NAME} ${OPENTXS_LIBRARIES})
-target_link_libraries(${MODULE_NAME} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-target_include_directories(${MODULE_NAME} PUBLIC ${OPENTXS_INCLUDE_DIRS} )
-target_include_directories(${MODULE_NAME} PUBLIC ${Boost_INCLUDE_DIRS} )
+target_link_libraries(
+  ${MODULE_NAME}
+  PRIVATE
+  Threads::Threads
+  ${OPENTXS_PROTO_LIBRARIES}
+  ${OPENTXS_LIBRARIES}
+  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+)
+
+target_include_directories(
+  ${MODULE_NAME}
+  PRIVATE
+  ${OPENTXS_PROTO_INCLUDE_DIRS}
+  ${OPENTXS_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+)
+
+set_property(TARGET ${MODULE_NAME} PROPERTY POSITION_INDEPENDENT_CODE 1)
+set_property(TARGET ${MODULE_NAME} PROPERTY CXX_STANDARD 17)
+
 install(TARGETS ${MODULE_NAME} DESTINATION bin)
