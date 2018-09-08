@@ -190,8 +190,10 @@ LIST(APPEND CMAKE_PREFIX_PATH "/usr/share/cmake/Modules")
 LIST(APPEND CMAKE_PREFIX_PATH "/usr/local/share/cmake/Modules")
 
 add_subdirectory(src)
-add_subdirectory(tests)
 
+if(BUILD_TESTS)
+  add_subdirectory(tests)
+endif()
 
 #-----------------------------------------------------------------------------
 # Uninstal
