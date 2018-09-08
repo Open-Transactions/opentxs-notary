@@ -3,18 +3,39 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(name unittests-opentxs-notary)
+set(MODULE_NAME unittests-opentxs-notary)
 
-include_directories(
+set(cxx-sources
+  Test_Example.cpp
+)
+
+add_executable(${MODULE_NAME} ${cxx-sources})
+
+set_target_properties(${MODULE_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests)
+
+target_link_libraries(
+  ${MODULE_NAME}
+  PRIVATE
+  Threads::Threads
+  ${OPENTXS_PROTO_LIBRARIES}
+  ${OPENTXS_LIBRARIES}
+  ${Boost_PROGRAM_OPTIONS_LIBRARIES}
+  ${GTEST_BOTH_LIBRARIES}
+)
+
+target_include_directories(
+  ${MODULE_NAME}
+  PRIVATE
+  ${OPENTXS_PROTO_INCLUDE_DIRS}
+  ${OPENTXS_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src
 )
 
-set(SRC
-  Test_Example.cpp
-)
+set_property(TARGET ${MODULE_NAME} PROPERTY POSITION_INDEPENDENT_CODE 1)
+set_property(TARGET ${MODULE_NAME} PROPERTY CXX_STANDARD 17)
 
-add_executable(${name} ${SRC})
-target_link_libraries(${name} ${GTEST_BOTH_LIBRARIES})
-set_target_properties(${name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests)
-add_test(${name} ${PROJECT_BINARY_DIR}/tests/${name} --gtest_output=xml:gtestresults.xml)
+add_test(${MODULE_NAME} ${PROJECT_BINARY_DIR}/tests/${MODULE_NAME} --gtest_output=xml:gtestresults.xml)
+
+
