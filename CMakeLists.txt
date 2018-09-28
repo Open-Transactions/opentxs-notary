@@ -90,7 +90,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES GNU)
   set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Weffc++ -Wctor-dtor-privacy -Wold-style-cast -Woverloaded-virtual -Wsynth -Wnoexcept -Wstrict-null-sentinel")
 elseif(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
-  set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Weverything -Wno-c++98-compat-pedantic -Wno-padded -Wno-weak-vtables -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-float-conversion -Wno-covered-switch-default")
+  set(PEDANTIC_CXX_FLAGS "${PEDANTIC_CXX_FLAGS} -Weverything -Wno-c++98-compat-pedantic -Wno-padded -Wno-weak-vtables -Wno-disabled-macro-expansion -Wno-sign-conversion -Wno-float-conversion -Wno-covered-switch-default -Wno-global-constructors")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PEDANTIC_CXX_FLAGS}")
