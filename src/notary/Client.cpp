@@ -115,7 +115,9 @@ void Client::set_address_type() const
     if (network_ != client_.ZMQ().DefaultAddressType()) {
         bool notUsed{false};
         client_.Config().Set_long(
-            "Connection", "preferred_address_type", network_, notUsed);
+        String::Factory("Connection"),
+        String::Factory("preferred_address_type"),
+        network_, notUsed);
         client_.Config().Save();
     }
 }
