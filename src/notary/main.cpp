@@ -18,6 +18,7 @@
 #define NOTARY_ARGUMENT_ADVERTISE_NETWORK "advertise-network"
 #define NOTARY_OPTION_ONLY_INIT "only-init"
 #define NOTARY_OPTION_VERSION "version"
+#define OT_METHOD "opentxs_notary::"
 
 namespace po = boost::program_options;
 
@@ -82,12 +83,15 @@ int main(int argc, char* argv[])
         argc, argv, args, version, onlyInit, startClient, network, gc);
 
     if (version) {
-        opentxs::otOut << "opentxs server " << OPENTXS_SERVER_VERSION_STRING
-                       << std::endl;
-        opentxs::otOut << "opentxs library " << OPENTXS_VERSION_STRING
-                       << std::endl;
-        opentxs::otOut << "Copyright (C) 2018 Open Transactions Developers"
-                       << std::endl;
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(": opentxs server ")(
+            OPENTXS_SERVER_VERSION_STRING)
+            .Flush();
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(": opentxs library ")(
+            OPENTXS_VERSION_STRING)
+            .Flush();
+        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
+            ": Copyright (C) 2018 Open Transactions Developers")
+            .Flush();
 
         return 0;
     }
