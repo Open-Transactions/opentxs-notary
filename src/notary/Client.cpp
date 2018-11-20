@@ -99,7 +99,7 @@ void Client::migrate_nym() const
 void Client::server_nym_updated(const network::zeromq::Message& message) const
 {
     if (1 > message.Body().size()) {
-        otErr << OT_METHOD << __FUNCTION__ << ": Missing nym ID." << std::endl;
+        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing nym ID.").Flush();
 
         return;
     }
@@ -115,9 +115,10 @@ void Client::set_address_type() const
     if (network_ != client_.ZMQ().DefaultAddressType()) {
         bool notUsed{false};
         client_.Config().Set_long(
-        String::Factory("Connection"),
-        String::Factory("preferred_address_type"),
-        network_, notUsed);
+            String::Factory("Connection"),
+            String::Factory("preferred_address_type"),
+            network_,
+            notUsed);
         client_.Config().Save();
     }
 }
