@@ -141,9 +141,10 @@ void process_arguments(
         const auto& gc = *gcIt->second.cbegin();
         try {
             gcInterval = std::chrono::seconds(std::stoll(gc));
-            opentxs::otErr
-                << " * Setting storage garbage collection interval to "
-                << gcInterval.count() << " seconds" << std::endl;
+            opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": * Setting storage garbage collection interval to ")(
+                gcInterval.count())(" seconds.")
+                .Flush();
         } catch (const std::invalid_argument&) {
         } catch (const std::out_of_range&) {
         }
@@ -153,16 +154,18 @@ void process_arguments(
         OT_ASSERT(2 > storageIt->second.size());
         OT_ASSERT(0 < storageIt->second.size());
         const auto& storage = *storageIt->second.cbegin();
-        opentxs::otErr << " * Setting primary storage plugin to " << storage
-                       << std::endl;
+        opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": * Setting primary storage plugin to ")(storage)(".")
+            .Flush();
     }
 
     if (args.end() != backupIt) {
         OT_ASSERT(2 > backupIt->second.size());
         OT_ASSERT(0 < backupIt->second.size());
         const auto& backup = *backupIt->second.cbegin();
-        opentxs::otErr << " * Setting backup directory to " << backup
-                       << std::endl;
+        opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+            ": * Setting backup directory to ")(backup)(".")
+            .Flush();
     }
 
     if (args.end() != advertiseIt) {
@@ -171,9 +174,9 @@ void process_arguments(
         const auto& advertise = *advertiseIt->second.cbegin();
 
         if (advertise == "true") {
-            opentxs::otErr
-                << " * Advertising notary contract on introduction server"
-                << std::endl;
+            opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
+                ": * Advertising notary contract on introduction server.")
+                .Flush();
             startClient = true;
         } else {
             startClient = false;
