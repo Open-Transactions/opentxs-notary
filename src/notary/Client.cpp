@@ -29,9 +29,9 @@ Client::Client(
     test_nym();
     migrate_contract();
     set_address_type();
-    client_.Sync().StartIntroductionServer(server_.NymID());
-    client_.Sync().SchedulePublishServerContract(
-        server_.NymID(), client_.Sync().IntroductionServer(), server_.ID());
+    client_.OTX().StartIntroductionServer(server_.NymID());
+    client_.OTX().PublishServerContract(
+        server_.NymID(), client_.OTX().IntroductionServer(), server_.ID());
 }
 
 void Client::import_nym() const
