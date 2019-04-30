@@ -38,6 +38,7 @@ option(BUILD_TESTS         "Build the unit tests." ON)
 option(KEYRING_FLATFILE    "Build with Flatfile Keyring" OFF)
 option(RPM                 "Build a RPM" OFF)
 option(DEB                 "Build a DEB" OFF)
+option(OT_WITH_QT          "opentxs was built with Qt support" OFF)
 
 set(PACKAGE_CONTACT        ""                              CACHE <TYPE>  "Package Maintainer")
 set(PACKAGE_VENDOR         "Open Transactions Developers"  CACHE <TYPE>  "Package Vendor")
@@ -116,6 +117,13 @@ find_package(opentxs-proto REQUIRED)
 find_package(opentxs REQUIRED)
 find_package(Boost REQUIRED program_options)
 find_package(Threads REQUIRED)
+
+if(OT_WITH_QT)
+  find_package(Qt5 COMPONENTS Core Qml REQUIRED)
+  set_target_properties(Qt5::Core PROPERTIES MAP_IMPORTED_CONFIG_COVERAGE "RELEASE")
+  list(GET Qt5Core_INCLUDE_DIRS 0 QT_INCLUDE_DIR)
+  include_directories("${QT_INCLUDE_DIR}")
+endif()
 
 #-----------------------------------------------------------------------------
 # Force out-of-source build
