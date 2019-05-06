@@ -136,8 +136,8 @@ void process_arguments(
     const auto networkIt = args.find(NOTARY_ARGUMENT_ADVERTISE_NETWORK);
 
     if (args.end() != gcIt) {
-        OT_ASSERT(2 > gcIt->second.size());
-        OT_ASSERT(0 < gcIt->second.size());
+        OT_ASSERT(2 > gcIt->second.size())
+        OT_ASSERT(0 < gcIt->second.size())
         const auto& gc = *gcIt->second.cbegin();
         try {
             gcInterval = std::chrono::seconds(std::stoll(gc));
@@ -151,8 +151,8 @@ void process_arguments(
     }
 
     if (args.end() != storageIt) {
-        OT_ASSERT(2 > storageIt->second.size());
-        OT_ASSERT(0 < storageIt->second.size());
+        OT_ASSERT(2 > storageIt->second.size())
+        OT_ASSERT(0 < storageIt->second.size())
         const auto& storage = *storageIt->second.cbegin();
         opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
             ": * Setting primary storage plugin to ")(storage)(".")
@@ -160,8 +160,8 @@ void process_arguments(
     }
 
     if (args.end() != backupIt) {
-        OT_ASSERT(2 > backupIt->second.size());
-        OT_ASSERT(0 < backupIt->second.size());
+        OT_ASSERT(2 > backupIt->second.size())
+        OT_ASSERT(0 < backupIt->second.size())
         const auto& backup = *backupIt->second.cbegin();
         opentxs::LogOutput(OT_METHOD)(__FUNCTION__)(
             ": * Setting backup directory to ")(backup)(".")
@@ -169,8 +169,8 @@ void process_arguments(
     }
 
     if (args.end() != advertiseIt) {
-        OT_ASSERT(2 > advertiseIt->second.size());
-        OT_ASSERT(0 < advertiseIt->second.size());
+        OT_ASSERT(2 > advertiseIt->second.size())
+        OT_ASSERT(0 < advertiseIt->second.size())
         const auto& advertise = *advertiseIt->second.cbegin();
 
         if (advertise == "true") {
@@ -184,8 +184,8 @@ void process_arguments(
     }
 
     if (args.end() != networkIt) {
-        OT_ASSERT(2 > networkIt->second.size());
-        OT_ASSERT(0 < networkIt->second.size());
+        OT_ASSERT(2 > networkIt->second.size())
+        OT_ASSERT(0 < networkIt->second.size())
         const auto& networkValue = *networkIt->second.cbegin();
 
         try {
