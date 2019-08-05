@@ -117,6 +117,7 @@ find_package(opentxs-proto REQUIRED)
 find_package(opentxs REQUIRED)
 find_package(Boost REQUIRED program_options)
 find_package(Threads REQUIRED)
+find_package(Protobuf REQUIRED)
 
 if(OT_WITH_QT)
   find_package(Qt5 COMPONENTS Core Qml REQUIRED)

@@ -90,26 +90,27 @@ int main(int argc, char* argv[])
             OPENTXS_VERSION_STRING)
             .Flush();
         opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Copyright (C) 2018 Open Transactions Developers")
+            ": Copyright (C) 2019 Open Transactions Developers")
             .Flush();
 
         return 0;
     }
 
     opentxs::Signals::Block();
-    const auto& ot = opentxs::OT::Start(args, gc);
+    const auto& ot = opentxs::InitContext(args, gc);
     const auto& server = ot.StartServer(args, 0);
-    opentxs::api::Native::ShutdownCallback shutdown{[&] { client.reset(); }};
-    opentxs::OT::App().HandleSignals(&shutdown);
+    auto shutdown =
+        opentxs::api::Context::ShutdownCallback{[&] { client.reset(); }};
+    ot.HandleSignals(&shutdown);
 
-    if (onlyInit) { opentxs::OT::Cleanup(); }
+    if (onlyInit) { opentxs::Cleanup(); }
 
     if (startClient) {
         const auto& otClient = ot.StartClient(args, 0);
         client.reset(new opentxs::notary::Client(otClient, server, network));
     }
 
-    opentxs::OT::Join();
+    opentxs::Join();
     cleanup_globals();
 
     return 0;

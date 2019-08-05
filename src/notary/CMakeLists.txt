@@ -31,13 +31,14 @@ target_link_libraries(
   ${MODULE_NAME}
   PRIVATE
   Threads::Threads
+  protobuf::libprotobuf-lite
   ${OPENTXS_PROTO_LIBRARIES}
   ${OPENTXS_LIBRARIES}
   ${Boost_PROGRAM_OPTIONS_LIBRARIES}
 )
 
 if(OT_WITH_QT)
-   target_link_libraries(${MODULE_NAME} PRIVATE ${Qt5Core_LIBRARIES} ${Qt5Qml_LIBRARIES})
+   target_link_libraries(${MODULE_NAME} PRIVATE ${Qt5Core_LIBRARIES} ${Qt5Qml_LIBRARIES} ${Qt5Widgets_LIBRARIES})
 endif()
 
 target_include_directories(
