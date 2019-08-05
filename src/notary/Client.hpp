@@ -23,6 +23,8 @@ private:
     const api::client::Manager& client_;
     const api::server::Manager& server_;
     const int network_{1};
+    const OTPasswordPrompt client_reason_;
+    const OTPasswordPrompt server_reason_;
     OTZMQListenCallback server_nym_callback_;
     OTZMQSubscribeSocket server_nym_subscriber_;
 

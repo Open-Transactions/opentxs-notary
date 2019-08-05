@@ -16,6 +16,8 @@ Client::Client(
     : client_(client)
     , server_(server)
     , network_(network)
+    , client_reason_(client_.Factory().PasswordPrompt("Notary operation"))
+    , server_reason_(client_.Factory().PasswordPrompt("Notary operation"))
     , server_nym_callback_(network::zeromq::ListenCallback::Factory(
           std::bind(&Client::server_nym_updated, this, std::placeholders::_1)))
     , server_nym_subscriber_(
@@ -36,7 +38,8 @@ Client::Client(
 
 void Client::import_nym() const
 {
-    const auto serverNym = server_.Wallet().Nym(server_.NymID());
+    const auto serverNym =
+        server_.Wallet().Nym(server_.NymID(), server_reason_);
 
     OT_ASSERT(serverNym)
 
@@ -47,9 +50,11 @@ void Client::import_nym() const
 
     const auto seedID = Identifier::Factory(path.root());
     OTPassword words{}, passphrase{};
-    words.setPassword(server_.Seeds().Words(seedID->str()));
-    passphrase.setPassword(server_.Seeds().Passphrase(seedID->str()));
-    const auto imported = client_.Seeds().ImportSeed(words, passphrase);
+    words.setPassword(server_.Seeds().Words(server_reason_, seedID->str()));
+    passphrase.setPassword(
+        server_.Seeds().Passphrase(server_reason_, seedID->str()));
+    const auto imported =
+        client_.Seeds().ImportSeed(words, passphrase, client_reason_);
 
     OT_ASSERT(imported == seedID->str())
     OT_ASSERT(2 == path.child_size())
@@ -67,7 +72,7 @@ void Client::import_nym() const
 #else
         NymParameters nymParameters(proto::CREDTYPE_LEGACY);
 #endif
-        auto clientNym = client_.Wallet().Nym(nymParameters);
+        auto clientNym = client_.Wallet().Nym(nymParameters, client_reason_);
 
         OT_ASSERT(clientNym)
         OT_ASSERT(clientNym->CompareID(server_.NymID()))
@@ -76,24 +81,27 @@ void Client::import_nym() const
 
 void Client::migrate_contract() const
 {
-    const auto serverContract = server_.Wallet().Server(server_.ID());
+    const auto serverContract =
+        server_.Wallet().Server(server_.ID(), server_reason_);
 
     OT_ASSERT(serverContract)
 
-    auto clientContract =
-        client_.Wallet().Server(serverContract->PublicContract());
+    auto clientContract = client_.Wallet().Server(
+        serverContract->PublicContract(), client_reason_);
 
     OT_ASSERT(clientContract)
 }
 
 void Client::migrate_nym() const
 {
-    const auto serverNym = server_.Wallet().Nym(server_.NymID());
+    const auto serverNym =
+        server_.Wallet().Nym(server_.NymID(), server_reason_);
 
     OT_ASSERT(serverNym)
 
-    auto clientNym = client_.Wallet().mutable_Nym(server_.NymID());
-    clientNym.SetContactData(serverNym->Claims().Serialize());
+    auto clientNym =
+        client_.Wallet().mutable_Nym(server_.NymID(), client_reason_);
+    clientNym.SetContactData(serverNym->Claims().Serialize(), client_reason_);
 }
 
 void Client::server_nym_updated(const network::zeromq::Message& message) const
@@ -125,7 +133,8 @@ void Client::set_address_type() const
 
 void Client::test_nym() const
 {
-    const auto clientNym = client_.Wallet().Nym(server_.NymID());
+    const auto clientNym =
+        client_.Wallet().Nym(server_.NymID(), client_reason_);
 
     if (false == bool(clientNym)) { import_nym(); }
 
