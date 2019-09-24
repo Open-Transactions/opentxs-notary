@@ -83,15 +83,7 @@ int main(int argc, char* argv[])
         argc, argv, args, version, onlyInit, startClient, network, gc);
 
     if (version) {
-        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(": opentxs server ")(
-            OPENTXS_SERVER_VERSION_STRING)
-            .Flush();
-        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(": opentxs library ")(
-            OPENTXS_VERSION_STRING)
-            .Flush();
-        opentxs::LogNormal(OT_METHOD)(__FUNCTION__)(
-            ": Copyright (C) 2019 Open Transactions Developers")
-            .Flush();
+        opentxs::LogNormal("opentxs library-")(OPENTXS_VERSION_STRING).Flush();
 
         return 0;
     }
