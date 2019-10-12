@@ -72,7 +72,8 @@ void Client::import_nym() const
 #else
         NymParameters nymParameters(proto::CREDTYPE_LEGACY);
 #endif
-        auto clientNym = client_.Wallet().Nym(nymParameters, client_reason_);
+        auto clientNym =
+            client_.Wallet().Nym(client_reason_, "", nymParameters);
 
         OT_ASSERT(clientNym)
         OT_ASSERT(clientNym->CompareID(server_.NymID()))
