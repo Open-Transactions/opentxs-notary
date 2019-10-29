@@ -5,6 +5,7 @@
 
 #include "Client.hpp"
 
+#if OT_CRYPTO_WITH_BIP39
 #define OT_METHOD "opentxs::notary::Client::"
 
 namespace opentxs::notary
@@ -142,3 +143,4 @@ void Client::test_nym() const
     migrate_nym();
 }
 }  // namespace opentxs::notary
+#endif  // OT_CRYPTO_WITH_BIP39

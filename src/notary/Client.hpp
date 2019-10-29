@@ -7,6 +7,7 @@
 
 #include <opentxs/opentxs.hpp>
 
+#if OT_CRYPTO_WITH_BIP39
 namespace opentxs::notary
 {
 class Client
@@ -42,3 +43,4 @@ private:
     Client& operator=(Client&&) = delete;
 };
 }  // namespace opentxs::notary
+#endif  // OT_CRYPTO_WITH_BIP39
