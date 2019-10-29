@@ -7,7 +7,9 @@
 
 #include <boost/program_options.hpp>
 
+#if OT_CRYPTO_WITH_BIP39
 #include "Client.hpp"
+#endif  // OT_CRYPTO_WITH_BIP39
 
 #include <chrono>
 #include <map>
@@ -78,7 +80,9 @@ int main(int argc, char* argv[])
     bool startClient{false};
     int network{1};
     std::chrono::seconds gc{0};
+#if OT_CRYPTO_WITH_BIP39
     std::unique_ptr<opentxs::notary::Client> client{nullptr};
+#endif  // OT_CRYPTO_WITH_BIP39
     process_arguments(
         argc, argv, args, version, onlyInit, startClient, network, gc);
 
@@ -90,17 +94,22 @@ int main(int argc, char* argv[])
 
     opentxs::Signals::Block();
     const auto& ot = opentxs::InitContext(args, gc);
-    const auto& server = ot.StartServer(args, 0);
-    auto shutdown =
-        opentxs::api::Context::ShutdownCallback{[&] { client.reset(); }};
+    [[maybe_unused]] const auto& server = ot.StartServer(args, 0);
+    auto shutdown = opentxs::api::Context::ShutdownCallback{[&] {
+#if OT_CRYPTO_WITH_BIP39
+        client.reset();
+#endif  // OT_CRYPTO_WITH_BIP39
+    }};
     ot.HandleSignals(&shutdown);
 
     if (onlyInit) { opentxs::Cleanup(); }
 
+#if OT_CRYPTO_WITH_BIP39
     if (startClient) {
         const auto& otClient = ot.StartClient(args, 0);
         client.reset(new opentxs::notary::Client(otClient, server, network));
     }
+#endif  // OT_CRYPTO_WITH_BIP39
 
     opentxs::Join();
     cleanup_globals();
