@@ -5,7 +5,6 @@
 
 #include "Client.hpp"
 
-#if OT_CRYPTO_WITH_BIP39
 #define OT_METHOD "opentxs::notary::Client::"
 
 namespace opentxs::notary
@@ -86,12 +85,12 @@ void Client::migrate_contract() const
     const auto serverContract =
         server_.Wallet().Server(server_.ID(), server_reason_);
 
-    OT_ASSERT(serverContract)
+    OT_ASSERT(0 != serverContract->Version())
 
     auto clientContract = client_.Wallet().Server(
         serverContract->PublicContract(), client_reason_);
 
-    OT_ASSERT(clientContract)
+    OT_ASSERT(0 != clientContract->Version())
 }
 
 void Client::migrate_nym() const
@@ -143,4 +142,3 @@ void Client::test_nym() const
     migrate_nym();
 }
 }  // namespace opentxs::notary
-#endif  // OT_CRYPTO_WITH_BIP39
