@@ -72,7 +72,10 @@ void read_options(int argc, char** argv);
 int main(int argc, char* argv[])
 {
     read_options(argc, argv);
-    opentxs::ArgList args;
+    auto args = opentxs::ArgList{
+        {OPENTXS_ARG_HOME,
+         {opentxs::api::Context::SuggestFolder("opentxs-notary")}},
+    };
     bool onlyInit{false};
     bool version{false};
     bool startClient{false};
@@ -91,9 +94,8 @@ int main(int argc, char* argv[])
     opentxs::Signals::Block();
     const auto& ot = opentxs::InitContext(args, gc);
     [[maybe_unused]] const auto& server = ot.StartServer(args, 0);
-    auto shutdown = opentxs::api::Context::ShutdownCallback{[&] {
-        client.reset();
-    }};
+    auto shutdown =
+        opentxs::api::Context::ShutdownCallback{[&] { client.reset(); }};
     ot.HandleSignals(&shutdown);
 
     if (onlyInit) { opentxs::Cleanup(); }
