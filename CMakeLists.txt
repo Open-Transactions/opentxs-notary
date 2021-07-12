@@ -15,7 +15,7 @@ include(open-transactions-common)
 # -----------------------------------------------------------------------------
 # Setup
 
-set_version_from_git()
+# set_version_from_git()
 set_build_type()
 set_out_of_source_build()
 update_git_submodules()
