@@ -1,4 +1,4 @@
-// Copyright (c) 2018 The Open-Transactions developers
+// Copyright (c) 2011-2021 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,7 +21,7 @@ Client::Client(
     , server_nym_callback_(network::zeromq::ListenCallback::Factory(
           std::bind(&Client::server_nym_updated, this, std::placeholders::_1)))
     , server_nym_subscriber_(
-          server_.ZeroMQ().SubscribeSocket(server_nym_callback_))
+          server_.Network().ZeroMQ().SubscribeSocket(server_nym_callback_))
 {
     const auto started =
         server_nym_subscriber_->Start(server_.Endpoints().NymDownload());
@@ -38,42 +38,48 @@ Client::Client(
 
 void Client::import_nym() const
 {
-    const auto serverNym =
-        server_.Wallet().Nym(server_.NymID(), server_reason_);
+    const auto serverNym = server_.Wallet().Nym(server_.NymID());
 
     OT_ASSERT(serverNym)
 
-    proto::HDPath path{};
-    const auto havePath = serverNym->Path(path);
+    const auto seedID = server_.Seeds().DefaultSeed();
+    const auto words = [&] {
+        auto out = client_.Factory().Secret(0);
 
-    OT_ASSERT(havePath)
+        if (false == seedID.empty()) {
+            out->AssignText(server_.Seeds().Words(seedID, server_reason_));
+        }
 
-    const auto seedID = Identifier::Factory(path.root());
-    OTPassword words{}, passphrase{};
-    words.setPassword(server_.Seeds().Words(server_reason_, seedID->str()));
-    passphrase.setPassword(
-        server_.Seeds().Passphrase(server_reason_, seedID->str()));
-    const auto imported =
-        client_.Seeds().ImportSeed(words, passphrase, client_reason_);
+        return out;
+    }();
+    const auto phrase = [&] {
+        auto out = client_.Factory().Secret(0);
 
-    OT_ASSERT(imported == seedID->str())
-    OT_ASSERT(2 == path.child_size())
+        if (false == seedID.empty()) {
+            out->AssignText(server_.Seeds().Passphrase(seedID, server_reason_));
+        }
 
-    // TODO const auto index = path.child(1);
+        return out;
+    }();
+    const auto imported = client_.Seeds().ImportSeed(
+        words,
+        phrase,
+        crypto::SeedStyle::BIP39,
+        crypto::Language::en,
+        client_reason_);
 
-    // TODO OT_ASSERT(0 == index)
+    OT_ASSERT(imported == seedID)
 
     {
-#if OT_CRYPTO_SUPPORTED_KEY_HD
-        NymParameters nymParameters(proto::CREDTYPE_HD);
-        nymParameters.SetSeed(seedID->str());
-        nymParameters.SetNym(0);
-        nymParameters.SetDefault(false);
+#if OT_CRYPTO_WITH_BIP32
+        auto params = NymParameters{seedID, 0};
 #else
-        NymParameters nymParameters(proto::CREDTYPE_LEGACY);
+        auto params = NymParameters{seedID, 0};
+
+        NymParameters nymParameters(identity::CredentialType::Legacy);
 #endif
         auto clientNym =
-            client_.Wallet().Nym(client_reason_, "", nymParameters);
+            client_.Wallet().Nym(client_reason_, serverNym->Name(), params);
 
         OT_ASSERT(clientNym)
         OT_ASSERT(clientNym->CompareID(server_.NymID()))
@@ -82,27 +88,36 @@ void Client::import_nym() const
 
 void Client::migrate_contract() const
 {
-    const auto serverContract =
-        server_.Wallet().Server(server_.ID(), server_reason_);
+    const auto serverContract = server_.Wallet().Server(server_.ID());
 
     OT_ASSERT(0 != serverContract->Version())
 
-    auto clientContract = client_.Wallet().Server(
-        serverContract->PublicContract(), client_reason_);
+    const auto proto = [&] {
+        auto out = Space{};
+        serverContract->Serialize(writer(out), true);
+
+        return out;
+    }();
+    auto clientContract = client_.Wallet().Server(reader(proto));
 
     OT_ASSERT(0 != clientContract->Version())
 }
 
 void Client::migrate_nym() const
 {
-    const auto serverNym =
-        server_.Wallet().Nym(server_.NymID(), server_reason_);
+    const auto serverNym = server_.Wallet().Nym(server_.NymID());
 
     OT_ASSERT(serverNym)
 
     auto clientNym =
         client_.Wallet().mutable_Nym(server_.NymID(), client_reason_);
-    clientNym.SetContactData(serverNym->Claims().Serialize(), client_reason_);
+    const auto proto = [&] {
+        auto out = Space{};
+        serverNym->Claims().Serialize(writer(out));
+
+        return out;
+    }();
+    clientNym.SetContactData(reader(proto), client_reason_);
 }
 
 void Client::server_nym_updated(const network::zeromq::Message& message) const
@@ -121,7 +136,8 @@ void Client::server_nym_updated(const network::zeromq::Message& message) const
 
 void Client::set_address_type() const
 {
-    if (network_ != client_.ZMQ().DefaultAddressType()) {
+    if (static_cast<core::AddressType>(network_) !=
+        client_.ZMQ().DefaultAddressType()) {
         bool notUsed{false};
         client_.Config().Set_long(
             String::Factory("Connection"),
@@ -134,8 +150,7 @@ void Client::set_address_type() const
 
 void Client::test_nym() const
 {
-    const auto clientNym =
-        client_.Wallet().Nym(server_.NymID(), client_reason_);
+    const auto clientNym = client_.Wallet().Nym(server_.NymID());
 
     if (false == bool(clientNym)) { import_nym(); }
 
