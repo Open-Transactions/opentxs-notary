@@ -5,13 +5,16 @@
 
 #include "Client.hpp"
 
+#include <cassert>
+#include <opentxs/client/NymData.hpp>
+
 #define OT_METHOD "opentxs::notary::Client::"
 
 namespace opentxs::notary
 {
 Client::Client(
-    const opentxs::api::client::Manager& client,
-    const opentxs::api::server::Manager& server,
+    const opentxs::api::session::Client& client,
+    const opentxs::api::session::Notary& server,
     const int network)
     : client_(client)
     , server_(server)
@@ -26,7 +29,7 @@ Client::Client(
     const auto started =
         server_nym_subscriber_->Start(server_.Endpoints().NymDownload());
 
-    OT_ASSERT(started)
+    assert(started);
 
     test_nym();
     migrate_contract();
@@ -40,14 +43,15 @@ void Client::import_nym() const
 {
     const auto serverNym = server_.Wallet().Nym(server_.NymID());
 
-    OT_ASSERT(serverNym)
+    assert(serverNym);
 
-    const auto seedID = server_.Seeds().DefaultSeed();
+    const auto seedID = server_.Crypto().Seed().DefaultSeed();
     const auto words = [&] {
         auto out = client_.Factory().Secret(0);
 
         if (false == seedID.empty()) {
-            out->AssignText(server_.Seeds().Words(seedID, server_reason_));
+            out->AssignText(
+                server_.Crypto().Seed().Words(seedID, server_reason_));
         }
 
         return out;
@@ -56,33 +60,28 @@ void Client::import_nym() const
         auto out = client_.Factory().Secret(0);
 
         if (false == seedID.empty()) {
-            out->AssignText(server_.Seeds().Passphrase(seedID, server_reason_));
+            out->AssignText(
+                server_.Crypto().Seed().Passphrase(seedID, server_reason_));
         }
 
         return out;
     }();
-    const auto imported = client_.Seeds().ImportSeed(
+    const auto imported = client_.Crypto().Seed().ImportSeed(
         words,
         phrase,
         crypto::SeedStyle::BIP39,
         crypto::Language::en,
         client_reason_);
 
-    OT_ASSERT(imported == seedID)
+    assert(imported == seedID);
 
     {
-#if OT_CRYPTO_WITH_BIP32
-        auto params = NymParameters{seedID, 0};
-#else
-        auto params = NymParameters{seedID, 0};
-
-        NymParameters nymParameters(identity::CredentialType::Legacy);
-#endif
+        auto params = crypto::Parameters{seedID, 0};
         auto clientNym =
-            client_.Wallet().Nym(client_reason_, serverNym->Name(), params);
+            client_.Wallet().Nym(params, client_reason_, serverNym->Name());
 
-        OT_ASSERT(clientNym)
-        OT_ASSERT(clientNym->CompareID(server_.NymID()))
+        assert(clientNym);
+        assert(clientNym->CompareID(server_.NymID()));
     }
 }
 
@@ -90,7 +89,7 @@ void Client::migrate_contract() const
 {
     const auto serverContract = server_.Wallet().Server(server_.ID());
 
-    OT_ASSERT(0 != serverContract->Version())
+    assert(0 != serverContract->Version());
 
     const auto proto = [&] {
         auto out = Space{};
@@ -100,14 +99,14 @@ void Client::migrate_contract() const
     }();
     auto clientContract = client_.Wallet().Server(reader(proto));
 
-    OT_ASSERT(0 != clientContract->Version())
+    assert(0 != clientContract->Version());
 }
 
 void Client::migrate_nym() const
 {
     const auto serverNym = server_.Wallet().Nym(server_.NymID());
 
-    OT_ASSERT(serverNym)
+    assert(serverNym);
 
     auto clientNym =
         client_.Wallet().mutable_Nym(server_.NymID(), client_reason_);
@@ -123,13 +122,13 @@ void Client::migrate_nym() const
 void Client::server_nym_updated(const network::zeromq::Message& message) const
 {
     if (1 > message.Body().size()) {
-        LogOutput(OT_METHOD)(__FUNCTION__)(": Missing nym ID.").Flush();
+        LogError()(OT_METHOD)(__FUNCTION__)(": Missing nym ID.").Flush();
 
         return;
     }
 
     const auto& frame = message.Body_at(0);
-    const auto id = Identifier::Factory(frame);
+    const auto id = client_.Factory().NymID(frame);
 
     if (server_.NymID() == id) { migrate_nym(); }
 }

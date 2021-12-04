@@ -44,7 +44,7 @@ auto main(int argc, char* argv[]) -> int
     const auto options = process_arguments(argc, argv);
 
     if (options.show_version_) {
-        std::cout << "opentxs library-" << OPENTXS_VERSION_STRING << '\n';
+        std::cout << "opentxs library-" << opentxs::VersionString() << '\n';
 
         return 0;
     }
@@ -58,7 +58,7 @@ auto main(int argc, char* argv[]) -> int
     std::unique_ptr<opentxs::notary::Client> client{nullptr};
     opentxs::Signals::Block();
     const auto& ot = opentxs::InitContext(options.args_);
-    const auto& server = ot.StartServer(options.args_, 0);
+    const auto& server = ot.StartNotarySession(options.args_, 0);
     auto shutdown = opentxs::api::Context::ShutdownCallback{
         [&]() noexcept { client.reset(); }};
     ot.HandleSignals(&shutdown);
@@ -66,7 +66,7 @@ auto main(int argc, char* argv[]) -> int
     if (options.only_init_) { opentxs::Cleanup(); }
 
     if (options.start_client_) {
-        const auto& otClient = ot.StartClient(options.args_, 0);
+        const auto& otClient = ot.StartClientSession(options.args_, 0);
         client.reset(
             new opentxs::notary::Client(otClient, server, options.network_));
     }

@@ -13,15 +13,15 @@ class Client
 {
 public:
     Client(
-        const api::client::Manager& client,
-        const api::server::Manager& server,
+        const api::session::Client& client,
+        const api::session::Notary& server,
         const int network);
 
     ~Client() = default;
 
 private:
-    const api::client::Manager& client_;
-    const api::server::Manager& server_;
+    const api::session::Client& client_;
+    const api::session::Notary& server_;
     const int network_{1};
     const OTPasswordPrompt client_reason_;
     const OTPasswordPrompt server_reason_;
