@@ -1,4 +1,4 @@
-// Copyright (c) 2011-2021 The Open-Transactions developers
+// Copyright (c) 2011-2023 The Open-Transactions developers
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,28 +7,23 @@
 
 #include <boost/program_options.hpp>
 
-#include "Client.hpp"
-
 #include <chrono>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 
-#define NOTARY_ARGUMENT_ADVERTISE "advertise"
-#define NOTARY_ARGUMENT_ADVERTISE_NETWORK "advertise_network"
-#define NOTARY_OPTION_ONLY_INIT "only_init"
-#define NOTARY_OPTION_VERSION "version"
-
 namespace po = boost::program_options;
 
-constexpr auto help_{"help"};
+constexpr auto help_arg_ = "help";
+constexpr auto only_init_arg_ = "only_init";
+constexpr auto version_arg_ = "version";
 
 struct Options {
     opentxs::Options args_{};
     bool show_help_{false};
     bool show_version_{false};
     bool only_init_{false};
-    bool start_client_{false};
     int network_{1};
 };
 
@@ -55,21 +50,12 @@ auto main(int argc, char* argv[]) -> int
         return 0;
     }
 
-    std::unique_ptr<opentxs::notary::Client> client{nullptr};
-    opentxs::Signals::Block();
+    opentxs::api::Context::PrepareSignalHandling();
     const auto& ot = opentxs::InitContext(options.args_);
-    const auto& server = ot.StartNotarySession(options.args_, 0);
-    auto shutdown = opentxs::api::Context::ShutdownCallback{
-        [&]() noexcept { client.reset(); }};
-    ot.HandleSignals(&shutdown);
+    ot.StartNotarySession(options.args_, 0);
+    ot.HandleSignals();
 
     if (options.only_init_) { opentxs::Cleanup(); }
-
-    if (options.start_client_) {
-        const auto& otClient = ot.StartClientSession(options.args_, 0);
-        client.reset(
-            new opentxs::notary::Client(otClient, server, options.network_));
-    }
 
     opentxs::Join();
 
@@ -80,22 +66,10 @@ auto options() noexcept -> const po::options_description&
 {
     static const auto output = [] {
         auto out = po::options_description{"opentxs-notary options"};
-        out.add_options()(help_, "Display this message");
+        out.add_options()(help_arg_, "Display this message");
         out.add_options()(
-            NOTARY_OPTION_ONLY_INIT,
-            po::value<std::string>()->implicit_value("true"),
-            "Create or verify notary contract only");
-        out.add_options()(
-            NOTARY_OPTION_VERSION, "Show application version and exit");
-        out.add_options()(
-            NOTARY_ARGUMENT_ADVERTISE,
-            po::value<std::string>(),
-            "Upload the notary contract to the introduction notary");
-        out.add_options()(
-            NOTARY_ARGUMENT_ADVERTISE_NETWORK,
-            po::value<std::string>(),
-            "Connection mode to introduction server. 1 = ipv4, 2 = ipv6, 3 = "
-            "tor, 4  = i2p");
+            only_init_arg_, "Create or verify notary contract only");
+        out.add_options()(version_arg_, "Show application version and exit");
 
         return out;
     }();
@@ -107,38 +81,18 @@ auto process_arguments(int argc, char** argv) noexcept -> Options
 {
     auto output = Options{};
     auto& args = output.args_;
-    args.SetHome(
-        opentxs::api::Context::SuggestFolder("opentxs-notary").c_str());
+    args.SetHome(opentxs::api::Context::SuggestFolder("opentxs-notary"));
     args.ParseCommandLine(argc, argv);
-    auto onlyInit = std::string{};
-    auto startClient = std::string{};
-    auto network = int{1};
 
     for (const auto& [name, value] : variables()) {
-        if (name == help_) {
+        if (name == help_arg_) {
             output.show_help_ = true;
-        } else if (name == NOTARY_OPTION_VERSION) {
+        } else if (name == version_arg_) {
             output.show_version_ = true;
-        } else if (name == NOTARY_OPTION_ONLY_INIT) {
-            try {
-                onlyInit = value.as<decltype(onlyInit)>();
-            } catch (...) {
-            }
-        } else if (name == NOTARY_ARGUMENT_ADVERTISE) {
-            try {
-                startClient = value.as<decltype(startClient)>();
-            } catch (...) {
-            }
-        } else if (name == NOTARY_ARGUMENT_ADVERTISE_NETWORK) {
-            try {
-                network = value.as<decltype(network)>();
-            } catch (...) {
-            }
+        } else if (name == only_init_arg_) {
+            output.only_init_ = true;
         }
     }
-
-    if ("true" == onlyInit) { output.only_init_ = true; }
-    if ("true" == startClient) { output.start_client_ = true; }
 
     return output;
 }

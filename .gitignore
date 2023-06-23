@@ -1,1 +1,3 @@
-cmake/.gitignore
+build/
+CMakeSettings.json
+CMakeUserPresets.json
