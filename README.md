@@ -1,50 +1,50 @@
-opentxs-notary
-==============
+# opentxs-notary
 
-[![Stories in Ready](https://badge.waffle.io/open-transactions/opentxs-notary.svg?label=ready&title=Ready)](http://waffle.io/open-transactions/opentxs-notary)
+opentxs-notary is the server component of the OTX protocol described in the [Open-Transactions whitepaper](http://www.opentransactions.org/open-transactions.pdf).
 
+## Build Instructions
 
-### Build Instructions
+The recommended way of deploying opentxs-notary is via [Docker](tools/docker).
 
-OpenTransactions uses the CMake build system. The basic steps are:
+opentxs-notary may also be built standalone using the CMake build system. The basic steps are:
 
     mkdir build
     cd build
     cmake ..
-    make
-    make install
+    cmake --build .
+    cmake --install .
 
-This assumes you have [opentxs](https://github.com/Open-Transactions/opentxs)
-installed and available on the system.
+## Usage
 
+The most current list of supported chains and their associated command line arguments, as well as the full list of libopentxs arguments, can be obtained by passing --help.
 
-### Contributing
+### First time setup
 
-If you are planning to contribute please contact the devs in #opentransactions @ freenode.net IRC chat.
+The following arguments should be considered when running the notary for the first time. ```--only-init``` will immediately exit after creating the contract.
 
-All development goes in develop branch - please don't submit pull requests to master.
+```
+  --notary_name arg                (only when creating a new notary contract)
+                                   notary name
+  --notary_terms arg               (only when creating a new notary contract)
+                                   notary terms and conditions
+  --notary_public_eep arg          (only when creating a new notary contract)
+                                   public eep address to advertise in contract
+  --notary_public_ipv4 arg         (only when creating a new notary contract)
+                                   public ipv4 address to advertise in contract
+  --notary_public_ipv6 arg         (only when creating a new notary contract)
+                                   public ipv6 address to advertise in contract
+  --notary_public_onion arg        (only when creating a new notary contract)
+                                   public onion address to advertise in
+                                   contract
+  --notary_command_port arg        (only when creating a new notary contract)
+                                   public listening port
+```
 
-Please do *NOT* use an editor that automatically reformats.
+### Normal operation
 
-As part of our Continuous Integration system
-we run [cppcheck](https://github.com/danmar/cppcheck/) and 
-[clang-format](http://clang.llvm.org/docs/ClangFormat.html). The build will fail
-if either of them finds problems.
+opentxs-notary will listen on a single tcp port as specified by the ```--notary_bind_port``` argument. Remote users will always attempt to connect to the notary using port 7085. This port must be accessible via the endpoints specified at contract creation time using the ```--notary_public_*``` arguments
 
-#### CppCheck and clang-format Git hooks
-
-For convenience please enable the git hooks which will trigger cppcheck and
-clang-format each time you push or commit. To do so type in the repo directory:
-
-    cd .git/hooks  
-    ln -s ../../scripts/git_hooks/pre-push
-    ln -s ../../scripts/git_hooks/pre-commit
- 
-To check your code without pushing the following command can be used:  
-
-    git push -n
-
-
-### Dependencies
-
-[Open Transactions library](https://github.com/Open-Transactions/opentxs)
+```
+  --notary_bind_ip arg             Local IP address for the notary to listen on
+  --notary_bind_port arg           Local TCP port for the notary to listen on
+```
