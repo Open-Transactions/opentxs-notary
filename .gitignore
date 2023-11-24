@@ -1,1 +1,5 @@
-cmake/.gitignore
+build/
+CMakeSettings.json
+CMakeUserPresets.json
+.clang-format
+.cmake-format.py
