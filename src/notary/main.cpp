@@ -53,11 +53,13 @@ auto main(int argc, char* argv[]) -> int
     opentxs::api::Context::PrepareSignalHandling();
     const auto& ot = opentxs::InitContext(options.args_);
     ot.StartNotarySession(options.args_, 0);
-    ot.HandleSignals();
 
-    if (options.only_init_) { opentxs::Cleanup(); }
-
-    opentxs::Join();
+    if (options.only_init_) {
+        opentxs::Cleanup();
+    } else {
+        ot.HandleSignals();
+        opentxs::Join();
+    }
 
     return 0;
 }
