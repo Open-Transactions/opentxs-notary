@@ -1,21 +1,30 @@
+ARG BASE_FEDORA_VERSION="39"
 ARG OPENTXS_NOTARY_REPO="https://github.com/Open-Transactions/opentxs-notary"
 ARG OPENTXS_VERSION="latest"
 ARG OPENTXS_BUILD_URL="opentransactions/fedora-devel:$OPENTXS_VERSION"
 ARG OPENTXS_RUN_URL="opentransactions/fedora:$OPENTXS_VERSION"
 
-FROM fedora:39 AS base
+FROM alpine AS download
+RUN mkdir -p /usr/src
+RUN --mount=type=tmpfs,target=/var/cache/apk apk add \
+    bzip2 \
+    git \
+    lzo \
+    p7zip \
+    rsync \
+    wget \
+    xz
 
-FROM base AS git
-RUN --mount=type=tmpfs,target=/var/cache/dnf dnf install -y git
+FROM fedora:${BASE_FEDORA_VERSION} AS base
 
-FROM git AS download
+FROM download AS notary-download
 ARG OPENTXS_NOTARY_REPO
 ARG OPENTXS_NOTARY_COMMIT
 RUN mkdir -p /usr/src && git clone --recursive "${OPENTXS_NOTARY_REPO}" /usr/src/opentxs-notary && cd /usr/src/opentxs-notary && git reset --hard "${OPENTXS_NOTARY_COMMIT}"
 
 ARG OPENTXS_BUILD_URL
 FROM $OPENTXS_BUILD_URL AS compile
-COPY --from=download /usr/src/opentxs-notary /usr/src/opentxs-notary
+COPY --from=notary-download /usr/src/opentxs-notary /usr/src/opentxs-notary
 RUN mkdir -p /tmp/opentxs-notary && cd /tmp/opentxs-notary \
     && cmake \
         -GNinja \
