@@ -22,7 +22,7 @@ RUN mkdir -p /usr/src && git clone --recursive "${OPENTXS_NOTARY_REPO}" /usr/src
 
 FROM $OPENTXS_BUILD_URL AS compile
 COPY --from=notary-download /usr/src/opentxs-notary /usr/src/opentxs-notary
-RUN --mount=type=tmpfs,target=/tmp/opentxs-notary /usr/bin/cmake \
+RUN --mount=type=tmpfs,target=/tmp/opentxs-notary /opt/cmake/bin/cmake \
         -S /usr/src/opentxs-notary \
         -B /tmp/opentxs-notary \
         -GNinja \
@@ -31,8 +31,8 @@ RUN --mount=type=tmpfs,target=/tmp/opentxs-notary /usr/bin/cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_UNITY_BUILD=ON \
         -DCMAKE_UNITY_BUILD_BATCH_SIZE=0 \
-    && /usr/bin/cmake --build /tmp/opentxs-notary \
-    && /usr/bin/cmake --install /tmp/opentxs-notary
+    && /opt/cmake/bin/cmake --build /tmp/opentxs-notary \
+    && /opt/cmake/bin/cmake --install /tmp/opentxs-notary
 
 FROM $OPENTXS_RUN_URL AS run
 COPY --from=compile /usr/local/bin/opentxs-notary /usr/bin/opentxs-notary
