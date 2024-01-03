@@ -3,15 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include <opentxs/opentxs.hpp>
-
 #include <boost/program_options.hpp>
-
-#include <chrono>
+#include <opentxs/opentxs.hpp>
 #include <iostream>
-#include <map>
-#include <memory>
-#include <string>
+#include <string_view>
+#include <utility>
 
 namespace po = boost::program_options;
 

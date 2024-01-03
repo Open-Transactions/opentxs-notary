@@ -15,14 +15,14 @@ To use a specific version of libopentxs add ```--build-arg "OPENTXS_VERSION=<des
 
 ### Running the image
 
-Persistent storage must be mounted at /var/lib/notary inside the image and the ```--user``` argument to ```docker run``` should be set to match the ownership of this directory.
+Persistent storage must be mounted at /srv/opentxs-notary inside the image and the ```--user``` argument to ```docker run``` should be set to match the ownership of this directory.
 
 #### Example
 
 ```
 docker run \
     --read-only \
-    --mount type=bind,src=/var/lib/notary,dst=/var/lib/notary \
+    --mount type=bind,src=/srv/opentxs-notary,dst=/srv/opentxs-notary \
     --user 1000:1000 \
     -p 7085:7085/tcp \
     opentransactions/notary:latest \

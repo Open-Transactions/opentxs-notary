@@ -55,6 +55,16 @@ option(
   ${OPENTXS_NOTARY_PEDANTIC_DEFAULT}
 )
 
+option(
+  OPENTXS_NOTARY_IWYU
+  "Enable include-what-you-use static analysis"
+  OFF
+)
+
+if(OPENTXS_NOTARY_IWYU)
+  otcommon_make_iwyu_target()
+endif()
+
 # -----------------------------------------------------------------------------
 # Set compiler options
 

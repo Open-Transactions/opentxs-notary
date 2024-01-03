@@ -1,0 +1,31 @@
+name: format
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    env:
+      docker: '1.189.0'
+    steps:
+    - name: Checkout opentxs
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: '0'
+        submodules: 'recursive'
+    - name: Cache Docker images
+      uses: ScribeMD/docker-cache@0.3.6
+      with:
+        key: docker-ci-${{ matrix.docker }}
+    - name: Setup build environment
+      run: |
+        docker pull opentransactions/downstream-ci:${{ env.docker }}
+    - name: Check formatting
+      run: |
+        mkdir -p /tmp/opentxs
+        docker run --read-only --mount type=bind,src=${{ github.workspace }},dst=/home/src -i --entrypoint /usr/bin/check-formatting.sh opentransactions/downstream-ci:${{ env.docker }} /home/src

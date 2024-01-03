@@ -1,0 +1,46 @@
+name: compile
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  compile:
+    name: ${{ matrix.toolchain }}-${{ matrix.preset }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [gcc, clang]
+        preset: [default]
+        include:
+          - toolchain: gcc
+            docker: 1.189.0
+            compiler: gcc
+          - toolchain: clang
+            docker: 1.189.0
+            compiler: clang
+    steps:
+    - name: Checkout opentxs
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: '0'
+        submodules: 'recursive'
+    - name: Get more disk space
+      run: |
+        sudo rm -rf "/usr/local/lib/android"
+        sudo rm -rf "${JAVA_HOME_8_X64}"
+        sudo rm -rf "${JAVA_HOME_11_X64}"
+      shell: bash
+      continue-on-error: true
+    - name: Cache Docker images
+      uses: ScribeMD/docker-cache@0.3.6
+      with:
+        key: docker-ci-${{ matrix.docker }}
+    - name: Setup build environment
+      run: |
+        docker pull opentransactions/downstream-ci:${{ matrix.docker }}
+    - name: Compile
+      run: |
+        mkdir -p /tmp/opentxs
+        docker run --mount type=bind,src=${{ github.workspace }},dst=/usr/src/ --mount type=bind,src=/tmp/opentxs,dst=/home/output -i opentransactions/downstream-ci:${{ matrix.docker }} /usr/src/ ${{ matrix.compiler }} ${{ matrix.preset }}

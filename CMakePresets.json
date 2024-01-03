@@ -1,0 +1,100 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 26,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "mode-debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "mode-release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "default",
+            "displayName": "Default",
+            "description": "Default build using Ninja generator",
+            "generator": "Ninja",
+            "inherits": "mode-debug",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_UNITY_BUILD": "ON"
+            }
+        },
+        {
+            "name": "iwyu",
+            "displayName": "iwyu",
+            "description": "configure build for include-what-you-use ci check",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "OPENTXS_NOTARY_PEDANTIC_BUILD": "OFF",
+                "OPENTXS_NOTARY_IWYU": "ON",
+                "CMAKE_UNITY_BUILD": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "hidden": true,
+            "name": "ninja",
+            "nativeToolOptions": [
+                "-k 0"
+            ]
+        },
+        {
+            "name": "default",
+            "configurePreset": "default",
+            "inherits": [
+                "ninja"
+            ]
+        },
+        {
+            "name": "iwyu",
+            "configurePreset": "iwyu",
+            "inherits": [
+                "ninja"
+            ]
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "default",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "default"
+                },
+                {
+                    "type": "build",
+                    "name": "default"
+                }
+            ]
+        },
+        {
+            "name": "iwyu",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "iwyu"
+                },
+                {
+                    "type": "build",
+                    "name": "iwyu"
+                }
+            ]
+        }
+    ]
+}
