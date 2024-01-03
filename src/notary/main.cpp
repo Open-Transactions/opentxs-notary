@@ -5,11 +5,9 @@
 
 #include <boost/program_options.hpp>
 #include <opentxs/opentxs.hpp>
-#include <chrono>
 #include <iostream>
-#include <map>
-#include <memory>
-#include <string>
+#include <string_view>
+#include <utility>
 
 namespace po = boost::program_options;
 

@@ -1,0 +1,31 @@
+name: iwyu
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  includes:
+    name: include-what-you-use
+    runs-on: ubuntu-22.04-large64
+    strategy:
+      fail-fast: true
+    env:
+      docker: '1.189.0'
+    steps:
+    - name: Checkout opentxs
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: '0'
+        submodules: 'recursive'
+    - name: Cache Docker images
+      uses: ScribeMD/docker-cache@0.3.6
+      with:
+        key: docker-ci-${{ matrix.docker }}
+    - name: Setup build environment
+      run: |
+        docker pull opentransactions/downstream-ci:${{ env.docker }}
+    - name: Check includes
+      run: |
+        mkdir -p /tmp/opentxs
+        docker run --mount type=bind,src=${{ github.workspace }},dst=/usr/src/ --mount type=bind,src=/tmp/opentxs,dst=/home/output -i --entrypoint /usr/bin/run-iwyu.sh opentransactions/downstream-ci:${{ env.docker }} /usr/src/ iwyu
