@@ -1,5 +1,9 @@
 # opentxs-notary
 
+[![format](https://github.com/open-transactions/opentxs-notary/workflows/format/badge.svg)](https://github.com/Open-Transactions/opentxs-notary/actions)
+[![iwyu](https://github.com/open-transactions/opentxs-notary/workflows/iwyu/badge.svg)](https://github.com/Open-Transactions/opentxs-notary/actions)
+[![compile](https://github.com/open-transactions/opentxs-notary/workflows/compile/badge.svg)](https://github.com/Open-Transactions/opentxs-notary/actions)
+
 opentxs-notary is the server component of the OTX protocol described in the [Open-Transactions whitepaper](http://www.opentransactions.org/open-transactions.pdf).
 
 ## Build Instructions
