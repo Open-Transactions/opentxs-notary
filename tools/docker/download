@@ -1,0 +1,8 @@
+FROM download AS notary-download
+ARG OPENTXS_NOTARY_REPO
+ARG OPENTXS_NOTARY_TAG
+
+RUN --mount=type=tmpfs,target=/tmp/download/ cd /tmp/download \
+    && wget -O /tmp/download/opentxs-notary.tar.gz "${OPENTXS_NOTARY_REPO}/archive/refs/tags/${OPENTXS_NOTARY_TAG}.tar.gz" \
+    && tar -xf opentxs-notary.tar.gz \
+    && mv "opentxs-notary-${OPENTXS_NOTARY_TAG}" /usr/src/opentxs-notary

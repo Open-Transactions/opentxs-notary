@@ -1,0 +1,8 @@
+ARG OPENTXS_RUNTIME
+ARG OPENTXS_VERSION
+ARG RUNTIME="${OPENTXS_RUNTIME}:${OPENTXS_VERSION}"
+
+FROM ${RUNTIME} AS run
+COPY --from=compile /opt/notary /usr
+ENTRYPOINT [ "/usr/bin/opentxs-notary", "--ot_home=/srv/opentxs-notary" ]
+CMD []

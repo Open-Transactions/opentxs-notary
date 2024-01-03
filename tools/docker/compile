@@ -1,0 +1,18 @@
+ARG OPENTXS_SDK
+ARG OPENTXS_VERSION
+ARG SDK="${OPENTXS_SDK}:${OPENTXS_VERSION}"
+
+FROM ${SDK} AS compile
+COPY --from=notary-download /usr/src/opentxs-notary /usr/src/opentxs-notary
+RUN --mount=type=tmpfs,target=/tmp/opentxs-notary /opt/cmake/bin/cmake \
+        -S /usr/src/opentxs-notary \
+        -B /tmp/opentxs-notary \
+        -GNinja \
+        -DCMAKE_INSTALL_PREFIX=/opt/notary \
+        -DCMAKE_C_FLAGS="-O2" \
+        -DCMAKE_CXX_FLAGS="-O2" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_UNITY_BUILD=ON \
+        -DCMAKE_UNITY_BUILD_BATCH_SIZE=0 \
+    && /opt/cmake/bin/cmake --build /tmp/opentxs-notary \
+    && /opt/cmake/bin/cmake --install /tmp/opentxs-notary
