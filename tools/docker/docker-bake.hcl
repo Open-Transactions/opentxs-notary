@@ -27,6 +27,7 @@ target "downloader" {
 target "notary-download" {
   dockerfile = "download"
   target = "notary-download"
+  ssh = [ "default" ]
   contexts = {
     download = "target:downloader"
   }
