@@ -7,7 +7,7 @@ include(otcommon-configure-target)
 include(otcommon-define-signed-overflow)
 
 function(opentxs_notary_configure_cxx_target target_name)
-  otcommon_configure_cxx_target(${target_name})
+  otcommon_configure_target_cxx(${target_name})
   otcommon_define_signed_overflow(${target_name})
 
   if(NOT MSVC)

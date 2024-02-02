@@ -22,7 +22,7 @@ list(
 
 find_package(
   otcommon
-  2
+  3
   CONFIG
   REQUIRED
 )

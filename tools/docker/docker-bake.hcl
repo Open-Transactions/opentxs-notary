@@ -1,5 +1,5 @@
-variable "tag" { default = "23.2.1" }
-variable "opentxs" { default = "1.189.0" }
+variable "tag" { default = "24.0.0" }
+variable "opentxs" { default = "1.190.2" }
 
 variable "target_arch" {
   default = "amd64"
