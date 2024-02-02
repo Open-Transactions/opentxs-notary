@@ -1,4 +1,4 @@
-# Copyright (c) 2020-2023 The Open-Transactions developers
+# Copyright (c) 2020-2024 The Open-Transactions developers
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -7,7 +7,7 @@ include(otcommon-configure-target)
 include(otcommon-define-signed-overflow)
 
 function(opentxs_notary_configure_cxx_target target_name)
-  otcommon_configure_cxx_target(${target_name})
+  otcommon_configure_target_cxx(${target_name})
   otcommon_define_signed_overflow(${target_name})
 
   if(NOT MSVC)
