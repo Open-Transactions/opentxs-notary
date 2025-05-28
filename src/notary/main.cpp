@@ -5,9 +5,6 @@
 
 #include <boost/program_options.hpp>
 #include <opentxs/opentxs.hpp>
-#include <iostream>
-#include <string_view>
-#include <utility>
 
 namespace po = boost::program_options;
 
@@ -16,26 +13,28 @@ constexpr auto only_init_arg_ = "only_init";
 constexpr auto version_arg_ = "version";
 
 struct Options {
-    opentxs::Options args_{};
+    opentxs::api::Options args_{};
     bool show_help_{false};
     bool show_version_{false};
     bool only_init_{false};
     int network_{1};
 };
 
-auto options() noexcept -> const po::options_description&;
+auto options() noexcept -> po::options_description const&;
 auto process_arguments(int argc, char** argv) noexcept -> Options;
 auto read_options(int argc, char** argv) noexcept -> bool;
 auto variables() noexcept -> po::variables_map&;
 
 auto main(int argc, char* argv[]) -> int
 {
+    std::set_terminate(&opentxs::terminate_handler);
+
     if (false == read_options(argc, argv)) { return 1; }
 
-    const auto options = process_arguments(argc, argv);
+    auto const options = process_arguments(argc, argv);
 
     if (options.show_version_) {
-        std::cout << "opentxs library-" << opentxs::VersionString() << '\n';
+        std::cout << "opentxs library-" << opentxs::version_string() << '\n';
 
         return 0;
     }
@@ -47,22 +46,22 @@ auto main(int argc, char* argv[]) -> int
     }
 
     opentxs::api::Context::PrepareSignalHandling();
-    const auto& ot = opentxs::InitContext(options.args_);
+    auto const& ot = opentxs::start(options.args_);
     ot.StartNotarySession(options.args_, 0);
 
     if (options.only_init_) {
-        opentxs::Cleanup();
+        opentxs::shutdown();
     } else {
         ot.HandleSignals();
-        opentxs::Join();
+        opentxs::join();
     }
 
     return 0;
 }
 
-auto options() noexcept -> const po::options_description&
+auto options() noexcept -> po::options_description const&
 {
-    static const auto output = [] {
+    static auto const output = [] {
         auto out = po::options_description{"opentxs-notary options"};
         out.add_options()(help_arg_, "Display this message");
         out.add_options()(
@@ -82,7 +81,7 @@ auto process_arguments(int argc, char** argv) noexcept -> Options
     args.SetHome(opentxs::api::Context::SuggestFolder("opentxs-notary"));
     args.ParseCommandLine(argc, argv);
 
-    for (const auto& [name, value] : variables()) {
+    for (auto const& [name, value] : variables()) {
         if (name == help_arg_) {
             output.show_help_ = true;
         } else if (name == version_arg_) {
@@ -98,7 +97,7 @@ auto process_arguments(int argc, char** argv) noexcept -> Options
 auto read_options(int argc, char** argv) noexcept -> bool
 {
     try {
-        const auto parsed = po::command_line_parser(argc, argv)
+        auto const parsed = po::command_line_parser(argc, argv)
                                 .options(options())
                                 .allow_unregistered()
                                 .run();

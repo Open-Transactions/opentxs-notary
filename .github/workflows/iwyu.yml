@@ -7,11 +7,11 @@ on:
 jobs:
   includes:
     name: include-what-you-use
-    runs-on: ubuntu-22.04-large64
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
     env:
-      docker: '1.190.2'
+      docker: '1.229.0'
     steps:
     - name: Checkout opentxs
       uses: actions/checkout@v3
@@ -19,7 +19,7 @@ jobs:
         fetch-depth: '0'
         submodules: 'recursive'
     - name: Cache Docker images
-      uses: ScribeMD/docker-cache@0.3.6
+      uses: ScribeMD/docker-cache@0.5.0
       with:
         key: docker-ci-${{ matrix.docker }}
     - name: Setup build environment

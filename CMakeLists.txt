@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-cmake_minimum_required(VERSION 3.21.0)
+cmake_minimum_required(VERSION 4.0.0)
 cmake_policy(
   SET
   CMP0091
@@ -86,6 +86,7 @@ opentxs_notary_print_build_details()
 
 find_package(
   opentxs
+  1.229.0
   CONFIG
   REQUIRED
 )

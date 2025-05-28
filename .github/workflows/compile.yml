@@ -15,10 +15,10 @@ jobs:
         preset: [default]
         include:
           - toolchain: gcc
-            docker: 1.190.2
+            docker: 1.229.0
             compiler: gcc
           - toolchain: clang
-            docker: 1.190.2
+            docker: 1.229.0
             compiler: clang
     steps:
     - name: Checkout opentxs
@@ -34,7 +34,7 @@ jobs:
       shell: bash
       continue-on-error: true
     - name: Cache Docker images
-      uses: ScribeMD/docker-cache@0.3.6
+      uses: ScribeMD/docker-cache@0.5.0
       with:
         key: docker-ci-${{ matrix.docker }}
     - name: Setup build environment
