@@ -27,7 +27,8 @@ auto variables() noexcept -> po::variables_map&;
 
 auto main(int argc, char* argv[]) -> int
 {
-    std::set_terminate(&opentxs::terminate_handler);
+    opentxs::init_terminate_handler();
+    auto const& log = opentxs::LogTrace();
 
     if (false == read_options(argc, argv)) { return 1; }
 
@@ -46,14 +47,14 @@ auto main(int argc, char* argv[]) -> int
     }
 
     opentxs::api::Context::PrepareSignalHandling();
-    auto const& ot = opentxs::start(options.args_);
+    auto const& ot = opentxs::start(log, options.args_);
     ot.StartNotarySession(options.args_, 0);
 
     if (options.only_init_) {
-        opentxs::shutdown();
+        opentxs::shutdown(log);
     } else {
         ot.HandleSignals();
-        opentxs::join();
+        opentxs::join(log);
     }
 
     return 0;
