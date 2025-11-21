@@ -15,10 +15,10 @@ jobs:
         preset: [default]
         include:
           - toolchain: gcc
-            docker: 1.229.0
+            docker: 1.246.0
             compiler: gcc
           - toolchain: clang
-            docker: 1.229.0
+            docker: 1.246.0
             compiler: clang
     steps:
     - name: Checkout opentxs
