@@ -86,7 +86,7 @@ opentxs_notary_print_build_details()
 
 find_package(
   opentxs
-  2
+  3
   CONFIG
   REQUIRED
 )
